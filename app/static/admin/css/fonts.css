@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dcb09cd (Testing Jack's ability to commit changes)
 @font-face {
     font-family: 'Roboto';
     src: url('../fonts/Roboto-Bold-webfont.woff');
@@ -18,3 +23,33 @@
     font-weight: 300;
     font-style: normal;
 }
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto-Bold-webfont.woff');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto-Regular-webfont.woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto-Light-webfont.woff');
+    font-weight: 300;
+    font-style: normal;
+}
+<<<<<<< HEAD
+>>>>>>> 86c1339 (django project set up with docker; sample api endpoint)
+=======
+>>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
+=======
+>>>>>>> dcb09cd (Testing Jack's ability to commit changes)
