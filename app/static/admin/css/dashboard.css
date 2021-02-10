@@ -1,3 +1,16 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dcb09cd (Testing Jack's ability to commit changes)
+=======
+>>>>>>> 33f1bd1 (ECC - 420 Implemented validation on request data & sending response accordingly)
+=======
+>>>>>>> dcb09cd (Testing Jack's ability to commit changes)
 /* DASHBOARD */
 
 .dashboard .module table th {
@@ -24,3 +37,55 @@ ul.actionlist li {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
+=======
+>>>>>>> 86c1339 (django project set up with docker; sample api endpoint)
+=======
+>>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
+/* DASHBOARD */
+
+.dashboard .module table th {
+    width: 100%;
+}
+
+.dashboard .module table td {
+    white-space: nowrap;
+}
+
+.dashboard .module table td a {
+    display: block;
+    padding-right: .6em;
+}
+
+/* RECENT ACTIONS MODULE */
+
+.module ul.actionlist {
+    margin-left: 0;
+}
+
+ul.actionlist li {
+    list-style-type: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 86c1339 (django project set up with docker; sample api endpoint)
+=======
+>>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
+=======
+>>>>>>> dcb09cd (Testing Jack's ability to commit changes)
+=======
+>>>>>>> 33f1bd1 (ECC - 420 Implemented validation on request data & sending response accordingly)
+=======
+>>>>>>> 86c1339 (django project set up with docker; sample api endpoint)
+=======
+>>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
+=======
+>>>>>>> dcb09cd (Testing Jack's ability to commit changes)
