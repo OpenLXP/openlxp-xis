@@ -1,18 +1,22 @@
 version: "3"
 
 services:
-  db:
+  db_xis:
     image: mysql:5.7
     ports:
-      - '3306:3306'
+      - '3310:3306'
     environment:
       MYSQL_DATABASE: "${DB_NAME}"
 #      MYSQL_USER: 'root'
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       MYSQL_HOST: ''
+    networks:
+      - openlxp
 
-  app:
+
+  app_xis:
+    container_name: openlxp-xis-load
     build:
       context: .
     ports:
@@ -35,5 +39,14 @@ services:
       SECRET_KEY_VAL: "${SECRET_KEY_VAL}"
     volumes:
       - ./app:/opt/app/openlxp-xis
+      - ${CERT_VOLUME}:/etc/ssl/certs/ca-certificates.pem
     depends_on:
-      - db
+      - db_xis
+    networks: 
+      - openlxp
+
+networks: 
+
+  openlxp:
+    external: true
+
