@@ -34,6 +34,7 @@ class MetadataLedgerView(APIView):
             # name = serializer.validated_data.get('name')
             # age = serializer.validated_data.get('age')
             # occupation = serializer.validated_data.get('occupation')
+            # comment
             logger.info(json.dumps(request.data))
 
             # convert both serializers into 1 JSON object, and return it in
