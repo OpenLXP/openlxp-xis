@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from metadata_api import serializers
+from api import serializers
 
 import logging
 import sys
@@ -44,4 +44,5 @@ class MetadataLedgerView(APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
+
+        
