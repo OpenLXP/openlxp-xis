@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+
 class TestObjectSerializer(serializers.Serializer):
     """Serializes a sample JSON object"""
     name = serializers.CharField()

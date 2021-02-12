@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -6,11 +5,11 @@ from rest_framework import status
 from api import serializers
 
 import logging
-import sys
 import json
 
 
 logger = logging.getLogger('dict_config_logger')
+
 
 class MetadataLedgerView(APIView):
     """Test API VIew"""
@@ -20,16 +19,16 @@ class MetadataLedgerView(APIView):
 
     def post(self, request):
         """Takes in a JSON object and prints to the console"""
-        
+
         serializer = self.serializer_class(data=request.data)
-        #metadataJSON = 
-        # supplementalJSON = 
+        # metadataJSON =
+        # supplementalJSON =
         # metadataSerializer = self.metadataSerializer_class(metadataJSON)
-        # supplementalSerializer = 
-            #  self.supplementSerializer_class(supplementalJSON)
+        # supplementalSerializer =
+        #  self.supplementSerializer_class(supplementalJSON)
 
         # Check if metadataSerializer is valid AND supplementalSerializer is
-            # valid
+        # valid
         if serializer.is_valid():
             # name = serializer.validated_data.get('name')
             # age = serializer.validated_data.get('age')
@@ -44,5 +43,3 @@ class MetadataLedgerView(APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        
