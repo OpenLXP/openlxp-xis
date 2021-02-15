@@ -11,8 +11,8 @@ logger = logging.getLogger('dict_config_logger')
 class MetadataLedgerView(APIView):
     """Test API VIew"""
     serializer_class = serializers.TestObjectSerializer
-    metadataSerializer_class = serializers.[MetadataLedgerSerializer]
-    supplementSerializer_class = serializers.[SupplementalLedgerSerializer]
+    metadataSerializer_class = serializers.MetadataLedgerSerializer
+    supplementSerializer_class = serializers.SupplementalLedgerSerializer
 
     def post(self, request):
         """Takes in a JSON object and prints to the console"""
