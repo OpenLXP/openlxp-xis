@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from metadata_api import models
 
+
 class TestObjectSerializer(serializers.Serializer):
     """Serializes a sample JSON object"""
     name = serializers.CharField()
@@ -23,9 +24,7 @@ class MetadataLedgerSerializer(serializers.Serializer):
                       'metadata_validation_date',
                       'metadata_validation_status')
             extra_kwargs: {
-                'unique_record_identifier': {'max_length':50,
-                                             'primary_key':True,
-                                             'editable':False},
+                'unique_record_identifier': {'max_length':50},
                 'agent_name': {'max_length':255},
                 'date_inserted': {'blank':True, 'null':True},
                 'metadata_hash': {'max_length':200},
@@ -57,9 +56,7 @@ class SupplementalLedgerSerializer(serializers.Serializer):
                       'metadata_validation_date',
                       'metadata_validation_status')
             extra_kwargs: {
-                'unique_record_identifier': {'max_length':50,
-                                             'primary_key':True,
-                                             'editable':False},
+                'unique_record_identifier': {'max_length':50},
                 'agent_name': {'max_length':255},
                 'date_inserted': {'blank':True, 'null':True},
                 'metadata_hash': {'max_length':200},

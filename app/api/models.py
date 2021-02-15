@@ -6,9 +6,7 @@ class MetadataLedger(models.Model):
 
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    unique_record_identifier = models.CharField(max_length=50,
-                                                primary_key=True,
-                                                editable=False)
+    unique_record_identifier = models.CharField(max_length=50)
     agent_name = models.CharField(max_length=255)
     date_inserted = models.DateTimeField(blank=True, null=True)
     metadata_key = models.TextField()
@@ -28,9 +26,7 @@ class SupplementalLedger(models.Model):
 
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    unique_record_identifier = models.CharField(max_length=50,
-                                                primary_key=True,
-                                                editable=False)
+    unique_record_identifier = models.CharField(max_length=50)
     agent_name = models.CharField(max_length=255)
     date_inserted = models.DateTimeField(blank=True, null=True)
     metadata_key = models.TextField()
