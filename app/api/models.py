@@ -11,7 +11,7 @@ class MetadataLedger(models.Model):
     date_inserted = models.DateTimeField(blank=True, null=True)
     metadata_key = models.TextField()
     metadata_hash = models.TextField(max_length=200)
-    metadata = modles.JSONField(blank=True)
+    metadata = models.JSONField(blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
@@ -31,7 +31,7 @@ class SupplementalLedger(models.Model):
     date_inserted = models.DateTimeField(blank=True, null=True)
     metadata_key = models.TextField()
     metadata_hash = models.TextField(max_length=200)
-    metadata = modles.JSONField(blank=True)
+    metadata = models.JSONField(blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)

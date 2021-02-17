@@ -30,8 +30,7 @@ DEBUG = True
 
 mimetypes.add_type("text/css", ".css", True)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 

@@ -40,6 +40,7 @@ class MetadataLedgerView(APIView):
             # the response
             return Response(serializer)
         else:
+            logger.info(json.dumps(request.data))
             return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
