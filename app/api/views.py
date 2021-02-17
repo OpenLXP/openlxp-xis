@@ -1,32 +1,24 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from api import serializers
-
 import logging
 import json
-
-
+from api.serializers import MetadataLedgerSerializer, SupplementalLedgerSerializer
 logger = logging.getLogger('dict_config_logger')
-
 
 class MetadataLedgerView(APIView):
     """Test API VIew"""
     serializer_class = serializers.TestObjectSerializer
-    # metadataSerializer_class = serializers.[serializer_name]
-    # supplementSerializer_class = serializers.[serializer_name]
-
+    metadataSerializer_class = serializers.MetadataLedgerSerializer
+    supplementSerializer_class = serializers.SupplementalLedgerSerializer
     def post(self, request):
         """Takes in a JSON object and prints to the console"""
-
         serializer = self.serializer_class(data=request.data)
-        # metadataJSON =
-        # supplementalJSON =
-        # metadataSerializer = self.metadataSerializer_class(metadataJSON)
-        # supplementalSerializer =
-        #  self.supplementSerializer_class(supplementalJSON)
-
+        metadataJSON = MetadataLedgerSerializer
+        supplementalJSON = SupplementalLedgerSerializer
+        metadataSerializer = self.metadataSerializer_class(metadataJSON)
+        supplementalSerializer = self.supplementSerializer_class(supplementalJSON)
         # Check if metadataSerializer is valid AND supplementalSerializer is
         # valid
         if serializer.is_valid():
@@ -35,7 +27,6 @@ class MetadataLedgerView(APIView):
             # occupation = serializer.validated_data.get('occupation')
             # comment
             logger.info(json.dumps(request.data))
-
             # convert both serializers into 1 JSON object, and return it in
             # the response
             return Response(serializer)
