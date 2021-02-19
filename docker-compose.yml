@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  db:
+  db_xis:
     image: mysql:5.7
     ports:
       - '3310:3306'
@@ -11,8 +11,10 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       MYSQL_HOST: ''
+    networks:
+      - openlxp
 
-  app:
+  app_xis:
     build:
       context: .
     ports:
@@ -36,10 +38,10 @@ services:
     volumes:
       - ./app:/opt/app/openlxp-xis
     depends_on:
-      - db
+      - db_xis
     networks: 
-      - openlxp-xia-dau_default
+      - openlxp
 
 networks: 
-  openlxp-xia-dau_default:
+  openlxp:
     external: true
