@@ -7,10 +7,10 @@ class MetadataLedger(models.Model):
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     unique_record_identifier = models.CharField(max_length=50)
-    agent_name = models.CharField(max_length=255)
+    provider_name = models.CharField(max_length=255)
     date_inserted = models.DateTimeField(blank=True, null=True)
     metadata_key = models.TextField()
-    metadata_hash = models.TextField(max_length=200)
+    metadata_hash = models.TextField()
     metadata = models.JSONField(blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
@@ -27,10 +27,10 @@ class SupplementalLedger(models.Model):
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     unique_record_identifier = models.CharField(max_length=50)
-    agent_name = models.CharField(max_length=255)
+    provider_name = models.CharField(max_length=255)
     date_inserted = models.DateTimeField(blank=True, null=True)
     metadata_key = models.TextField()
-    metadata_hash = models.TextField(max_length=200)
+    metadata_hash = models.TextField()
     metadata = models.JSONField(blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
