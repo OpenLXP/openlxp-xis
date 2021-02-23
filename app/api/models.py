@@ -6,7 +6,7 @@ class MetadataLedger(models.Model):
 
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    unique_record_identifier = models.CharField(max_length=50)
+    unique_record_identifier = models.CharField(max_length=50, primary_key= True)
     provider_name = models.CharField(max_length=255, blank=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     metadata_key = models.CharField(max_length=200)
@@ -19,6 +19,7 @@ class MetadataLedger(models.Model):
     metadata_validation_status = models.CharField(max_length=10, blank=True,
                                                   choices=
                                                   METADATA_VALIDATION_CHOICES)
+
 
 class SupplementalLedger(models.Model):
     """Model for MetadataLedger"""
