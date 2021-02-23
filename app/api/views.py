@@ -1,5 +1,4 @@
 import logging
-
 from rest_framework.utils import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -19,7 +18,7 @@ class MetadataLedgerView(APIView):
     #     return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = MetadataLedgerSerializer(data=request.data, many= True)
+        serializer = MetadataLedgerSerializer(data=request.data)
         if serializer.is_valid():
             logger.info(json.dumps(request.data))
             serializer.save()
