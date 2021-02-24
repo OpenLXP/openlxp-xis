@@ -22,7 +22,7 @@ class MetadataLedger(models.Model):
 
 
 class SupplementalLedger(models.Model):
-    """Model for MetadataLedger"""
+    """Model for SupplementalLedger"""
 
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
