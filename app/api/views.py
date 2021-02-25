@@ -1,45 +1,30 @@
+import logging
+
+from rest_framework.utils import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
-from api import serializers
-
-import logging
-import json
-
+from api.serializers import MetadataLedgerSerializer
 
 logger = logging.getLogger('dict_config_logger')
 
 
 class MetadataLedgerView(APIView):
-    """Test API VIew"""
-    serializer_class = serializers.TestObjectSerializer
-    # metadataSerializer_class = serializers.[serializer_name]
-    # supplementSerializer_class = serializers.[serializer_name]
+    """Receive metadata_ledger data from XIA"""
 
     def post(self, request):
-        """Takes in a JSON object and prints to the console"""
+        serializer = MetadataLedgerSerializer(data=request.data)
+        logger.info("Assigned to serializer")
 
-        serializer = self.serializer_class(data=request.data)
-        # metadataJSON =
-        # supplementalJSON =
-        # metadataSerializer = self.metadataSerializer_class(metadataJSON)
-        # supplementalSerializer =
-        #  self.supplementSerializer_class(supplementalJSON)
-
-        # Check if metadataSerializer is valid AND supplementalSerializer is
-        # valid
         if serializer.is_valid():
-            # name = serializer.validated_data.get('name')
-            # age = serializer.validated_data.get('age')
-            # occupation = serializer.validated_data.get('occupation')
+            # If received save record in ledger and send response of UUID &
+            # created status
             logger.info(json.dumps(request.data))
-
-            # convert both serializers into 1 JSON object, and return it in
-            # the response
-            return Response(serializer)
+            serializer.save()
+            return Response(serializer.data['unique_record_identifier'],
+                            status=status.HTTP_201_CREATED)
         else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            # If not received send error and bad request status
+            logger.info(json.dumps(request.data))
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
