@@ -1,18 +1,20 @@
 version: "3"
 
 services:
-  db:
+  db_xis:
     image: mysql:5.7
     ports:
-      - '3306:3306'
+      - '3310:3306'
     environment:
       MYSQL_DATABASE: "${DB_NAME}"
 #      MYSQL_USER: 'root'
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       MYSQL_HOST: ''
-
-  app:
+    networks:
+      - openlxp
+  app_xis:
+    container_name: openlxp-xis
     build:
       context: .
     ports:
@@ -36,4 +38,27 @@ services:
     volumes:
       - ./app:/opt/app/openlxp-xis
     depends_on:
-      - db
+      - db_xis
+    networks:
+      - openlxp
+
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    container_name: es01
+    environment:
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+volumes:
+  data01:
+    driver: local
+networks:
+  openlxp:
+    external: true

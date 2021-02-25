@@ -1,45 +1,46 @@
+import logging
+from rest_framework.utils import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
-from api import serializers
-
-import logging
-import json
+from api.serializers import MetadataLedgerSerializer
+from core.models import MetadataLedger
 
 
 logger = logging.getLogger('dict_config_logger')
 
 
 class MetadataLedgerView(APIView):
-    """Test API VIew"""
-    serializer_class = serializers.TestObjectSerializer
-    # metadataSerializer_class = serializers.[serializer_name]
-    # supplementSerializer_class = serializers.[serializer_name]
+    """Receive metadata_ledger data from XIA"""
 
     def post(self, request):
-        """Takes in a JSON object and prints to the console"""
+        """POST request are handled here"""
 
-        serializer = self.serializer_class(data=request.data)
-        # metadataJSON =
-        # supplementalJSON =
-        # metadataSerializer = self.metadataSerializer_class(metadataJSON)
-        # supplementalSerializer =
-        #  self.supplementSerializer_class(supplementalJSON)
+        # obtaining key value for comparison of records in metadata ledger
+        key_hash_value = request.data.get('metadata_key_hash', None)
+        record_in_table = None
+        if key_hash_value is not None:
+            # Comparing metadata_key value in metadata ledger
+            # to find older instances
+            record_in_table = MetadataLedger.objects.filter(
 
-        # Check if metadataSerializer is valid AND supplementalSerializer is
-        # valid
-        if serializer.is_valid():
-            # name = serializer.validated_data.get('name')
-            # age = serializer.validated_data.get('age')
-            # occupation = serializer.validated_data.get('occupation')
+                metadata_key_hash=key_hash_value, record_status='Active')\
+                .first()
+
+        # Assign data from request to serializer
+        serializer = MetadataLedgerSerializer(record_in_table,
+                                              data=request.data)
+        logger.info("Assigned to serializer")
+
+        if not serializer.is_valid():
+            # If not received send error and bad request status
             logger.info(json.dumps(request.data))
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            # convert both serializers into 1 JSON object, and return it in
-            # the response
-            return Response(serializer)
-        else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # If received save record in ledger and send response of UUID &
+        # created status
+        logger.info(json.dumps(request.data))
+        serializer.save()
+        return Response(serializer.data['unique_record_identifier'],
+                        status=status.HTTP_201_CREATED)
