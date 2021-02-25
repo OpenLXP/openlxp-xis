@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dcb09cd (Testing Jack's ability to commit changes)
-=======
->>>>>>> 33f1bd1 (ECC - 420 Implemented validation on request data & sending response accordingly)
-=======
->>>>>>> dcb09cd (Testing Jack's ability to commit changes)
 # nginx.default
 
 
@@ -25,74 +12,8 @@ server {
     }
 
     location / {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 33f1bd1 (ECC - 420 Implemented validation on request data & sending response accordingly)
         proxy_set_header Host $host;
         proxy_pass http://127.0.0.1:8010;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
-=======
->>>>>>> 86c1339 (django project set up with docker; sample api endpoint)
-=======
->>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
-# nginx.default
-
-
-include /etc/nginx/mime.types;
-
-server {
-    listen 8020;
-    server_name example.org;
-
-    location /static {
-        root /opt/app/openlxp-xis;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:8010;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 86c1339 (django project set up with docker; sample api endpoint)
-=======
->>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
-=======
-        proxy_pass http://127.0.0.1:8010;
-=======
->>>>>>> d4f8b38 (Adding XIA to XIS metadata_ledger using REST_API.)
-        proxy_set_header Host $host;
-        proxy_pass http://127.0.0.1:8010;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
->>>>>>> dcb09cd (Testing Jack's ability to commit changes)
-=======
->>>>>>> 33f1bd1 (ECC - 420 Implemented validation on request data & sending response accordingly)
-=======
->>>>>>> 86c1339 (django project set up with docker; sample api endpoint)
-=======
->>>>>>> 68c08d4 (django project set up with docker and same api endpoint)
-=======
-        proxy_pass http://127.0.0.1:8010;
-=======
->>>>>>> d4f8b38 (Adding XIA to XIS metadata_ledger using REST_API.)
-        proxy_set_header Host $host;
-        proxy_pass http://127.0.0.1:8010;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
->>>>>>> dcb09cd (Testing Jack's ability to commit changes)
