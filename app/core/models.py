@@ -5,7 +5,7 @@ from django.forms import ValidationError
 
 
 class XISConfiguration(models.Model):
-    """Model for XIA Configuration """
+    """Model for XIS Configuration """
 
     source_target_mapping = models.CharField(
         default='p2881_target_metadata_schema.json', max_length=200,

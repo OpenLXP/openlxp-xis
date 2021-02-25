@@ -21,7 +21,8 @@ class MetadataLedgerView(APIView):
             # created status
             logger.info(json.dumps(request.data))
             serializer.save()
-            return Response(serializer.data['unique_record_identifier'], status=status.HTTP_201_CREATED)
+            return Response(serializer.data['unique_record_identifier'],
+                            status=status.HTTP_201_CREATED)
         else:
             # If not received send error and bad request status
             logger.info(json.dumps(request.data))

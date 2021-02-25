@@ -32,14 +32,13 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
         required_dict, recommended_dict = \
             get_required_recommended_fields_for_target_validation()
         json_metadata = data.get('metadata')
+        validation_result = 'Y'
         for column in json_metadata:
             required_columns = required_dict[column]
             recommended_columns = recommended_dict[column]
-            validation_result = 'Y'
             for key in json_metadata[column]:
                 if key in required_columns:
                     if not json_metadata[column][key]:
-                        validation_result = 'N'
                         logger.info(
                             "Record " + str(
                                 data.get('unique_record_identifier')
@@ -48,6 +47,7 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
                                 "fields. " + key + "field"
                                                    " is "
                                                    " empty")
+                        validation_result = 'N'
                     if key in recommended_columns:
                         if not json_metadata[column][key]:
                             logger.info(
@@ -55,8 +55,8 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
                                     data.unique_record_identifier) +
                                 " does not have all RECOMMENDED fields. " +
                                 key + " field is empty")
-        data['metadata_validation_status'] = validation_result
-        data['metadata_validation_date'] = timezone.now()
+            data['metadata_validation_status'] = validation_result
+            data['metadata_validation_date'] = timezone.now()
         logger.info(data['metadata_validation_status'],
                     data['metadata_validation_date'])
         return data
