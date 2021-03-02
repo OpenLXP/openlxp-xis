@@ -164,7 +164,7 @@ LOGGING = {
 
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': '3.208.136.89:9200'
+        'hosts': os.environ.get('ES_HOST')
     },
 }
 

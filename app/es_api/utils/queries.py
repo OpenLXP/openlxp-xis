@@ -2,9 +2,10 @@ from elasticsearch_dsl import connections, Search, Q
 from requests.exceptions import HTTPError 
 import json
 import logging
+import os
 
 connections.create_connection(alias='default',
-    hosts=['3.208.136.89:9200'], timeout=60)
+    hosts=[os.environ.get('ES_HOST'),], timeout=60)
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -13,7 +14,7 @@ def search_by_keyword(keyword=""):
         term then returns the dictionary results"""
     q = Q("bool", should=[Q("match", Course__CourseDescription=keyword),       
         Q("match", Course__CourseTitle=keyword)], minimum_should_match=1)  
-    s = Search(using='default', index="dau-test").query(q)
+    s = Search(using='default', index=os.environ.get('ES_INDEX')).query(q)
     response = s.execute()
     logger.info(response)  
     searchResults = get_results(response)
