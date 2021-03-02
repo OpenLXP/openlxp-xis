@@ -67,3 +67,20 @@ class SupplementalLedger(models.Model):
                                                   blank=True,
                                                   choices=
                                                   METADATA_VALIDATION_CHOICES)
+
+
+class CompositeLedger(models.Model):
+    """Model for CompositeLedger"""
+    RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
+    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
+    unique_record_identifier = models.CharField(max_length=50)
+    date_inserted = models.DateTimeField(blank=True, null=True)
+    date_transmitted = models.DateTimeField(blank=True, null=True)
+    updated_by = models.CharField(max_length=10, blank=True,
+                                  choices=RECORD_UPDATED_BY)
+    metadata_key = models.TextField(max_length=200)
+    metadata_hash = models.TextField(max_length=200)
+    metadata = models.JSONField(blank=True)
+    record_status = models.CharField(max_length=10, blank=True,
+                                     choices=RECORD_ACTIVATION_STATUS_CHOICES)
+    date_deleted = models.DateTimeField(blank=True, null=True)
