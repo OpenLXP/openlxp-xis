@@ -119,13 +119,4 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SupplementalLedger
-        fields = ['unique_record_identifier',
-                  'agent_name',
-                  'date_inserted',
-                  'metadata_key',
-                  'metadata_hash',
-                  'metadata',
-                  'record_status',
-                  'date_deleted',
-                  'date_validated',
-                  'metadata_validation_status']
+        fields = '__all__'
