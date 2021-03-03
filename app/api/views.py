@@ -16,13 +16,13 @@ class MetadataLedgerView(APIView):
         """POST request are handled here"""
 
         # obtaining key value for comparison of records in metadata ledger
-        key_value = request.data.get('metadata_key', None)
+        key_hash_value = request.data.get('metadata_key_hash', None)
         record_in_table = None
-        if key_value is not None:
+        if key_hash_value is not None:
             # Comparing metadata_key value in metadata ledger
             # to find older instances
             record_in_table = MetadataLedger.objects.filter(
-                metadata_key=key_value, record_status='Active').first()
+                metadata_key_hash=key_hash_value, record_status='Active').first()
         # Assign data from request to serializer
         serializer = MetadataLedgerSerializer(record_in_table,
                                               data=request.data)
