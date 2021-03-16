@@ -15,7 +15,7 @@ logger = logging.getLogger('dict_config_logger')
 def renaming_xia_for_posting_to_xis(data):
     """Renaming XIS column names to match with XSE"""
 
-    data['_id'] = data.pop('unique_record_identifier')
+    data['_id'] = data.pop('metadata_key_hash')
     data['metadata'] = data.pop('metadata')
     return data
 
@@ -25,11 +25,11 @@ def post_data_to_xis(data):
     data = renaming_xia_for_posting_to_xis(data)
     renamed_data = json.dumps(data['metadata'], cls=DjangoJSONEncoder)
     # Getting UUID to update metadata_transmission_status to pending
-    uuid_val = data.get('_id')
+    metadata_key_hash_val = data.get('_id')
 
     # Updating status in XIS Composite_Ledger to 'Pending'
     CompositeLedger.objects.filter(
-        unique_record_identifier=uuid_val).update(
+        metadata_key_hash=metadata_key_hash_val).update(
         metadata_transmission_status='Pending')
     # POSTing Composite_Ledger to XSE
     try:
@@ -40,14 +40,14 @@ def post_data_to_xis(data):
         # Receiving XSE response after validation and updating Composite_Ledger
         if res['result'] == "created":
             CompositeLedger.objects.filter(
-                unique_record_identifier=uuid_val).update(
+                metadata_key_hash=metadata_key_hash_val).update(
                 metadata_transmission_status_code=
                 res['result'],
                 metadata_transmission_status='Successful',
                 date_transmitted=timezone.now())
         else:
             CompositeLedger.objects.filter(
-                unique_record_identifier=uuid_val).update(
+                metadata_key_hash=metadata_key_hash_val).update(
                 metadata_transmission_status_code=
                 res['result'],
                 metadata_transmission_status='Failed',
@@ -77,7 +77,7 @@ def check_records_to_load_into_xse():
         data = CompositeLedger.objects.filter(
             record_status='Active',
             metadata_transmission_status='Ready').values(
-            'unique_record_identifier',
+            'metadata_key_hash',
             'metadata').first()
         post_data_to_xis(data)
         check_records_to_load_into_xse()
