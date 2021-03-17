@@ -23,7 +23,6 @@ class MetadataLedgerView(APIView):
             # Comparing metadata_key value in metadata ledger
             # to find older instances
             record_in_table = MetadataLedger.objects.filter(
-
                 metadata_key_hash=key_hash_value, record_status='Active')\
                 .first()
 

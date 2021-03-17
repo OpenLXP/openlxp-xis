@@ -119,5 +119,5 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SupplementalLedger
-
+        
         fields = '__all__'

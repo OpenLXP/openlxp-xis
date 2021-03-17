@@ -9,4 +9,3 @@ urlpatterns = [
     path('metadata/', views.MetadataLedgerView.as_view(), name="metadata"),
 ]
 
-
