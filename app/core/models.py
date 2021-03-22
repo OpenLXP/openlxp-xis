@@ -105,4 +105,3 @@ class CompositeLedger(models.Model):
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True,
                                   choices=RECORD_UPDATED_BY)
-
