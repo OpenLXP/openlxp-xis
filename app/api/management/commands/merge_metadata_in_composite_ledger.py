@@ -8,39 +8,39 @@ logger = logging.getLogger('dict_config_logger')
 
 def put_metadata_ledger_into_composite_ledger(data):
     """ Take Metadata_Ledger data to post to Composite_Ledger"""
+    for row in data:
+        # Setting record_status & deleted_date for updated record
+        CompositeLedger.objects.filter(
+            metadata_key_hash=row['metadata_key_hash'],
+            record_status='Active').exclude(
+            metadata_hash=row['metadata_hash']).update(
+            date_deleted=timezone.now())
+        CompositeLedger.objects.filter(
+            metadata_key_hash=row['metadata_key_hash'],
+            record_status='Active').exclude(
+            metadata_hash=row['metadata_hash']).update(
+            record_status='Inactive')
 
-    # Setting record_status & deleted_date for updated record
-    CompositeLedger.objects.filter(
-        metadata_key_hash=data['metadata_key_hash'],
-        record_status='Active').exclude(
-        metadata_hash=data['metadata_hash']).update(
-        date_deleted=timezone.now())
-    CompositeLedger.objects.filter(
-        metadata_key_hash=data['metadata_key_hash'],
-        record_status='Active').exclude(
-        metadata_hash=data['metadata_hash']).update(
-        record_status='Inactive')
+        # Retrieving existing records or creating new record to CompositeLedger
+        CompositeLedger.objects.get_or_create(unique_record_identifier=
+                                              row['unique_record_identifier'],
+                                              metadata_key=row['metadata_key'],
+                                              metadata_key_hash=
+                                              row['metadata_key_hash'],
+                                              metadata=
+                                              row['metadata'],
+                                              metadata_hash=
+                                              row['metadata_hash'],
+                                              date_inserted=timezone.now(),
+                                              updated_by='System',
+                                              record_status='Active')
+        # Updating existing records or creating new record to CompositeLedger
+        MetadataLedger.objects.filter(unique_record_identifier=
+                                      row['unique_record_identifier']).update(
+            composite_ledger_transmission_status='Y',
+            composite_ledger_transmission_date=timezone.now())
 
-    # Retrieving existing records or creating new record to CompositeLedger
-    CompositeLedger.objects.get_or_create(unique_record_identifier=
-                                          data['unique_record_identifier'],
-                                          metadata_key=data['metadata_key'],
-                                          metadata_key_hash=
-                                          data['metadata_key_hash'],
-                                          metadata=
-                                          data['metadata'],
-                                          metadata_hash=
-                                          data['metadata_hash'],
-                                          date_inserted=timezone.now(),
-                                          updated_by='System',
-                                          record_status='Active')
-    # Updating existing records or creating new record to CompositeLedger
-    MetadataLedger.objects.filter(unique_record_identifier=
-                                  data['unique_record_identifier']).update(
-        composite_ledger_transmission_status='Y',
-        composite_ledger_transmission_date=timezone.now())
-
-    return
+    check_metadata_ledger_transmission_ready_record()
 
 
 def check_metadata_ledger_transmission_ready_record():
@@ -50,25 +50,19 @@ def check_metadata_ledger_transmission_ready_record():
     data = MetadataLedger.objects.filter(
         metadata_validation_status='Y',
         record_status='Active',
-        composite_ledger_transmission_status='N').all()
+        composite_ledger_transmission_status='N').values(
+        'unique_record_identifier',
+        'metadata_key',
+        'metadata_key_hash',
+        'metadata_hash',
+        'metadata')
 
     # Checking available no. of records to transmit in XIS Metadata Ledger
     if len(data) == 0:
         logger.info("Metadata_Ledger data loading in XIS composite ledger is "
                     "complete")
     else:
-        # Get record to load from XIS metadata_ledger
-        data = MetadataLedger.objects.filter(
-            record_status='Active',
-            metadata_validation_status='Y',
-            composite_ledger_transmission_status='N').values(
-            'unique_record_identifier',
-            'metadata_key',
-            'metadata_key_hash',
-            'metadata_hash',
-            'metadata').first()
         put_metadata_ledger_into_composite_ledger(data)
-        check_metadata_ledger_transmission_ready_record()
 
 
 class Command(BaseCommand):
