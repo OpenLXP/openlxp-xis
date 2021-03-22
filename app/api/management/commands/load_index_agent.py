@@ -23,7 +23,7 @@ def renaming_xia_for_posting_to_xis(data):
     return data
 
 
-def post_data_to_xis(data):
+def post_data_to_xse(data):
     """POSTing XIS composite_ledger to XSE in JSON format"""
     # Traversing through each row one by one from data
     for row in data:
@@ -83,7 +83,7 @@ def check_records_to_load_into_xse():
         logger.info("Data Loading in XSE is complete, Zero records are "
                     "available in XIS to transmit")
     else:
-        post_data_to_xis(data)
+        post_data_to_xse(data)
 
 
 class Command(BaseCommand):
