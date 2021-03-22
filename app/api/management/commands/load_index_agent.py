@@ -7,6 +7,9 @@ import json
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 
+from api.management.utils.xse_client import get_elasticsearch_endpoint, \
+    get_elasticsearch_index
+
 es = Elasticsearch()
 
 logger = logging.getLogger('dict_config_logger')
@@ -35,8 +38,9 @@ def post_data_to_xis(data):
             metadata_transmission_status='Pending')
         # POSTing Composite_Ledger to XSE
         try:
-            es = Elasticsearch(['http://3.208.136.89:9200'])
-            res = es.index(index='test_2', doc_type="_doc", id=data['_id'],
+            es = Elasticsearch(get_elasticsearch_endpoint())
+            res = es.index(index=get_elasticsearch_index(), doc_type="_doc",
+                           id=data['_id'],
                            body=renamed_data)
 
             # Receiving XSE response after validation and updating
@@ -71,8 +75,8 @@ def check_records_to_load_into_xse():
     data = CompositeLedger.objects.filter(
         record_status='Active',
         metadata_transmission_status='Ready').values(
-            'metadata_key_hash',
-            'metadata')
+        'metadata_key_hash',
+        'metadata')
 
     # Checking available no. of records in XIA to load into XIS is Zero or not
     if len(data) == 0:

@@ -74,6 +74,7 @@ class SupplementalLedger(models.Model):
     metadata_key_hash = models.CharField(max_length=200)
     metadata_validation_status = models.CharField(max_length=10, blank=True,
                                                   choices=METADATA_VALIDATION_CHOICES)
+    provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=50,
@@ -99,6 +100,7 @@ class CompositeLedger(models.Model):
                                                     choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     metadata_transmission_status_code = models.CharField(max_length=200,
                                                          blank=True)
+    provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=50,

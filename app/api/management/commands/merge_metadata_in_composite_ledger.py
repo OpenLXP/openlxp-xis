@@ -33,7 +33,9 @@ def put_metadata_ledger_into_composite_ledger(data):
                                               row['metadata_hash'],
                                               date_inserted=timezone.now(),
                                               updated_by='System',
-                                              record_status='Active')
+                                              record_status='Active',
+                                              provider_name=
+                                              row['provider_name'])
         # Updating existing records or creating new record to CompositeLedger
         MetadataLedger.objects.filter(unique_record_identifier=
                                       row['unique_record_identifier']).update(
@@ -55,7 +57,8 @@ def check_metadata_ledger_transmission_ready_record():
         'metadata_key',
         'metadata_key_hash',
         'metadata_hash',
-        'metadata')
+        'metadata',
+        'provider_name')
 
     # Checking available no. of records to transmit in XIS Metadata Ledger
     if len(data) == 0:
