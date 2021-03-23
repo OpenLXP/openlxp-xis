@@ -1,6 +1,5 @@
-from django.test import SimpleTestCase
-from django.test import tag
 from core.management.utils.xsr_client import aws_get
+from django.test import SimpleTestCase, tag
 
 
 @tag('unit')

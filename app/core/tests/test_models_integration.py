@@ -1,7 +1,6 @@
-from django.test import TestCase
 from core.models import XISConfiguration
 from django.core.exceptions import ValidationError
-from django.test import tag
+from django.test import TestCase, tag
 
 
 @tag('integration')

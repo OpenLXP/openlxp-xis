@@ -1,6 +1,6 @@
 from django.db import models
-from django.urls import reverse
 from django.forms import ValidationError
+from django.urls import reverse
 
 
 class XISConfiguration(models.Model):

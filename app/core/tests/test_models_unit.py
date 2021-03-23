@@ -1,7 +1,5 @@
-from django.test import SimpleTestCase
-from core.models import XISConfiguration
-from core.models import MetadataLedger
-from django.test import tag
+from core.models import MetadataLedger, XISConfiguration
+from django.test import SimpleTestCase, tag
 
 
 @tag('unit')
