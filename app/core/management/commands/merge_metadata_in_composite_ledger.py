@@ -1,8 +1,9 @@
 import logging
 
-from core.models import CompositeLedger, MetadataLedger
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+
+from core.models import CompositeLedger, MetadataLedger
 
 logger = logging.getLogger('dict_config_logger')
 

@@ -1,8 +1,6 @@
 import logging
 import os
 
-import requests
-
 logger = logging.getLogger('dict_config_logger')
 
 
@@ -16,4 +14,3 @@ def get_elasticsearch_index():
     """Setting elastic search index """
     api_es_index = os.environ.get('ES_INDEX')
     return api_es_index
-

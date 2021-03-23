@@ -39,6 +39,7 @@ services:
       ES_INDEX: "${ES_INDEX}"
     volumes:
       - ./app:/opt/app/openlxp-xis
+      - ${CERT_VOLUME}:/etc/ssl/certs/ca-certificates.pem
     depends_on:
       - db_xis
     networks:
