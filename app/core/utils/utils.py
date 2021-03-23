@@ -2,6 +2,7 @@ import json
 import logging
 
 import boto3
+
 from core.models import XISConfiguration
 
 logger = logging.getLogger('dict_config_logger')

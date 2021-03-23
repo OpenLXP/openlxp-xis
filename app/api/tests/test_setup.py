@@ -1,6 +1,7 @@
-from core.models import XISConfiguration
 from django.urls import reverse
 from rest_framework.test import APITestCase
+
+from core.models import XISConfiguration
 
 
 class TestSetUp(APITestCase):
@@ -25,10 +26,12 @@ class TestSetUp(APITestCase):
                     "EducationalContext": "",
                     "CourseSectionDeliveryMode": "JKO"
                 },
-                "Lifecycle": {
-                    "Provider": "Defense Language Institute (DLI)",
-                    "OtherRole": "Success Factors LMS v. 3390",
-                    "Maintainer": "Center for Advanced Operational"
+                "CourseInstance": {
+                    "CourseURL": "https://example@data"
+                },
+                "General_Information": {
+                    "EndDate": "end_date",
+                    "StartDate": "start_date"
                 }
             },
             "metadata_hash": "4f2a7da4f872e9807079ac7cb42aefb4",
@@ -51,10 +54,12 @@ class TestSetUp(APITestCase):
                     "EducationalContext": "",
                     "CourseSectionDeliveryMode": "JKO"
                 },
-                "Lifecycle": {
-                    "Provider": "Defense Language Institute (DLI)",
-                    "OtherRole": "Success Factors LMS v. 3390",
-                    "Maintainer": "Center for Advanced Operational"
+                 "CourseInstance": {
+                    "CourseURL": "https://example@data"
+                },
+                "General_Information": {
+                    "EndDate": "end_date",
+                    "StartDate": "start_date"
                 }
             },
             "metadata_hash": "4f2a7da4f872e9807079ac7cb42aefb5",
@@ -77,10 +82,12 @@ class TestSetUp(APITestCase):
                     "EducationalContext": "",
                     "CourseSectionDeliveryMode": "JKO"
                 },
-                "Lifecycle": {
-                    "Provider": "Defense Language Institute (DLI)",
-                    "OtherRole": "Success Factors LMS v. 3390",
-                    "Maintainer": "Center for Advanced Operational"
+                "CourseInstance": {
+                    "CourseURL": "https://example@data"
+                },
+                "General_Information": {
+                    "EndDate": "end_date",
+                    "StartDate": "start_date"
                 }
             },
             "metadata_hash": "4f2a7da4f872e9807079ac7cb42aefb6",

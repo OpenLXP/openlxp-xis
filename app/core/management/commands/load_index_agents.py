@@ -2,13 +2,14 @@ import json
 import logging
 
 import requests
-from core.models import CompositeLedger, MetadataLedger
-from core.utils.xse_client import (get_elasticsearch_endpoint,
-                                   get_elasticsearch_index)
 from django.core.management.base import BaseCommand
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from elasticsearch import Elasticsearch
+
+from core.models import CompositeLedger, MetadataLedger
+from core.utils.xse_client import (get_elasticsearch_endpoint,
+                                   get_elasticsearch_index)
 
 es = Elasticsearch()
 
