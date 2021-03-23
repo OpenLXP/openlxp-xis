@@ -1,6 +1,8 @@
-from .test_setup import TestSetUp
-from django.test import tag
 import logging
+
+from django.test import tag
+
+from .test_setup import TestSetUp
 
 logger = logging.getLogger('dict_config_logger')
 

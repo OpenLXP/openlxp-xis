@@ -1,9 +1,11 @@
+import logging
+from unittest.mock import patch
+
 from api.serializers import MetadataLedgerSerializer
 from core.models import MetadataLedger
-from .test_setup import TestSetUp
-from unittest.mock import patch
 from django.test import tag
-import logging
+
+from .test_setup import TestSetUp
 
 logger = logging.getLogger('dict_config_logger')
 

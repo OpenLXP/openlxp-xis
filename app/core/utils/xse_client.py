@@ -1,5 +1,6 @@
 import logging
 import os
+
 import requests
 
 logger = logging.getLogger('dict_config_logger')

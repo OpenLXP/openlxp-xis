@@ -1,8 +1,8 @@
-from django.test import TestCase
 from core.models import XISConfiguration
-from core.utils.utils import get_target_validation_schema, read_json_data,\
-    get_required_recommended_fields_for_target_validation
-from django.test import tag
+from core.utils.utils import (
+    get_required_recommended_fields_for_target_validation,
+    get_target_validation_schema, read_json_data)
+from django.test import TestCase, tag
 
 
 @tag('integration')

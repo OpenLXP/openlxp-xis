@@ -1,21 +1,21 @@
-import logging
-from django.core.serializers.json import DjangoJSONEncoder
-import requests
-from django.core.management.base import BaseCommand
-from core.models import CompositeLedger, MetadataLedger
 import json
+import logging
+
+import requests
+from core.models import CompositeLedger, MetadataLedger
+from core.utils.xse_client import (get_elasticsearch_endpoint,
+                                   get_elasticsearch_index)
+from django.core.management.base import BaseCommand
+from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from elasticsearch import Elasticsearch
-
-from api.management.utils.xse_client import get_elasticsearch_endpoint, \
-    get_elasticsearch_index
 
 es = Elasticsearch()
 
 logger = logging.getLogger('dict_config_logger')
 
 
-def renaming_xia_for_posting_to_xis(data):
+def renaming_xis_for_posting_to_xse(data):
     """Renaming XIS column names to match with XSE"""
 
     data['_id'] = data.pop('metadata_key_hash')
@@ -27,7 +27,7 @@ def post_data_to_xse(data):
     """POSTing XIS composite_ledger to XSE in JSON format"""
     # Traversing through each row one by one from data
     for row in data:
-        data = renaming_xia_for_posting_to_xis(row)
+        data = renaming_xis_for_posting_to_xse(row)
         renamed_data = json.dumps(data['metadata'], cls=DjangoJSONEncoder)
         # Getting UUID to update metadata_transmission_status to pending
         metadata_key_hash_val = data.get('_id')
