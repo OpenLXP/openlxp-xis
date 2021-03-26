@@ -54,7 +54,7 @@ class TestSetUp(APITestCase):
                     "EducationalContext": "",
                     "CourseSectionDeliveryMode": "JKO"
                 },
-                 "CourseInstance": {
+                "CourseInstance": {
                     "CourseURL": "https://example@data"
                 },
                 "General_Information": {

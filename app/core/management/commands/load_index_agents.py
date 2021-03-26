@@ -7,11 +7,12 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 
-from core.models import CompositeLedger, MetadataLedger
+from core.models import CompositeLedger
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
 
 es = Elasticsearch()
+
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -46,7 +47,7 @@ def post_data_to_xse(data):
 
             # Receiving XSE response after validation and updating
             # Composite_Ledger
-            if res['result'] == "created":
+            if res['result'] == "created" or res['result'] == "updated":
                 CompositeLedger.objects.filter(
                     metadata_key_hash=metadata_key_hash_val).update(
                     metadata_transmission_status_code=
