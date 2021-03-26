@@ -36,4 +36,3 @@ class Command(TestCase):
         req_dict1, rcm_dict2 = \
             get_required_recommended_fields_for_target_validation()
         self.assertEqual(required_dict, req_dict1)
-

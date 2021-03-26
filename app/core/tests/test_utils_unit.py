@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase, tag
 
-from core.utils.utils import aws_get, get_target_validation_schema
+from core.utils.utils import aws_get
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
 

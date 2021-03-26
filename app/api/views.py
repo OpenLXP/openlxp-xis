@@ -40,7 +40,6 @@ class MetadataLedgerView(APIView):
 
         # If received save record in ledger and send response of UUID &
         # created status
-        logger.info(json.dumps(request.data))
         serializer.save()
         return Response(serializer.data['unique_record_identifier'],
                         status=status.HTTP_201_CREATED)
