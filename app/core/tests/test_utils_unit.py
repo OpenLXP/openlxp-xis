@@ -1,8 +1,10 @@
 from django.test import SimpleTestCase, tag
+from unittest.mock import patch
 
 from core.utils.utils import aws_get
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
+from core.models import XISConfiguration
 
 
 @tag('unit')
@@ -20,12 +22,24 @@ class UtilsTests(SimpleTestCase):
     def test_get_elasticsearch_endpoint(self):
         """This test is to check if function returns the elasticsearch
         endpoint """
-        result_api_es_endpoint = get_elasticsearch_endpoint()
+        with patch('core.utils.xse_client.XISConfiguration.objects') as \
+            xis_config:
+            configObj = XISConfiguration(target_schema="test.json",
+                                     xse_host="host:8080",
+                                     xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result_api_es_endpoint = get_elasticsearch_endpoint()
 
-        self.assertTrue(result_api_es_endpoint)
+            self.assertTrue(result_api_es_endpoint)
 
     def test_get_elasticsearch_index(self):
         """This test is to check if function returns the elasticsearch index"""
-        result_api_es_index = get_elasticsearch_index()
+        with patch('core.utils.xse_client.XISConfiguration.objects') as \
+            xis_config:
+            configObj = XISConfigurationtarget_schema="test.json",
+                                     xse_host="host:8080",
+                                     xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result_api_es_index = get_elasticsearch_index()
 
-        self.assertTrue(result_api_es_index)
+            self.assertTrue(result_api_es_index)
