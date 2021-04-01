@@ -58,28 +58,22 @@ class Command(TestCase):
         }
     }}
 
-    metadata_ledger = MetadataLedger(unique_record_identifier=
-                                     'fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
-                                     metadata=meta_value,
-                                     metadata_hash=
-                                     '205b2df155a2dd4783087af1ad07bca8',
-                                     metadata_key_hash=
-                                     '52c6a7eacac672e03e6a8c60c5fa39c2',
-                                     metadata_key=
-                                     'DAU_oper_24_a02_bs_enus',
-                                     metadata_validation_status='Y',
-                                     record_status='Active',
-                                     composite_ledger_transmission_status=
-                                     'N', provider_name='XYZ')
+    metadata_ledger = MetadataLedger(
+        unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
+        metadata=meta_value,
+        metadata_hash='205b2df155a2dd4783087af1ad07bca8',
+        metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
+        metadata_key='DAU_oper_24_a02_bs_enus',
+        metadata_validation_status='Y',
+        record_status='Active',
+        composite_ledger_transmission_status='N', provider_name='XYZ')
 
-    composite_ledger = CompositeLedger(unique_record_identifier=
-                                       'fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
-                                       metadata=meta_value,
-                                       metadata_key_hash=
-                                       '52c6a7eacac672e03e6a8c60c5fa39c2',
-                                       record_status='Active',
-                                       provider_name
-                                       ='XYZ')
+    composite_ledger = CompositeLedger(
+        unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
+        metadata=meta_value,
+        metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
+        record_status='Active',
+        provider_name='XYZ')
 
     def test_put_metadata_ledger_into_composite_ledger(self):
         """Test to take Metadata_Ledger data to post to Composite_Ledger """
@@ -133,8 +127,8 @@ class Command(TestCase):
 
     @patch('core.management.commands.merge_metadata_in_composite_ledger'
            '.put_metadata_ledger_into_composite_ledger', return_value=None)
-    def test_check_metadata_ledger_transmission_ready_record_one_record(self,
-                            mock_put_metadata_ledger_into_composite_ledger):
+    def test_check_metadata_ledger_transmission_ready_record_one_record(
+            self, mock_put_metadata_ledger_into_composite_ledger):
         """Test to retrieve number of Metadata_Ledger transmission ready
         records in XIS to load into Composite_Ledger """
         self.metadata_ledger.save()
@@ -144,8 +138,8 @@ class Command(TestCase):
 
     @patch('core.management.commands.merge_metadata_in_composite_ledger'
            '.put_metadata_ledger_into_composite_ledger', return_value=None)
-    def test_check_metadata_ledger_transmission_ready_record_zero_record(self,
-                             mock_put_metadata_ledger_into_composite_ledger):
+    def test_check_metadata_ledger_transmission_ready_record_zero_record(
+            self, mock_put_metadata_ledger_into_composite_ledger):
         """Test to retrieve number of Metadata_Ledger transmission ready
         records in XIS to load into Composite_Ledger """
         check_metadata_ledger_transmission_ready_record()
@@ -189,14 +183,12 @@ class Command(TestCase):
         """Test for POSTing XIS composite_ledger to XSE in JSON format when
             record gets updated in XSE"""
         self.composite_ledger.save()
-        composite_ledger = CompositeLedger(unique_record_identifier=
-                                        'fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
-                                           metadata=self.changed_meta_value,
-                                           metadata_key_hash=
-                                           '52c6a7eacac672e03e6a8c60c5fa39c2',
-                                           record_status='Active',
-                                           provider_name
-                                           ='XYZ')
+        composite_ledger = CompositeLedger(
+            unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
+            metadata=self.changed_meta_value,
+            metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
+            record_status='Active',
+            provider_name='XYZ')
         composite_ledger.save()
 
         data = CompositeLedger.objects.filter(

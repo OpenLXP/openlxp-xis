@@ -50,15 +50,13 @@ def post_data_to_xse(data):
             if res['result'] == "created" or res['result'] == "updated":
                 CompositeLedger.objects.filter(
                     metadata_key_hash=metadata_key_hash_val).update(
-                    metadata_transmission_status_code=
-                    res['result'],
+                    metadata_transmission_status_code=res['result'],
                     metadata_transmission_status='Successful',
                     date_transmitted=timezone.now())
             else:
                 CompositeLedger.objects.filter(
                     metadata_key_hash=metadata_key_hash_val).update(
-                    metadata_transmission_status_code=
-                    res['result'],
+                    metadata_transmission_status_code=res['result'],
                     metadata_transmission_status='Failed',
                     date_transmitted=timezone.now())
                 logger.warning("Bad request sent " + str(res['result'])

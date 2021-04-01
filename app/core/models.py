@@ -31,12 +31,14 @@ class MetadataLedger(models.Model):
 
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    composite_ledger_transmission_date = models.DateTimeField(blank=True,
-                                                              null=True)
-    composite_ledger_transmission_status = models.CharField(max_length=10,
-                                                            blank=True,
-                                                            default='N',
-                                                            choices=METADATA_VALIDATION_CHOICES)
+    composite_ledger_transmission_date = models.DateTimeField(
+        blank=True,
+        null=True)
+    composite_ledger_transmission_status = models.CharField(
+        max_length=10,
+        blank=True,
+        default='N',
+        choices=METADATA_VALIDATION_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     date_validated = models.DateTimeField(blank=True, null=True)
@@ -44,8 +46,9 @@ class MetadataLedger(models.Model):
     metadata_hash = models.CharField(max_length=200)
     metadata_key = models.CharField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
-    metadata_validation_status = models.CharField(max_length=10, blank=True,
-                                                  choices=METADATA_VALIDATION_CHOICES)
+    metadata_validation_status = models.CharField(
+        max_length=10, blank=True,
+        choices=METADATA_VALIDATION_CHOICES)
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
@@ -61,10 +64,11 @@ class SupplementalLedger(models.Model):
     agent_name = models.CharField(max_length=255)
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
-    composite_ledger_transmission_status = models.CharField(max_length=10,
-                                                            blank=True,
-                                                            default='N',
-                                                            choices=METADATA_VALIDATION_CHOICES)
+    composite_ledger_transmission_status = models.CharField(
+        max_length=10,
+        blank=True,
+        default='N',
+        choices=METADATA_VALIDATION_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     date_validated = models.DateTimeField(blank=True, null=True)
@@ -72,8 +76,9 @@ class SupplementalLedger(models.Model):
     metadata_hash = models.TextField(max_length=200)
     metadata_key = models.TextField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
-    metadata_validation_status = models.CharField(max_length=10, blank=True,
-                                                  choices=METADATA_VALIDATION_CHOICES)
+    metadata_validation_status = models.CharField(
+        max_length=10, blank=True,
+        choices=METADATA_VALIDATION_CHOICES)
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
@@ -95,9 +100,10 @@ class CompositeLedger(models.Model):
     metadata_hash = models.TextField(max_length=200)
     metadata_key = models.TextField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
-    metadata_transmission_status = models.CharField(max_length=10, blank=True,
-                                                    default='Ready',
-                                                    choices=RECORD_TRANSMISSION_STATUS_CHOICES)
+    metadata_transmission_status = models.CharField(
+        max_length=10, blank=True,
+        default='Ready',
+        choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     metadata_transmission_status_code = models.CharField(max_length=200,
                                                          blank=True)
     provider_name = models.CharField(max_length=255, blank=True)
