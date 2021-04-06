@@ -12,11 +12,12 @@ class XISConfiguration(models.Model):
                   'schema file to '
                   'validate from.')
     xse_host = models.CharField(
-        help_text='Enter the host url for the XSE (Search Enginer) to use.',
+        help_text='Enter the host url for the XSE (Search Engine) to use.',
         max_length=200
     )
     xse_index = models.CharField(
-        help_text='Enter the name of the index for the XSE to query.',
+        help_text='Enter the name of the index for the XSE (Search Engine) \
+            to query.',
         max_length=200
     )
 
