@@ -11,11 +11,17 @@ class ModelTests(SimpleTestCase):
         """Test that creating a new XIS Configuration entry is successful
         with defaults """
         target_schema = 'test_file.json'
+        xse_host = 'test:8080'
+        xse_index = 'test-index'
 
-        xisConfig = XISConfiguration(target_schema=target_schema)
+        xisConfig = XISConfiguration(target_schema=target_schema,
+                                     xse_host=xse_host,
+                                     xse_index=xse_index)
 
         self.assertEqual(xisConfig.target_schema,
                          target_schema)
+        self.assertEqual(xisConfig.xse_host, xse_host)
+        self.assertEqual(xisConfig.xse_index, xse_index)
 
     def test_metadata_ledger(self):
         """Test for a new Metadata_Ledger entry is successful with defaults"""
