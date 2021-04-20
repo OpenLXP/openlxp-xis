@@ -4,8 +4,9 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from core.models import MetadataLedger, SupplementalLedger
-from core.utils.utils import \
-    get_required_recommended_fields_for_target_validation
+from core.utils.xss_client import \
+    get_required_recommended_fields_for_validation
+from core.utils.xis_internal import dict_flatten, required_recommended_logs
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -22,37 +23,32 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
         """function to validate metadata field"""
 
         # Call function to get required & recommended values
-        required_dict, recommended_dict = \
-            get_required_recommended_fields_for_target_validation()
+        required_column_list, recommended_column_list = \
+            get_required_recommended_fields_for_validation()
         json_metadata = data.get('metadata')
         validation_result = 'Y'
         record_status_result = 'Active'
-        for column in json_metadata:
-            required_columns = required_dict[column]
-            recommended_columns = recommended_dict[column]
-            for key in json_metadata[column]:
-                if key in required_columns:
-                    if not json_metadata[column][key]:
-                        logger.info(
-                            "Record " + str(
-                                data.get('unique_record_identifier')
-                            ) + "does not have all "
-                                "REQUIRED "
-                                "fields. " + key + "field"
-                                                   " is "
-                                                   " empty")
-                        record_status_result = 'Inactive'
-                        validation_result = 'N'
-                    if key in recommended_columns:
-                        if not json_metadata[column][key]:
-                            logger.info(
-                                "Record " + str(
-                                    data.unique_record_identifier) +
-                                " does not have all RECOMMENDED fields. " +
-                                key + " field is empty")
-            data['metadata_validation_status'] = validation_result
-            data['record_status'] = record_status_result
-            data['date_validated'] = timezone.now()
+        flattened_source_data = dict_flatten(json_metadata,
+                                             required_column_list)
+        #  looping through elements in the metadata
+        for item in flattened_source_data:
+            # validate for required values in data
+            if item in required_column_list:
+                # update validation and record status for invalid data
+                # Log out error for missing required values
+                if not flattened_source_data[item]:
+                    validation_result = 'N'
+                    record_status_result = 'Inactive'
+                    required_recommended_logs(data.unique_record_identifier, "Required", item)
+            # validate for recommended values in data
+            elif item in recommended_column_list:
+                # Log out warning for missing recommended values
+                if not flattened_source_data[item]:
+                    required_recommended_logs(data.unique_record_identifier, "Recommended", item)
+
+        data['metadata_validation_status'] = validation_result
+        data['record_status'] = record_status_result
+        data['date_validated'] = timezone.now()
 
         return data
 
