@@ -39,13 +39,15 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
                 if not flattened_source_data[item]:
                     validation_result = 'N'
                     record_status_result = 'Inactive'
-                    required_recommended_logs(data.unique_record_identifier,
+                    required_recommended_logs(data.get
+                                              ('unique_record_identifier'),
                                               "Required", item)
             # validate for recommended values in data
             elif item in recommended_column_list:
                 # Log out warning for missing recommended values
                 if not flattened_source_data[item]:
-                    required_recommended_logs(data.unique_record_identifier,
+                    required_recommended_logs(data.
+                                              get('unique_record_identifier'),
                                               "Recommended", item)
 
         data['metadata_validation_status'] = validation_result
