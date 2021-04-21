@@ -8,4 +8,6 @@ router = DefaultRouter()
 urlpatterns = [
     path('metadata-ledger/', views.MetadataLedgerView.as_view()),
     path('metadata/', views.MetadataLedgerView.as_view(), name="metadata"),
+    path('catalogs/', views.get_course_providers),
+    path('catalog_records/<str:provider>/', views.records_for_provider_name),
 ]
