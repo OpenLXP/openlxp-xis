@@ -11,7 +11,7 @@ class ModelTests(TestCase):
         """Test that trying to create more than one XIS Configuration throws
         ValidationError """
         with self.assertRaises(ValidationError):
-            xiaConfig = XISConfiguration(target_schema="example1.json")
-            xiaConfig2 = XISConfiguration(target_schema="example2.json")
-            xiaConfig.save()
-            xiaConfig2.save()
+            xisConfig = XISConfiguration(target_schema="example1.json")
+            xisConfig2 = XISConfiguration(target_schema="example2.json")
+            xisConfig.save()
+            xisConfig2.save()

@@ -1,19 +1,11 @@
-import logging
-from django.test import tag
+from django.test import SimpleTestCase, tag
+from unittest.mock import patch
 
 from core.utils.xis_internal import (dict_flatten, update_flattened_object,
                                      flatten_dict_object, flatten_list_object)
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
-from core.utils.xss_client import (
-    aws_get, get_target_validation_schema,
-    get_required_recommended_fields_for_validation)
 from core.models import XISConfiguration
-from unittest.mock import patch
-from .test_setup import TestSetUp
-from ddt import data, ddt
-
-logger = logging.getLogger('dict_config_logger')
 
 
 @tag('unit')
@@ -246,53 +238,24 @@ class UtilsTests(TestSetUp):
     def test_get_elasticsearch_endpoint(self):
         """This test is to check if function returns the elasticsearch
         endpoint """
-        result_api_es_endpoint = get_elasticsearch_endpoint()
+        with patch('core.utils.xse_client.XISConfiguration.objects') as \
+            xis_config:
+            configObj = XISConfiguration(target_schema="test.json",
+                                     xse_host="host:8080",
+                                     xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result_api_es_endpoint = get_elasticsearch_endpoint()
 
-        self.assertTrue(result_api_es_endpoint)
+            self.assertTrue(result_api_es_endpoint)
 
     def test_get_elasticsearch_index(self):
         """This test is to check if function returns the elasticsearch index"""
-        result_api_es_index = get_elasticsearch_index()
+        with patch('core.utils.xse_client.XISConfiguration.objects') as \
+            xis_config:
+            configObj = XISConfigurationtarget_schema="test.json",
+                                     xse_host="host:8080",
+                                     xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result_api_es_index = get_elasticsearch_index()
 
-        self.assertTrue(result_api_es_index)
-
-    """This cases for xss_client.py"""
-
-    def test_aws_get(self):
-        """This test is to check if function returns the bucket name"""
-        result_bucket_name = aws_get()
-
-        self.assertTrue(result_bucket_name)
-
-    def test_get_target_validation_schema(self):
-        """Test to retrieve target_metadata_schema from XIA configuration"""
-        with patch('core.utils.xss_client'
-                   '.XISConfiguration.objects') as xisconfigobj, \
-                patch('core.utils.xss_client'
-                      '.read_json_data') as read_obj:
-            xisConfig = XISConfiguration(
-                target_schema='p2881_schema.json')
-            xisconfigobj.return_value = xisConfig
-            read_obj.return_value = read_obj
-            read_obj.return_value = self.target_data_dict
-            return_from_function = get_target_validation_schema()
-            self.assertEqual(read_obj.return_value,
-                             return_from_function)
-
-    def test_get_required_recommended_fields_for_validation(self):
-        """Test for Creating list of fields which are Required """
-        with patch('core.utils.xss_client'
-                   '.XISConfiguration.objects') as xisconfigobj, \
-                patch('core.utils.xss_client.get_target_validation_schema'
-                      ) as read_obj:
-            xisConfig = XISConfiguration(
-                target_schema='p2881_schema.json')
-            xisconfigobj.return_value = xisConfig
-            read_obj.return_value = read_obj
-            read_obj.return_value = self.target_data_dict
-
-            required_column_name, recommended_column_name = \
-                get_required_recommended_fields_for_validation()
-
-            self.assertTrue(required_column_name)
-            self.assertTrue(recommended_column_name)
+            self.assertTrue(result_api_es_index)
