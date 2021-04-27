@@ -3,6 +3,8 @@ from django.test import SimpleTestCase, tag
 from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
                          XISConfiguration)
 
+from django.utils import timezone
+
 
 @tag('unit')
 class ModelTests(SimpleTestCase):
@@ -27,15 +29,15 @@ class ModelTests(SimpleTestCase):
         """Test for a new Metadata_Ledger entry is successful with defaults"""
 
         unique_record_identifier = 'fe16decc-a982-40b2-bd2b-e8ab98b80a6e'
-        provider_name = 'DAU'
-        date_inserted = ''
+        provider_name = 'AGENT'
+        date_inserted = timezone.now()
         metadata = ''
         metadata_hash = '4f2a7da4f872e9807079ac7cb42aefb4'
-        metadata_key = 'DAU_apr_06_a03_bs_enus'
+        metadata_key = 'Agent_test'
         metadata_key_hash = '4f2a7da4f872e9807079ac7cb42aefb5'
         record_status = ''
-        date_deleted = ''
-        date_validated = ''
+        date_deleted = timezone.now()
+        date_validated = timezone.now()
         metadata_validation_status = ''
 
         metadataLedger = MetadataLedger(
@@ -79,15 +81,15 @@ class ModelTests(SimpleTestCase):
         defaults """
 
         unique_record_identifier = 'fe16decc-a982-40b2-bd2b-e8ab98b80a6e'
-        provider_name = 'DAU'
+        provider_name = 'AGENT'
         date_inserted = ''
         metadata = ''
         metadata_hash = '4f2a7da4f872e9807079ac7cb42aefb4'
-        metadata_key = 'DAU_apr_06_a03_bs_enus'
+        metadata_key = 'AGENT_Test_key'
         metadata_key_hash = '4f2a7da4f872e9807079ac7cb42aefb5'
         record_status = ''
-        date_deleted = ''
-        date_validated = ''
+        date_deleted = timezone.now()
+        date_validated = timezone.now()
         metadata_validation_status = ''
 
         supplemental_ledger = SupplementalLedger(
@@ -130,14 +132,14 @@ class ModelTests(SimpleTestCase):
         """Test for a new Composite_Ledger entry is successful with defaults"""
 
         unique_record_identifier = 'fe16decc-a982-40b2-bd2b-e8ab98b80a6e'
-        provider_name = 'DAU'
-        date_inserted = ''
+        provider_name = 'AGENT'
+        date_inserted = timezone.now()
         metadata = ''
         metadata_hash = '4f2a7da4f872e9807079ac7cb42aefb4'
-        metadata_key = 'DAU_apr_06_a03_bs_enus'
+        metadata_key = 'AGENT_Test_key'
         metadata_key_hash = '4f2a7da4f872e9807079ac7cb42aefb5'
         record_status = ''
-        date_deleted = ''
+        date_deleted = timezone.now()
 
         composite_ledger = CompositeLedger(
             unique_record_identifier=unique_record_identifier,

@@ -24,23 +24,19 @@ def put_metadata_ledger_into_composite_ledger(data):
             record_status='Inactive')
 
         # Retrieving existing records or creating new record to CompositeLedger
-        CompositeLedger.objects.get_or_create(unique_record_identifier=
-                                              row['unique_record_identifier'],
-                                              metadata_key=row['metadata_key'],
-                                              metadata_key_hash=
-                                              row['metadata_key_hash'],
-                                              metadata=
-                                              row['metadata'],
-                                              metadata_hash=
-                                              row['metadata_hash'],
-                                              date_inserted=timezone.now(),
-                                              updated_by='System',
-                                              record_status='Active',
-                                              provider_name=
-                                              row['provider_name'])
+        CompositeLedger.objects.get_or_create(
+            unique_record_identifier=row['unique_record_identifier'],
+            metadata_key=row['metadata_key'],
+            metadata_key_hash=row['metadata_key_hash'],
+            metadata=row['metadata'],
+            metadata_hash=row['metadata_hash'],
+            date_inserted=timezone.now(),
+            updated_by='System',
+            record_status='Active',
+            provider_name=row['provider_name'])
         # Updating existing records or creating new record to CompositeLedger
-        MetadataLedger.objects.filter(unique_record_identifier=
-                                      row['unique_record_identifier']).update(
+        MetadataLedger.objects.filter(
+            unique_record_identifier=row['unique_record_identifier']).update(
             composite_ledger_transmission_status='Y',
             composite_ledger_transmission_date=timezone.now())
 

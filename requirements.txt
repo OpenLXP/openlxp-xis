@@ -24,4 +24,6 @@ s3fs
 
 elasticsearch==7.11.0
 
+ddt
+
 coverage>=5.5,<6.0

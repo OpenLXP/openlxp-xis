@@ -4,6 +4,7 @@ import logging
 import boto3
 
 from core.models import XISConfiguration
+from core.utils.xis_internal import dict_flatten
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -34,21 +35,23 @@ def get_target_validation_schema():
     return schema_data_dict
 
 
-def get_required_recommended_fields_for_target_validation():
+def get_required_recommended_fields_for_validation():
     """Creating list of fields which are Required & Recommended"""
-    # Call function to get target validation dictionary
+
     schema_data_dict = get_target_validation_schema()
-    required_dict = {}
-    recommended_dict = {}
-    # Getting key list whose Value is Required
-    for k in schema_data_dict:
-        required_list = []
-        recommended_list = []
-        for k1, v1 in schema_data_dict[k].items():
-            if v1 == 'Required':
-                required_list.append(k1)
-            if v1 == 'Recommended':
-                recommended_list.append(k1)
-            required_dict[k] = required_list
-            recommended_dict[k] = recommended_list
-    return required_dict, recommended_dict
+    # Call function to flatten schema used for validation
+    flattened_schema_dict = dict_flatten(schema_data_dict, [])
+
+    # Declare list for required and recommended column names
+    required_column_list = list()
+    recommended_column_list = list()
+
+    #  Adding values to required and recommended list based on schema
+    for column, value in flattened_schema_dict.items():
+        if value == "Required":
+            required_column_list.append(column)
+        elif value == "Recommended":
+            recommended_column_list.append(column)
+
+    # Returning required and recommended list for validation
+    return required_column_list, recommended_column_list

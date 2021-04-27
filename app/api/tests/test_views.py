@@ -7,7 +7,7 @@ from .test_setup import TestSetUp
 logger = logging.getLogger('dict_config_logger')
 
 
-@tag('integration')
+@tag('unit')
 class TestViews(TestSetUp):
     """Class with tests related to Views"""
     def test_post_failed_no_data(self):
