@@ -2,12 +2,13 @@ from unittest.mock import patch
 
 from core.utils.xis_internal import (dict_flatten, update_flattened_object,
                                      flatten_dict_object, flatten_list_object)
-from django.test import SimpleTestCase, tag
+from ddt import data, ddt
+from django.test import tag
 
 from core.models import XISConfiguration
-from core.utils.utils import aws_get
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
+from .test_setup import TestSetUp
 
 
 @tag('unit')

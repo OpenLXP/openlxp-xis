@@ -12,7 +12,7 @@ class TestSetUp(TestCase):
         """Function to set up necessary data for testing"""
 
         # globally accessible data sets
-        self.metadata_url = reverse('metadata')
+        self.metadata_url = reverse('api:metadata')
         XISConfiguration.objects.create(target_schema='p2881_schema.json')
 
         self.metadata = {

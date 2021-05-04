@@ -1,14 +1,14 @@
 import logging
 
 from django.test import tag
-
-
+from unittest.mock import patch
+from core.models import CompositeLedger
 from .test_setup import TestSetUp
 
 logger = logging.getLogger('dict_config_logger')
 
 
-@tag('unit')
+@tag('integration')
 class TestViews(TestSetUp):
     """Class with tests related to Views"""
 
