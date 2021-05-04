@@ -18,6 +18,64 @@ logger = logging.getLogger('dict_config_logger')
 @ddt
 class CommandIntegration(TestSetUp):
     """Test cases for merge_metadata_in_composite_ledger """
+    meta_value = {"metadata": {
+        "Course": {
+            "CourseCode": "apr_06_a03_bs_enus",
+            "CourseType": "",
+            "CourseTitle": "Appium Concepts with Mac OS X",
+            "CourseAudience": "Users who need to enter GF ",
+            "DepartmentName": "DSS/CDSE",
+            "CourseDescription": "course description",
+            "CourseProviderName": "DAU",
+            "EducationalContext": "",
+            "CourseSectionDeliveryMode": "JKO"
+        },
+        "CourseInstance": {
+            "CourseURL": "https://example@data"
+        },
+        "General_Information": {
+            "EndDate": "end_date",
+            "StartDate": "start_date"
+        }
+    }}
+
+    changed_meta_value = {"metadata": {
+        "Course": {
+            "CourseCode": "apr_06_a03_bs_enus",
+            "CourseType": "",
+            "CourseTitle": "Appium Concepts with Mac OS X",
+            "CourseAudience": "Users who need to enter GF ",
+            "DepartmentName": "DSS/CDSE",
+            "CourseDescription": "course description",
+            "CourseProviderName": "DAU",
+            "EducationalContext": "",
+            "CourseSectionDeliveryMode": "JKO"
+        },
+        "CourseInstance": {
+            "CourseURL": "https://example123@data"
+        },
+        "General_Information": {
+            "EndDate": "end_date",
+            "StartDate": "start_date"
+        }
+    }}
+
+    metadata_ledger = MetadataLedger(
+        unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
+        metadata=meta_value,
+        metadata_hash='205b2df155a2dd4783087af1ad07bca8',
+        metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
+        metadata_key='DAU_oper_24_a02_bs_enus',
+        metadata_validation_status='Y',
+        record_status='Active',
+        composite_ledger_transmission_status='N', provider_name='XYZ')
+
+    composite_ledger = CompositeLedger(
+        unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
+        metadata=meta_value,
+        metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
+        record_status='Active',
+        provider_name='XYZ')
 
     def test_put_metadata_ledger_into_composite_ledger(self):
         """Test to take Metadata_Ledger data to post to Composite_Ledger """
@@ -126,11 +184,11 @@ class CommandIntegration(TestSetUp):
             record gets updated in XSE"""
         self.composite_ledger.save()
         composite_ledger = CompositeLedger(
-            unique_record_identifier=self.unique_record_identifier,
-            metadata=self.metadata_1,
-            metadata_key_hash=self.metadata_key_hash,
+            unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
+            metadata=self.changed_meta_value,
+            metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
             record_status='Active',
-            provider_name=self.provider_name)
+            provider_name='XYZ')
         composite_ledger.save()
 
         data = CompositeLedger.objects.filter(

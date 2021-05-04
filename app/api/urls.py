@@ -12,7 +12,8 @@ urlpatterns = [
     path('composite-ledger/', views.CompositeLedgerView.as_view(
         {'get': 'records_for_provider_name'}),
          name='records_for_provider_name'),
-    path('composite-ledger/<str:course_id>/', views.CompositeLedgerView.as_view(
-        {'get': 'record_for_requested_course_id'}),
+    path('composite-ledger/<str:course_id>/',
+         views.CompositeLedgerView.as_view({
+             'get': 'record_for_requested_course_id'}),
          name='record_for_requested_course_id'),
 ]

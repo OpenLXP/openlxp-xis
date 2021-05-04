@@ -16,8 +16,8 @@ logger = logging.getLogger('dict_config_logger')
 
 def get_course_providers(request):
     """This method defines an API to fetch the names of all course providers"""
-    providers = list(CompositeLedger.objects.order_by() \
-                     .values_list('provider_name', flat=True).distinct())
+    providers = list(CompositeLedger.objects.order_by().values_list(
+        'provider_name', flat=True).distinct())
     result = json.dumps(providers)
 
     return HttpResponse(result, content_type="application/json")
