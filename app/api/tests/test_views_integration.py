@@ -19,7 +19,7 @@ class TestViews(TestSetUp):
 
     def test_post_success_with_data(self):
         """Test to check if views are accepting api and responding
-               accurately if there is no data sent """
+               accurately if there is data sent """
 
         res = self.client.post(self.metadata_url,
                                self.metadataLedger_data_valid, format="json")

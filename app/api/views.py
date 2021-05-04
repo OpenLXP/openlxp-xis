@@ -16,8 +16,8 @@ logger = logging.getLogger('dict_config_logger')
 
 def get_course_providers(request):
     """This method defines an API to fetch the names of all course providers"""
-    providers = list(CompositeLedger.objects.order_by().values_list(
-        'provider_name', flat=True).distinct())
+    providers = list(CompositeLedger.objects.order_by()
+                     .values_list('provider_name', flat=True).distinct())
     result = json.dumps(providers)
 
     return HttpResponse(result, content_type="application/json")
@@ -60,51 +60,62 @@ class MetadataLedgerView(APIView):
 class CompositeLedgerView(viewsets.ViewSet):
     """API connection of composite Ledger"""
 
-    def records_for_provider_name(self, request):
-        """This method defines an API to fetch the record of the
-        corresponding course providers"""
+    def get_records(self, request):
+        """This method defines an API to fetch the records"""
         errorMsg = {
-            "message": "error: no record for corresponding provider name; " +
-                       "please check the logs"
+            "message": "Error fetching records please check the logs."
         }
         errorMsgJSON = json.dumps(errorMsg)
+        # initially fetch all active records
+        querySet = CompositeLedger.objects.all().order_by()\
+            .filter(record_status='Active')
 
-        if CompositeLedger.objects.filter(provider_name=request.GET.get(
-                'provider')).exists() or request.GET.get('provider') is None:
-            try:
-                if request.GET.get('provider'):
-                    logger.info(request.GET.get('provider'))
-                    logger.info(request.GET['provider'])
+        # case where provider sent as query parameter
+        if request.GET.get('provider'):
+            querySet = querySet.filter(provider_name=request.GET.
+                                       get('provider'))
 
-                    provider = request.GET['provider']
-                    queryset = CompositeLedger.objects.all().order_by(). \
-                        filter(provider_name=provider, record_status='Active')
+            if not querySet:
+                errorMsg = {
+                    "message": "Error; no provider name found for: " +
+                    request.GET.get('provider')
+                }
+                errorMsgJSON = json.dumps(errorMsg)
 
-                elif request.GET.get('provider') != '':
-                    queryset = CompositeLedger.objects.all().order_by(). \
-                        filter(record_status='Active')
+                return HttpResponseBadRequest(errorMsgJSON,
+                                              content_type="application/json")
+        # case a list of ids sent as query parameter e.g a,b,c,d
+        elif request.GET.get('id'):
+            id_param = request.GET.get('id')
+            ids = id_param.split(",")
+            querySet = querySet.filter(unique_record_identifier__in=ids)
 
-                serializer_class = CompositeLedgerSerializer(queryset,
-                                                             many=True)
-            except HTTPError as http_err:
-                logger.error(http_err)
-                return HttpResponseServerError(errorMsgJSON,
-                                               content_type="application/json")
-            except Exception as err:
-                logger.error(err)
-                return HttpResponseServerError(errorMsgJSON,
-                                               content_type="application/json")
-            else:
-                result = list(serializer_class.data)
-                result = json.dumps(result)
-                return HttpResponse(result, content_type="application/json")
+            if not querySet:
+                errorMsg = {
+                    "message": "Error; no unique record identidier found for: "
+                    + id_param
+                }
+                errorMsgJSON = json.dumps(errorMsg)
+
+                return HttpResponseBadRequest(errorMsgJSON,
+                                              content_type="application/json")
+        try:
+
+            serializer_class = CompositeLedgerSerializer(querySet, many=True)
+
+        except HTTPError as http_err:
+            logger.error(http_err)
+            return HttpResponseServerError(errorMsgJSON,
+                                           content_type="application/json")
+        except Exception as err:
+            logger.error(err)
+            return HttpResponseServerError(errorMsgJSON,
+                                           content_type="application/json")
         else:
-            error = {
-                "message": "Request has incorrect query parameter"
-            }
-            errorJson = json.dumps(error)
-            return HttpResponseBadRequest(errorJson,
-                                          content_type="application/json")
+            result = list(serializer_class.data)
+            result = json.dumps(result)
+
+            return HttpResponse(result, content_type="application/json")
 
     def record_for_requested_course_id(self, request, course_id):
         """This method defines an API to fetch the record of the
