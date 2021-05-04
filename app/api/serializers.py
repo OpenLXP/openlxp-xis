@@ -129,6 +129,6 @@ class CompositeLedgerSerializer(serializers.ModelSerializer):
     """Serializes an entry into the Supplemental Ledger"""
 
     class Meta:
-        model = Compositeledger
+        model = CompositeLedger
 
         fields = '__all__'
