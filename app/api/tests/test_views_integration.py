@@ -2,11 +2,8 @@ import logging
 
 from django.test import tag
 
+
 from .test_setup import TestSetUp
-
-from core.models import CompositeLedger
-
-from unittest.mock import patch
 
 logger = logging.getLogger('dict_config_logger')
 

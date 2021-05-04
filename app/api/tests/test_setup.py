@@ -9,8 +9,8 @@ class TestSetUp(APITestCase):
 
     def setUp(self):
         """Function to set up necessary data for testing"""
-        self.metadata_url = reverse('metadata')
-        self.composite_provider_url = reverse('records_for_provider_name')
+        self.metadata_url = reverse('api:metadata')
+        self.composite_provider_url = reverse('api:metadata')
         XISConfiguration.objects.create(target_schema='p2881_schema.json')
         self.metadataLedger_data_valid = {
             "provider_name": "DAU",

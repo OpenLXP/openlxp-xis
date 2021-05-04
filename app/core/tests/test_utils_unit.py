@@ -1,11 +1,13 @@
-from django.test import SimpleTestCase, tag
 from unittest.mock import patch
 
 from core.utils.xis_internal import (dict_flatten, update_flattened_object,
                                      flatten_dict_object, flatten_list_object)
+from django.test import SimpleTestCase, tag
+
+from core.models import XISConfiguration
+from core.utils.utils import aws_get
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
-from core.models import XISConfiguration
 
 
 @tag('unit')
@@ -251,10 +253,10 @@ class UtilsTests(TestSetUp):
     def test_get_elasticsearch_index(self):
         """This test is to check if function returns the elasticsearch index"""
         with patch('core.utils.xse_client.XISConfiguration.objects') as \
-            xis_config:
+                xis_config:
             configObj = XISConfiguration(target_schema="test.json",
-                                     xse_host="host:8080",
-                                     xse_index="test-index")
+                                         xse_host="host:8080",
+                                         xse_index="test-index")
             xis_config.first.return_value = configObj
             result_api_es_index = get_elasticsearch_index()
 
