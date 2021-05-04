@@ -103,14 +103,32 @@ class CompositeLedgerView(viewsets.ViewSet):
 
             serializer_class = CompositeLedgerSerializer(querySet, many=True)
 
-        except HTTPError as http_err:
-            logger.error(http_err)
-            return HttpResponseServerError(errorMsgJSON,
-                                           content_type="application/json")
-        except Exception as err:
-            logger.error(err)
-            return HttpResponseServerError(errorMsgJSON,
-                                           content_type="application/json")
+        if CompositeLedger.objects.filter(provider_name=request.GET.get(
+                'provider')).exists() or request.GET.get('provider') is None:
+            try:
+                if request.GET.get('provider'):
+                    provider = request.GET['provider']
+                    queryset = CompositeLedger.objects.all().order_by(). \
+                        filter(provider_name=provider, record_status='Active')
+
+                elif request.GET.get('provider') != '':
+                    queryset = CompositeLedger.objects.all().order_by(). \
+                        filter(record_status='Active')
+
+                serializer_class = CompositeLedgerSerializer(queryset,
+                                                             many=True)
+            except HTTPError as http_err:
+                logger.error(http_err)
+                return HttpResponseServerError(errorMsgJSON,
+                                               content_type="application/json")
+            except Exception as err:
+                logger.error(err)
+                return HttpResponseServerError(errorMsgJSON,
+                                               content_type="application/json")
+            else:
+                result = list(serializer_class.data)
+                result = json.dumps(result)
+                return HttpResponse(result, content_type="application/json")
         else:
             result = list(serializer_class.data)
             result = json.dumps(result)

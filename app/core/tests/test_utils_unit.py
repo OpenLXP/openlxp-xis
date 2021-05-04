@@ -251,10 +251,10 @@ class UtilsTests(TestSetUp):
     def test_get_elasticsearch_index(self):
         """This test is to check if function returns the elasticsearch index"""
         with patch('core.utils.xse_client.XISConfiguration.objects') as \
-                xis_config:
+            xis_config:
             configObj = XISConfiguration(target_schema="test.json",
-                                         xse_host="host:8080",
-                                         xse_index="test-index")
+                                     xse_host="host:8080",
+                                     xse_index="test-index")
             xis_config.first.return_value = configObj
             result_api_es_index = get_elasticsearch_index()
 
