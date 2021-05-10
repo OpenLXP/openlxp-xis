@@ -5,12 +5,13 @@ from ddt import data, ddt
 from django.test import tag
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+
+from .test_setup import TestSetUp
 
 
 @tag('unit')
 @ddt
-class ViewTests(APITestCase):
+class ViewTests(TestSetUp):
 
     def test_get_records_provider_not_found(self):
         """Test that the /api/metadata/ endpoint returns the correct error
@@ -123,3 +124,42 @@ class ViewTests(APITestCase):
             self.assertEqual(response.status_code,
                              status.HTTP_200_OK)
             self.assertEqual(responseDict, result_obj)
+
+    def test_record_for_requested_course_id(self):
+        """Test that the /api/metadata/ID endpoint returns a single record with
+            the matching id"""
+        doc_id = '123456'
+        url = reverse('api:record_for_requested_course_id', args=(doc_id,))
+
+        with patch('api.views.CompositeLedger.objects') as compositeObj:
+            compositeObj.return_value = compositeObj
+            compositeObj.order_by.return_value = compositeObj
+            compositeObj.filter.return_value = [self.composite_ledger]
+
+            response = self.client.get(url)
+            responseDict = json.loads(response.content)
+
+            self.assertEqual(response.status_code,
+                             status.HTTP_200_OK)
+            self.assertEqual(responseDict[0]['unique_record_identifier'],
+                             str(self.unique_record_identifier))
+
+    def test_post_record_valid(self):
+        """Test that sending a POST request to the /api/metadata endpoint
+            succeeds and returns unique record identifier for the new record"""
+        url = reverse('api:metadata')
+
+        with patch('api.views.MetadataLedgerSerializer') as serializer:
+            serializer.return_value = serializer
+            serializer.is_valid.return_value = True
+            serializer.save.return_value = serializer
+            serializer.data = self.metadataLedger_data_valid
+            dataJSON = json.dumps(self.metadataLedger_data_valid)
+
+            response = self.client.post(url, json=dataJSON)
+            responseDict = json.loads(response.content)
+            uid = self.metadataLedger_data_valid['unique_record_identifier']
+
+            self.assertEqual(response.status_code,
+                             status.HTTP_201_CREATED)
+            self.assertEqual(responseDict, uid)
