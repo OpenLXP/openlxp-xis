@@ -12,6 +12,68 @@ class TestSetUp(APITestCase):
         """Function to set up necessary data for testing"""
         self.metadata_url = reverse('api:metadata')
         self.composite_provider_url = reverse('api:metadata')
+        self.required_dict = {'Course.CourseProviderName', 'Course.CourseCode',
+                              'Course.CourseTitle', 'Course.CourseDescription',
+                              'Course.CourseShortDescription',
+                              'Course.CourseSubjectMatter',
+                              'CourseInstance.CourseCode',
+                              'CourseInstance.CourseTitle ',
+                              'CourseInstance.StartDate',
+                              'CourseInstance.EndDate',
+                              'CourseInstance.DeliveryMode',
+                              'CourseInstance.Instructor',
+                              'General_Information.StartDate',
+                              'General_Information.EndDate'}
+        self.recommended_dict = {'CourseInstance.Thumbnail',
+                                 'Technical_Information.Thumbnail'}
+
+        self.target_data_dict = {
+            'Course': {
+                'CourseProviderName': 'Required',
+                'DepartmentName': 'Optional',
+                'CourseCode': 'Required',
+                'CourseTitle': 'Required',
+                'CourseDescription': 'Required',
+                'CourseShortDescription': 'Required',
+                'CourseFullDescription': 'Optional',
+                'CourseAudience': 'Optional',
+                'CourseSectionDeliveryMode': 'Optional',
+                'CourseObjective': 'Optional',
+                'CoursePrerequisites': 'Optional',
+                'EstimatedCompletionTime': 'Optional',
+                'CourseSpecialNotes': 'Optional',
+                'CourseAdditionalInformation': 'Optional',
+                'CourseURL': 'Optional',
+                'CourseLevel': 'Optional',
+                'CourseSubjectMatter': 'Required'
+            },
+            'CourseInstance': {
+                'CourseCode': 'Required',
+                'CourseTitle': 'Required',
+                'Thumbnail': 'Recommended',
+                'CourseShortDescription': 'Optional',
+                'CourseFullDescription': 'Optional',
+                'CourseURL': 'Optional',
+                'StartDate': 'Required',
+                'EndDate': 'Required',
+                'EnrollmentStartDate': 'Optional',
+                'EnrollmentEndDate': 'Optional',
+                'DeliveryMode': 'Required',
+                'InLanguage': 'Optional',
+                'Instructor': 'Required',
+                'Duration': 'Optional',
+                'CourseLearningOutcome': 'Optional',
+                'CourseLevel': 'Optional',
+                'InstructorBio': 'Optional'
+            },
+            'General_Information': {
+                'StartDate': 'Required',
+                'EndDate': 'Required'
+            },
+            'Technical_Information': {
+                'Thumbnail': 'Recommended'
+            }
+        }
         XISConfiguration.objects.create(target_schema='p2881_schema.json')
         self.metadataLedger_data_valid = {
             "provider_name": "DAU",
