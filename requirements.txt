@@ -27,3 +27,7 @@ elasticsearch==7.11.0
 ddt
 
 coverage>=5.5,<6.0
+
+django-cors-headers>=3.7.0,<3.8.0
+
+ddt>=1.4.2,<1.5.0
