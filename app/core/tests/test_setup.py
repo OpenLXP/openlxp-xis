@@ -1,8 +1,9 @@
 from uuid import UUID
-from django.urls import reverse
+
 from django.test import TestCase
-from core.models import CompositeLedger, MetadataLedger
-from core.models import XISConfiguration
+from django.urls import reverse
+
+from core.models import CompositeLedger, MetadataLedger, XISConfiguration
 
 
 class TestSetUp(TestCase):
@@ -13,7 +14,8 @@ class TestSetUp(TestCase):
 
         # globally accessible data sets
         self.metadata_url = reverse('metadata')
-        XISConfiguration.objects.create(target_schema='p2881_schema.json')
+        XISConfiguration.objects.create(target_schema='p2881_schema.json',
+                                        xse_host='host', xse_index='Index')
 
         self.metadata = {
             "Course": {
@@ -189,6 +191,22 @@ class TestSetUp(TestCase):
             'Technical_Information': {
                 'Thumbnail': 'Recommended'
             }
+        }
+
+        self.schema_data_dict = {
+            'SOURCESYSTEM': 'Required',
+            'test_id': 'Optional',
+            'crs_header': 'Required',
+            'test_name': 'Required',
+            'test_description': 'Required',
+            'test_objective': 'Optional',
+            'test_attendies': 'Optional',
+            'test_images': 'Optional',
+            'test1_id': 'Optional',
+            'test_url': 'Optional',
+            'Start_date': 'Required',
+            'End_date': 'Required',
+            'Test_current': 'Recommended'
         }
 
         return super().setUp()

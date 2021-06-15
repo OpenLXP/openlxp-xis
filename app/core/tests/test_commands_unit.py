@@ -1,17 +1,19 @@
 import logging
 from unittest.mock import patch
+
 from ddt import ddt
 from django.core.management import call_command
 from django.db.utils import OperationalError
 from django.test import tag
-from core.models import CompositeLedger, MetadataLedger
 
+from core.management.commands.load_index_agents import (
+    check_records_to_load_into_xse, post_data_to_xse,
+    renaming_xis_for_posting_to_xse)
 from core.management.commands.merge_metadata_in_composite_ledger import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
-from core.management.commands.load_index_agents import (
-    renaming_xis_for_posting_to_xse, check_records_to_load_into_xse,
-    post_data_to_xse)
+from core.models import CompositeLedger, MetadataLedger
+
 from .test_setup import TestSetUp
 
 logger = logging.getLogger('dict_config_logger')
@@ -20,7 +22,7 @@ logger = logging.getLogger('dict_config_logger')
 @tag('unit')
 @ddt
 class CommandTests(TestSetUp):
-    """Test cases for waitdb """
+    # Test cases for waitdb
 
     def test_wait_for_db_ready(self):
         """Test that waiting for db when db is available"""
@@ -39,7 +41,7 @@ class CommandTests(TestSetUp):
             call_command('waitdb')
             self.assertEqual(gi.ensure_connection.call_count, 6)
 
-    """Test cases for merge_metadata_in_composite_ledger """
+    # Test cases for merge_metadata_in_composite_ledger
 
     def test_put_metadata_ledger_into_composite_ledger_zero(self):
         """Test for POSTing XIA metadata_ledger to XIS metadata_ledger
@@ -113,7 +115,7 @@ class CommandTests(TestSetUp):
             self.assertEqual(
                 mock_post_data_to_composite_ledger.call_count, 0)
 
-    """Test cases for load_index_agents """
+    # Test cases for load_index_agents
 
     def test_renaming_xis_for_posting_to_xse(self):
         """Test for Renaming XIS column names to match with XSE"""

@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import boto3
 
@@ -10,7 +11,7 @@ logger = logging.getLogger('dict_config_logger')
 
 
 def aws_get():
-    bucket_name = 'xisschema'
+    bucket_name = os.environ.get('BUCKET_NAME')
     return bucket_name
 
 
