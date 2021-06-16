@@ -4,7 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 
-from core.models import MetadataLedger, SupplementalLedger
+from core.models import MetadataLedger, SupplementalLedger, CompositeLedger
 from core.utils.xis_internal import dict_flatten, required_recommended_logs
 from core.utils.xss_client import \
     get_required_recommended_fields_for_validation
