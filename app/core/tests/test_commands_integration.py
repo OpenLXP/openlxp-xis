@@ -10,6 +10,7 @@ from core.management.commands.merge_metadata_in_composite_ledger import (
     put_metadata_ledger_into_composite_ledger)
 from core.models import CompositeLedger, MetadataLedger
 from .test_setup import TestSetUp
+import os
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -162,10 +163,9 @@ class CommandIntegration(TestSetUp):
 
         with patch('core.management.commands.load_index_agents.'
                    'get_elasticsearch_endpoint',
-                   return_value='http://3.208.136.89:9200'), \
+                   return_value=os.environ.get('ES_ENDPOINT')), \
                 patch('core.management.commands.load_index_agents.'
-                      'get_elasticsearch_index',
-                      return_value='testing'):
+                      'get_elasticsearch_index', return_value='testing'):
             post_data_to_xse(data)
 
             result_query = CompositeLedger.objects.values(
