@@ -10,6 +10,7 @@ from core.management.commands.merge_metadata_in_composite_ledger import (
     put_metadata_ledger_into_composite_ledger)
 from core.models import CompositeLedger, MetadataLedger
 from .test_setup import TestSetUp
+import os
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -159,11 +160,12 @@ class CommandIntegration(TestSetUp):
             metadata_transmission_status='Ready').values(
             'metadata_key_hash',
             'metadata')
-        with patch('elasticsearch.Elasticsearch.index') as response_obj:
-            response_obj.return_value = {
-                "result": "created"
-            }
 
+        with patch('core.management.commands.load_index_agents.'
+                   'get_elasticsearch_endpoint',
+                   return_value=os.environ.get('ES_ENDPOINT')), \
+                patch('core.management.commands.load_index_agents.'
+                      'get_elasticsearch_index', return_value='testing'):
             post_data_to_xse(data)
 
             result_query = CompositeLedger.objects.values(
@@ -172,75 +174,9 @@ class CommandIntegration(TestSetUp):
                 'date_transmitted').filter(
                 metadata_key_hash=self.metadata_key_hash).first()
 
-            self.assertEqual('created', result_query.get(
+            self.assertTrue(result_query.get(
                 'metadata_transmission_status_code'))
             self.assertEqual('Successful', result_query.get(
-                'metadata_transmission_status'))
-            self.assertTrue(result_query.get(
-                'date_transmitted'))
-
-    def test_post_data_to_xse_updated(self):
-        """Test for POSTing XIS composite_ledger to XSE in JSON format when
-            record gets updated in XSE"""
-        self.composite_ledger.save()
-        composite_ledger = CompositeLedger(
-            unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
-            metadata=self.changed_meta_value,
-            metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
-            record_status='Active',
-            provider_name='XYZ')
-        composite_ledger.save()
-
-        data = CompositeLedger.objects.filter(
-            record_status='Active',
-            metadata_transmission_status='Ready').values(
-            'metadata_key_hash',
-            'metadata')
-        with patch('elasticsearch.Elasticsearch.index') as response_obj:
-            response_obj.return_value = {
-                "result": "updated"
-            }
-
-            post_data_to_xse(data)
-
-            result_query = CompositeLedger.objects.values(
-                'metadata_transmission_status_code',
-                'metadata_transmission_status',
-                'date_transmitted').filter(
-                metadata_key_hash=self.metadata_key_hash).first()
-
-            self.assertEqual('updated', result_query.get(
-                'metadata_transmission_status_code'))
-            self.assertEqual('Successful', result_query.get(
-                'metadata_transmission_status'))
-            self.assertTrue(result_query.get(
-                'date_transmitted'))
-
-    def test_post_data_to_xse_failed(self):
-        """Test for POSTing XIS composite_ledger to XSE in JSON format when
-            request fails"""
-        self.composite_ledger.save()
-        data = CompositeLedger.objects.filter(
-            record_status='Active',
-            metadata_transmission_status='Ready').values(
-            'metadata_key_hash',
-            'metadata')
-        with patch('elasticsearch.Elasticsearch.index') as response_obj:
-            response_obj.return_value = {
-                "result": "failed"
-            }
-
-            post_data_to_xse(data)
-
-            result_query = CompositeLedger.objects.values(
-                'metadata_transmission_status_code',
-                'metadata_transmission_status',
-                'date_transmitted').filter(
-                metadata_key_hash=self.metadata_key_hash).first()
-
-            self.assertEqual('failed', result_query.get(
-                'metadata_transmission_status_code'))
-            self.assertEqual('Failed', result_query.get(
                 'metadata_transmission_status'))
             self.assertTrue(result_query.get(
                 'date_transmitted'))

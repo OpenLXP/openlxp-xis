@@ -74,7 +74,8 @@ class TestSetUp(APITestCase):
                 'Thumbnail': 'Recommended'
             }
         }
-        XISConfiguration.objects.create(target_schema='p2881_schema.json')
+        XISConfiguration.objects.create(target_schema='p2881_schema.json',
+                                        xse_host='host', xse_index='index')
         self.metadataLedger_data_valid = {
             "provider_name": "DAU",
             "unique_record_identifier": "fe16decc-a982-40b2-bd2b-e8ab98b80a6e",

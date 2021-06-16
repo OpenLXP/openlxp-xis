@@ -8,7 +8,6 @@ router = DefaultRouter()
 app_name = 'api'
 
 urlpatterns = [
-    # path('metadata-ledger/', views.MetadataLedgerView.as_view()),
     path('metadata/', views.metadata_list,
          name='metadata'),
     path('catalogs/', views.get_course_providers),
