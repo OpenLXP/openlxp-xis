@@ -30,3 +30,4 @@ class TestViews(TestSetUp):
                              self.
                              metadataLedger_data_valid[
                                  'unique_record_identifier'])
+ 

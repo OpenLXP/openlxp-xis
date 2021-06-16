@@ -3,6 +3,7 @@ import logging
 from django.utils import timezone
 from rest_framework import serializers
 
+
 from core.models import MetadataLedger, SupplementalLedger
 from core.utils.xis_internal import dict_flatten, required_recommended_logs
 from core.utils.xss_client import \
@@ -121,5 +122,14 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SupplementalLedger
+
+        fields = '__all__'
+
+
+class CompositeLedgerSerializer(serializers.ModelSerializer):
+    """Serializes an entry into the Supplemental Ledger"""
+
+    class Meta:
+        model = CompositeLedger
 
         fields = '__all__'

@@ -4,6 +4,7 @@ from ddt import data, ddt
 from django.test import tag
 
 from core.models import XISConfiguration
+
 from core.utils.xis_internal import (dict_flatten, flatten_dict_object,
                                      flatten_list_object,
                                      update_flattened_object)

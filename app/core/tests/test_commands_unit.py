@@ -200,12 +200,15 @@ class CommandTests(TestSetUp):
                    return_value=self.xse_expected_data), \
                 patch('core.management.commands.load_index_agents'
                       '.CompositeLedger.objects') as composite_obj, \
-                patch('elasticsearch.Elasticsearch.index') as response_obj, \
+                patch('core.management.commands.load_index_agents'
+                      '.Elasticsearch') as es_construct, \
                 patch('core.management.commands.load_index_agents'
                       '.check_records_to_load_into_xse', return_value=None
                       ) as mock_check_records_to_load_into_xse:
-            response_obj.return_value = response_obj
-            response_obj.return_value = {
+            es_instance = es_construct.return_value
+            es_construct.return_value = es_instance
+            es_instance.return_value = es_instance
+            es_instance.index.return_value = {
                 "result": "created"
             }
 
@@ -217,5 +220,5 @@ class CommandTests(TestSetUp):
                                                 composite_obj]
 
             post_data_to_xse(data)
-            self.assertEqual(response_obj.call_count, 2)
+            self.assertEqual(es_instance.index.call_count, 2)
             self.assertEqual(mock_check_records_to_load_into_xse.call_count, 1)
