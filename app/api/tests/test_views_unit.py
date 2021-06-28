@@ -4,6 +4,7 @@ from unittest.mock import patch
 from ddt import data, ddt
 from django.test import tag
 from django.urls import reverse
+from requests.exceptions import HTTPError
 from rest_framework import status
 
 from .test_setup import TestSetUp
@@ -134,14 +135,14 @@ class ViewTests(TestSetUp):
         with patch('api.views.CompositeLedger.objects') as compositeObj:
             compositeObj.return_value = compositeObj
             compositeObj.order_by.return_value = compositeObj
-            compositeObj.filter.return_value = [self.composite_ledger]
+            compositeObj.get.return_value = self.composite_ledger
 
             response = self.client.get(url)
             responseDict = json.loads(response.content)
 
             self.assertEqual(response.status_code,
                              status.HTTP_200_OK)
-            self.assertEqual(responseDict[0]['unique_record_identifier'],
+            self.assertEqual(responseDict['unique_record_identifier'],
                              str(self.unique_record_identifier))
 
     def test_post_record_valid(self):
@@ -163,3 +164,19 @@ class ViewTests(TestSetUp):
             self.assertEqual(response.status_code,
                              status.HTTP_201_CREATED)
             self.assertEqual(responseDict, uid)
+
+    def test_record_for_requested_course_id_fail(self):
+        """Test that the /api/metadata/ID endpoint returns a 500 error if an
+            exception is thrown"""
+        doc_id = '123456'
+        url = reverse('api:record_for_requested_course_id', args=(doc_id,))
+
+        with patch('api.views.CompositeLedger.objects') as compositeObj:
+            compositeObj.return_value = compositeObj
+            compositeObj.order_by.return_value = compositeObj
+            compositeObj.get.side_effect = HTTPError
+
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code,
+                             status.HTTP_500_INTERNAL_SERVER_ERROR)
