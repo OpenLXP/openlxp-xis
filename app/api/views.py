@@ -108,9 +108,9 @@ def record_for_requested_course_id(request, course_id):
     }
 
     try:
-        queryset = CompositeLedger.objects.order_by(). \
-            filter(unique_record_identifier=course_id, record_status='Active')
-        serializer_class = CompositeLedgerSerializer(queryset, many=True)
+        queryset = CompositeLedger.objects.order_by() \
+            .get(unique_record_identifier=course_id, record_status='Active')
+        serializer_class = CompositeLedgerSerializer(queryset)
     except HTTPError as http_err:
         logger.error(http_err)
         return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
