@@ -3,7 +3,6 @@ from unittest.mock import patch
 from ddt import ddt
 from django.test import tag
 
-
 from api.serializers import MetadataLedgerSerializer
 
 from .test_setup import TestSetUp

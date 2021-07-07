@@ -1,14 +1,16 @@
 from unittest.mock import patch
 
-from core.utils.xis_internal import (dict_flatten, update_flattened_object,
-                                     flatten_dict_object, flatten_list_object)
 from ddt import data, ddt
 from django.test import tag
 
 from core.models import XISConfiguration
+from core.utils.notification import send_notifications
+from core.utils.xis_internal import (dict_flatten, flatten_dict_object,
+                                     flatten_list_object,
+                                     update_flattened_object)
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
-from core.utils.notification import send_notifications
+
 from .test_setup import TestSetUp
 
 

@@ -1,21 +1,23 @@
 import logging
 from unittest.mock import patch
+
 from ddt import ddt
 from django.core.management import call_command
 from django.db.utils import OperationalError
 from django.test import tag
-from core.models import CompositeLedger, MetadataLedger
 
+from core.management.commands.conformance_alerts import send_log_email
+from core.management.commands.load_index_agents import (
+    check_records_to_load_into_xse, post_data_to_xse,
+    renaming_xis_for_posting_to_xse)
 from core.management.commands.merge_metadata_in_composite_ledger import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
-from core.management.commands.load_index_agents import (
-    renaming_xis_for_posting_to_xse, check_records_to_load_into_xse,
-    post_data_to_xse)
-from core.management.commands.conformance_alerts import send_log_email
+from core.models import (CompositeLedger, MetadataLedger,
+                         ReceiverEmailConfiguration, SenderEmailConfiguration)
+
 from .test_setup import TestSetUp
 
-from core.models import (ReceiverEmailConfiguration, SenderEmailConfiguration)
 logger = logging.getLogger('dict_config_logger')
 
 
