@@ -37,6 +37,7 @@ services:
       AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.pem'
       SECRET_KEY_VAL: "${SECRET_KEY_VAL}"
       ES_ENDPOINT: "${ES_ENDPOINT}"
+      LOG_PATH: "${LOG_PATH}"
     volumes:
       - ./app:/opt/app/openlxp-xis
     depends_on:
