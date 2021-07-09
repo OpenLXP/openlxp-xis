@@ -1,13 +1,16 @@
 from unittest.mock import patch
 
-from core.utils.xis_internal import (dict_flatten, update_flattened_object,
-                                     flatten_dict_object, flatten_list_object)
 from ddt import data, ddt
 from django.test import tag
 
 from core.models import XISConfiguration
+from core.utils.notification import send_notifications
+from core.utils.xis_internal import (dict_flatten, flatten_dict_object,
+                                     flatten_list_object,
+                                     update_flattened_object)
 from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
+
 from .test_setup import TestSetUp
 
 
@@ -262,3 +265,13 @@ class UtilsTests(TestSetUp):
             result_api_es_index = get_elasticsearch_index()
 
             self.assertTrue(result_api_es_index)
+
+# Test cases for NOTIFICATION
+    def test_send_notifications(self):
+        """Test for function to send emails of log file to personas"""
+        with patch('core.utils.notification'
+                   '.EmailMessage') as mock_send, \
+                patch('core.utils.notification'
+                      '.boto3.client'):
+            send_notifications(self.receive_email_list, self.sender_email)
+            self.assertEqual(mock_send.call_count, 2)

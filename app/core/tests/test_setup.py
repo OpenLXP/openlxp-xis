@@ -1,8 +1,9 @@
 from uuid import UUID
-from django.urls import reverse
+
 from django.test import TestCase
-from core.models import CompositeLedger, MetadataLedger
-from core.models import XISConfiguration
+from django.urls import reverse
+
+from core.models import CompositeLedger, MetadataLedger, XISConfiguration
 
 
 class TestSetUp(TestCase):
@@ -190,6 +191,9 @@ class TestSetUp(TestCase):
                 'Thumbnail': 'Recommended'
             }
         }
+        self.receive_email_list = ['receiver1@openlxp.com',
+                                   'receiver1@openlxp.com']
+        self.sender_email = "sender@openlxp.com"
 
         return super().setUp()
 

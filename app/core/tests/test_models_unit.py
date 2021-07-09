@@ -1,9 +1,8 @@
 from django.test import SimpleTestCase, tag
+from django.utils import timezone
 
 from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
                          XISConfiguration)
-
-from django.utils import timezone
 
 
 @tag('unit')

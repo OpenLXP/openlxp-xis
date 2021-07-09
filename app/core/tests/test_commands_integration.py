@@ -1,5 +1,7 @@
 import logging
+import os
 from unittest.mock import patch
+
 from ddt import ddt
 from django.test import tag
 
@@ -9,8 +11,8 @@ from core.management.commands.merge_metadata_in_composite_ledger import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
 from core.models import CompositeLedger, MetadataLedger
+
 from .test_setup import TestSetUp
-import os
 
 logger = logging.getLogger('dict_config_logger')
 
