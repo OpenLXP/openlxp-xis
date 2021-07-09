@@ -1,14 +1,16 @@
 import logging
 
-from django.http import HttpResponse
+from celery.result import AsyncResult
+from django.http import HttpResponse, JsonResponse
 from requests.exceptions import HTTPError
-from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework import permissions, status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.utils import json
 
 from api.serializers import CompositeLedgerSerializer, MetadataLedgerSerializer
 from core.models import CompositeLedger, MetadataLedger
+from core.tasks import xis_workflow
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -119,3 +121,21 @@ def record_for_requested_course_id(request, course_id):
         return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
         return Response(serializer_class.data, status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes((permissions.AllowAny,))
+def xis_workflow_api(request):
+    print('XIS workflow api')
+    task = xis_workflow.delay()
+    return JsonResponse({"task_id": task.id}, status=202)
+
+
+def get_status(request, task_id):
+    task_result = AsyncResult(task_id)
+    result = {
+        "task_id": task_id,
+        "task_status": task_result.status,
+        "task_result": task_result.result
+    }
+    return JsonResponse(result, status=200)
