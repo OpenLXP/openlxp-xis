@@ -7,7 +7,7 @@ from core.models import XISConfiguration
 @tag('integration')
 class ModelTests(TestCase):
 
-    def test_create_two_xia_configuration(self):
+    def test_create_two_xis_configuration(self):
         """Test that trying to create more than one XIS Configuration throws
         ValidationError """
         with self.assertRaises(ValidationError):
