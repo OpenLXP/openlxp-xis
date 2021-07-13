@@ -109,7 +109,6 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
 
         # Update table with new record
         else:
-
             self.instance = self.create(validated_data)
 
         logger.info(self.instance)
@@ -123,6 +122,78 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         model = SupplementalLedger
 
         fields = '__all__'
+
+    def validate(self, data):
+        """Check if supplemental data has corresponding active metadata"""
+
+        metadata_status = 'Inactive'
+        if MetadataLedger.objects. \
+                filter(metadata_key_hash=data.get('metadata_key_hash'),
+                       record_status="Active").first():
+            metadata_status = 'Active'
+
+        data['record_status'] = metadata_status
+        return data
+
+    def update(self, instance, validated_data):
+        """Updates the older record in table based on validation result"""
+
+        # Check if older record is the same to skip updating
+        if validated_data['metadata_hash'] != self.instance.metadata_hash:
+            if validated_data.get('record_status') == 'Active':
+                # Updating old instance of record INACTIVE if present record is
+                # ACTIVE
+                logger.info("Active instance found for update to inactive")
+                instance.record_status = 'Inactive'
+                instance.date_deleted = timezone.now()
+        instance.save()
+        return instance
+
+    def create(self, validated_data):
+        """creates new record in table"""
+
+        # Updating date inserted value for newly saved values
+        validated_data['date_inserted'] = timezone.now()
+        logger.info(validated_data)
+        # Updating deleted_date for newly saved inactive values
+        if validated_data.get('record_status') == "Inactive":
+            validated_data['date_deleted'] = timezone.now()
+        # Creating new value in metadata ledger
+        try:
+            # Here is the important part! Creating new object!
+            instance = SupplementalLedger.objects.create(**validated_data)
+        except TypeError:
+            raise TypeError('Cannot create record')
+
+        return instance
+
+    def save(self):
+        """Save function to create and update record in metadata ledger """
+
+        logger.info('Entering save function')
+
+        # Assigning validated data as dictionary for updates in records
+        validated_data = dict(
+            list(self.validated_data.items())
+        )
+
+        # If value to update is present in metadata ledger
+        if self.instance is not None:
+
+            logger.info('Instance for update found')
+            self.instance = self.update(self.instance, validated_data)
+            # Creating new value in metadata ledger after checking duplication
+            if validated_data['metadata_hash'] != self.instance.metadata_hash:
+                # validated_data =self.set_validated_data(self,validated_data)
+                self.instance = self.create(validated_data)
+
+        # Update table with new record
+        else:
+
+            self.instance = self.create(validated_data)
+
+        logger.info(self.instance)
+        return self.instance
 
 
 class CompositeLedgerSerializer(serializers.ModelSerializer):

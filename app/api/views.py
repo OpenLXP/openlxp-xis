@@ -8,8 +8,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.utils import json
 
-from api.serializers import CompositeLedgerSerializer, MetadataLedgerSerializer
-from core.models import CompositeLedger, MetadataLedger
+from api.serializers import CompositeLedgerSerializer, \
+    MetadataLedgerSerializer, SupplementalLedgerSerializer
+from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
 from core.tasks import xis_workflow
 
 logger = logging.getLogger('dict_config_logger')
@@ -55,8 +56,8 @@ def metadata_list(request):
 
             if not querySet:
                 errorMsg = {
-                    "message": "Error; no unique record identidier found for: "
-                    + id_param
+                    "message": "Error; no unique record identifier found for: "
+                               + id_param
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
@@ -98,6 +99,38 @@ def metadata_list(request):
         serializer.save()
         return Response(serializer.data['unique_record_identifier'],
                         status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+def supplemental_list(request):
+    """Handles creating metadata record"""
+
+    # Obtaining key value for comparison of records in metadata ledger
+    key_hash_value = request.data.get('metadata_key_hash', None)
+    record_in_table = None
+    if key_hash_value is not None:
+        # Comparing metadata_key value in metadata ledger
+        # to find older instances
+        record_in_table = SupplementalLedger.objects.filter(
+            metadata_key_hash=key_hash_value, record_status='Active') \
+            .first()
+
+    # Assign data from request to serializer
+    serializer = SupplementalLedgerSerializer(record_in_table,
+                                              data=request.data)
+    logger.info("Assigned to serializer")
+
+    if not serializer.is_valid():
+        # If not received send error and bad request status
+        logger.info(json.dumps(request.data))
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    # If received save record in ledger and send response of UUID &
+    # status created
+    serializer.save()
+    return Response(serializer.data['unique_record_identifier'],
+                    status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
