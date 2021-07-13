@@ -37,7 +37,7 @@ def put_metadata_ledger_into_composite_ledger(data):
         # Updating existing records or creating new record to CompositeLedger
         MetadataLedger.objects.filter(
             unique_record_identifier=row['unique_record_identifier']).update(
-            composite_ledger_transmission_status='Y',
+            composite_ledger_transmission_status='Successful',
             composite_ledger_transmission_date=timezone.now())
 
     check_metadata_ledger_transmission_ready_record()
@@ -50,7 +50,7 @@ def check_metadata_ledger_transmission_ready_record():
     data = MetadataLedger.objects.filter(
         metadata_validation_status='Y',
         record_status='Active',
-        composite_ledger_transmission_status='N').values(
+        composite_ledger_transmission_status='Failed').values(
         'unique_record_identifier',
         'metadata_key',
         'metadata_key_hash',
@@ -67,8 +67,8 @@ def check_metadata_ledger_transmission_ready_record():
 
 
 class Command(BaseCommand):
-    """Django command to merge the XIS data into XIS Composite_Ledger"""
+    """Django command to consolidate the XIS data into XIS Composite_Ledger"""
 
     def handle(self, *args, **options):
-        """ Merge the XIS metadata into XIS Composite_Ledger"""
+        """ Consolidate the XIS metadata into XIS Composite_Ledger"""
         check_metadata_ledger_transmission_ready_record()

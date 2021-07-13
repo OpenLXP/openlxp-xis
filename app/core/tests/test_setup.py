@@ -77,7 +77,8 @@ class TestSetUp(TestCase):
             metadata_key=self.metadata_key,
             metadata_validation_status='Y',
             record_status='Active',
-            composite_ledger_transmission_status='N', provider_name='AGENT')
+            composite_ledger_transmission_status='Failed',
+            provider_name='AGENT')
 
         self.composite_ledger = CompositeLedger(
             unique_record_identifier=self.unique_record_identifier,

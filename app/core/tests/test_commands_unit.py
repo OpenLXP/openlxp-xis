@@ -7,12 +7,12 @@ from django.db.utils import OperationalError
 from django.test import tag
 
 from core.management.commands.conformance_alerts import send_log_email
+from core.management.commands.consolidate_ledgers import (
+    check_metadata_ledger_transmission_ready_record,
+    put_metadata_ledger_into_composite_ledger)
 from core.management.commands.load_index_agents import (
     check_records_to_load_into_xse, post_data_to_xse,
     renaming_xis_for_posting_to_xse)
-from core.management.commands.merge_metadata_in_composite_ledger import (
-    check_metadata_ledger_transmission_ready_record,
-    put_metadata_ledger_into_composite_ledger)
 from core.models import (CompositeLedger, MetadataLedger,
                          ReceiverEmailConfiguration, SenderEmailConfiguration)
 
@@ -43,21 +43,21 @@ class CommandTests(TestSetUp):
             call_command('waitdb')
             self.assertEqual(gi.ensure_connection.call_count, 6)
 
-    """Test cases for merge_metadata_in_composite_ledger """
+    """Test cases for consolidate_ledgers """
 
     def test_put_metadata_ledger_into_composite_ledger_zero(self):
         """Test for POSTing XIA metadata_ledger to XIS metadata_ledger
         when data is not present"""
         data = []
         with patch(
-                'core.management.commands.merge_metadata_in_composite_ledger'
+                'core.management.commands.consolidate_ledgers'
                 '.MetadataLedger.objects') as meta_obj, \
                 patch(
                     'core.management.commands.'
-                    'merge_metadata_in_composite_ledger.CompositeLedger.'
+                    'consolidate_ledgers.CompositeLedger.'
                     'objects') as composite_obj, \
                 patch('core.management.commands.'
-                      'merge_metadata_in_composite_ledger'
+                      'consolidate_ledgers'
                       '.check_metadata_ledger_transmission_ready_record',
                       return_value=None) as mock_check_records_to_load:
             composite_obj.return_value = composite_obj
@@ -74,17 +74,17 @@ class CommandTests(TestSetUp):
         """Test to Retrieve number of Metadata_Ledger transmission ready
         records in XIS to load into Composite_Ledger"""
         with patch('core.management.commands.'
-                   'merge_metadata_in_composite_ledger'
+                   'consolidate_ledgers'
                    '.put_metadata_ledger_into_composite_ledger',
                    return_value=None)as \
                 mock_post_data_to_composite_ledger, \
                 patch('core.management.commands.'
-                      'merge_metadata_in_composite_ledger'
+                      'consolidate_ledgers'
                       '.MetadataLedger.objects') as meta_obj:
             meta_data = MetadataLedger(
                 metadata_validation_status='Y',
                 record_status='Active',
-                composite_ledger_transmission_status='N',
+                composite_ledger_transmission_status='Failed',
                 unique_record_identifier=self.unique_record_identifier,
                 metadata_key=self.metadata_key,
                 metadata_key_hash=self.metadata_key_hash,
@@ -103,12 +103,12 @@ class CommandTests(TestSetUp):
         """Test to Retrieve number of Metadata_Ledger records in XIA to load
         into XIS  and calls the post_data_to_xis accordingly"""
         with patch('core.management.commands.'
-                   'merge_metadata_in_composite_ledger'
+                   'consolidate_ledgers'
                    '.put_metadata_ledger_into_composite_ledger',
                    return_value=None)as \
                 mock_post_data_to_composite_ledger, \
                 patch('core.management.commands.'
-                      'merge_metadata_in_composite_ledger.MetadataLedger.'
+                      'consolidate_ledgers.MetadataLedger.'
                       'objects') as meta_obj:
             meta_obj.return_value = meta_obj
             meta_obj.exclude.return_value = meta_obj

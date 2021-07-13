@@ -5,11 +5,11 @@ from unittest.mock import patch
 from ddt import ddt
 from django.test import tag
 
-from core.management.commands.load_index_agents import (
-    check_records_to_load_into_xse, post_data_to_xse)
-from core.management.commands.merge_metadata_in_composite_ledger import (
+from core.management.commands.consolidate_ledgers import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
+from core.management.commands.load_index_agents import (
+    check_records_to_load_into_xse, post_data_to_xse)
 from core.models import CompositeLedger, MetadataLedger
 
 from .test_setup import TestSetUp
@@ -20,7 +20,7 @@ logger = logging.getLogger('dict_config_logger')
 @tag('integration')
 @ddt
 class CommandIntegration(TestSetUp):
-    """Test cases for merge_metadata_in_composite_ledger """
+    """Test cases for consolidate_ledgers """
     meta_value = {"metadata": {
         "Course": {
             "CourseCode": "apr_06_a03_bs_enus",
@@ -71,7 +71,7 @@ class CommandIntegration(TestSetUp):
         metadata_key='DAU_oper_24_a02_bs_enus',
         metadata_validation_status='Y',
         record_status='Active',
-        composite_ledger_transmission_status='N', provider_name='XYZ')
+        composite_ledger_transmission_status='Failed', provider_name='XYZ')
 
     composite_ledger = CompositeLedger(
         unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
@@ -86,7 +86,7 @@ class CommandIntegration(TestSetUp):
         data = MetadataLedger.objects.filter(
             metadata_validation_status='Y',
             record_status='Active',
-            composite_ledger_transmission_status='N').values(
+            composite_ledger_transmission_status='Failed').values(
             'unique_record_identifier',
             'metadata_key',
             'metadata_key_hash',
@@ -128,7 +128,7 @@ class CommandIntegration(TestSetUp):
         self.assertEquals(data[0].get('provider_name'),
                           result_query_composite_ledger.get('provider_name'))
 
-    @patch('core.management.commands.merge_metadata_in_composite_ledger'
+    @patch('core.management.commands.consolidate_ledgers'
            '.put_metadata_ledger_into_composite_ledger', return_value=None)
     def test_check_metadata_ledger_transmission_ready_record_one_record(
             self, mock_put_metadata_ledger_into_composite_ledger):
@@ -139,7 +139,7 @@ class CommandIntegration(TestSetUp):
         self.assertEqual(
             mock_put_metadata_ledger_into_composite_ledger.call_count, 1)
 
-    @patch('core.management.commands.merge_metadata_in_composite_ledger'
+    @patch('core.management.commands.consolidate_ledgers'
            '.put_metadata_ledger_into_composite_ledger', return_value=None)
     def test_check_metadata_ledger_transmission_ready_record_zero_record(
             self, mock_put_metadata_ledger_into_composite_ledger):

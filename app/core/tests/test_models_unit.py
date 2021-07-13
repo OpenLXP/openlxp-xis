@@ -88,8 +88,6 @@ class ModelTests(SimpleTestCase):
         metadata_key_hash = '4f2a7da4f872e9807079ac7cb42aefb5'
         record_status = ''
         date_deleted = timezone.now()
-        date_validated = timezone.now()
-        metadata_validation_status = ''
 
         supplemental_ledger = SupplementalLedger(
             unique_record_identifier=unique_record_identifier,
@@ -100,9 +98,7 @@ class ModelTests(SimpleTestCase):
             metadata_key=metadata_key,
             metadata_key_hash=metadata_key_hash,
             record_status=record_status,
-            date_deleted=date_deleted,
-            date_validated=date_validated,
-            metadata_validation_status=metadata_validation_status)
+            date_deleted=date_deleted)
 
         self.assertEqual(supplemental_ledger.unique_record_identifier,
                          unique_record_identifier)
@@ -122,10 +118,6 @@ class ModelTests(SimpleTestCase):
                          record_status)
         self.assertEqual(supplemental_ledger.date_deleted,
                          date_deleted)
-        self.assertEqual(supplemental_ledger.date_validated,
-                         date_validated)
-        self.assertEqual(supplemental_ledger.metadata_validation_status,
-                         metadata_validation_status)
 
     def test_composite_ledger(self):
         """Test for a new Composite_Ledger entry is successful with defaults"""
