@@ -124,15 +124,9 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        """Check if supplemental data has corresponding active metadata"""
+        """Assign active status to supplemental data """
 
-        metadata_status = 'Inactive'
-        if MetadataLedger.objects. \
-                filter(metadata_key_hash=data.get('metadata_key_hash'),
-                       record_status="Active").first():
-            metadata_status = 'Active'
-
-        data['record_status'] = metadata_status
+        data['record_status'] = 'Active'
         return data
 
     def update(self, instance, validated_data):
@@ -168,7 +162,7 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         return instance
 
     def save(self):
-        """Save function to create and update record in metadata ledger """
+        """Save function to create and update record in supplemental ledger """
 
         logger.info('Entering save function')
 
@@ -197,7 +191,7 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
 
 
 class CompositeLedgerSerializer(serializers.ModelSerializer):
-    """Serializes an entry into the Supplemental Ledger"""
+    """Serializes an entry into the Composite Ledger"""
 
     class Meta:
         model = CompositeLedger

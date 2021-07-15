@@ -109,7 +109,7 @@ def supplemental_list(request):
     key_hash_value = request.data.get('metadata_key_hash', None)
     record_in_table = None
     if key_hash_value is not None:
-        # Comparing metadata_key value in metadata ledger
+        # Comparing key value in metadata ledger
         # to find older instances
         record_in_table = SupplementalLedger.objects.filter(
             metadata_key_hash=key_hash_value, record_status='Active') \
