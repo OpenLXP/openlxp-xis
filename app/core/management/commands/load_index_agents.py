@@ -1,5 +1,6 @@
 import json
 import logging
+import pandas as pd
 
 import requests
 from django.core.management.base import BaseCommand
@@ -12,7 +13,6 @@ from core.utils.xse_client import (get_elasticsearch_endpoint,
                                    get_elasticsearch_index)
 
 es = Elasticsearch()
-
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -29,8 +29,11 @@ def post_data_to_xse(data):
     """POSTing XIS composite_ledger to XSE in JSON format"""
     # Traversing through each row one by one from data
     for row in data:
+        # Creating nested json format for XSE
+        composite_ledger = json_doc_creation_for_xse(row)
+
         data = renaming_xis_for_posting_to_xse(row)
-        renamed_data = json.dumps(data['metadata'], cls=DjangoJSONEncoder)
+        renamed_data = json.dumps(composite_ledger, cls=DjangoJSONEncoder)
         # Getting UUID to update metadata_transmission_status to pending
         metadata_key_hash_val = data.get('_id')
 
@@ -66,6 +69,16 @@ def post_data_to_xse(data):
             logger.error(e)
             raise SystemExit('Exiting! Can not make connection with XSE.')
     check_records_to_load_into_xse()
+
+
+def json_doc_creation_for_xse(row):
+    """ Function to Create nested json for XSE """
+    composite_ledger_dict = {"Supplemental_Ledger": row['metadata'][
+        'Supplemental_Ledger']}
+
+    composite_ledger_dict.update(row['metadata']['Metadata_Ledger'])
+
+    return composite_ledger_dict
 
 
 def check_records_to_load_into_xse():
