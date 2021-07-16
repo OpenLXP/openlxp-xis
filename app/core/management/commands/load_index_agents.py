@@ -1,6 +1,5 @@
 import json
 import logging
-import pandas as pd
 
 import requests
 from django.core.management.base import BaseCommand
