@@ -9,10 +9,11 @@ from django.test import tag
 from core.management.commands.conformance_alerts import send_log_email
 from core.management.commands.consolidate_ledgers import (
     check_metadata_ledger_transmission_ready_record,
-    put_metadata_ledger_into_composite_ledger)
+    put_metadata_ledger_into_composite_ledger,
+    append_metadata_ledger_with_supplemental_ledger)
 from core.management.commands.load_index_agents import (
     check_records_to_load_into_xse, post_data_to_xse,
-    renaming_xis_for_posting_to_xse)
+    renaming_xis_for_posting_to_xse, json_doc_creation_for_xse)
 from core.models import (CompositeLedger, MetadataLedger,
                          ReceiverEmailConfiguration, SenderEmailConfiguration)
 
@@ -117,6 +118,33 @@ class CommandTests(TestSetUp):
             self.assertEqual(
                 mock_post_data_to_composite_ledger.call_count, 0)
 
+    def test_append_metadata_ledger_with_supplemental_ledger(self):
+        """Test to get supplemental metadata to further merge it into metadata
+        ledger"""
+        with patch('core.management.commands.'
+                   'consolidate_ledgers.SupplementalLedger.objects') as \
+                Supplemental_obj, \
+                patch('core.management.commands.'
+                      'consolidate_ledgers.MetadataLedger.objects'
+                      ) as meta_obj:
+            meta_obj.return_value = meta_obj
+            meta_obj.filter.return_value = self.metadata_ledger
+            meta_obj.first.return_value = meta_obj
+
+            Supplemental_obj.return_value = Supplemental_obj
+            Supplemental_obj.filter.return_value = self.supplemental_ledger
+            Supplemental_obj.first.return_value = Supplemental_obj
+
+            for row in meta_obj:
+                composite_ledger_dict, supplemental_metadata = \
+                    append_metadata_ledger_with_supplemental_ledger(row)
+                logger.info(composite_ledger_dict)
+                logger.info(supplemental_metadata)
+
+                self.assertTrue(composite_ledger_dict)
+                self.assertEquals(self.supplement_metadata,
+                                  supplemental_metadata)
+
     """Test cases for load_index_agents """
 
     def test_renaming_xis_for_posting_to_xse(self):
@@ -163,6 +191,22 @@ class CommandTests(TestSetUp):
             self.assertEqual(
                 mock_post_data_to_xse.call_count, 0)
 
+    def test_json_doc_creation_for_xse(self):
+        """Test for function to Create nested json for XSE"""
+
+        with patch('core.management.commands.'
+                   'load_index_agents.CompositeLedger.objects') \
+                as composite_obj:
+            composite_obj.return_value = composite_obj
+            composite_obj.filter.return_value = self.composite_ledger
+            composite_obj.first.return_value = composite_obj
+
+            for row in composite_obj:
+                composite_ledger_dict = json_doc_creation_for_xse(row)
+
+                self.assertEquals(self.composite_ledger_dict_xse_updated,
+                                  composite_ledger_dict)
+
     def test_post_data_to_xse_zero(self):
         """Test POSTing XIS composite_ledger to XSE in JSON format
          data is not present"""
@@ -173,6 +217,8 @@ class CommandTests(TestSetUp):
                 patch('core.management.commands.load_index_agents'
                       '.CompositeLedger.objects') as composite_obj, \
                 patch('elasticsearch.Elasticsearch.index') as response_obj, \
+                patch('core.management.commands.load_index_agents'
+                      '.json_doc_creation_for_xse', return_value=None), \
                 patch('core.management.commands.load_index_agents'
                       '.check_records_to_load_into_xse', return_value=None
                       ) as mock_check_records_to_load_into_xse:
@@ -204,6 +250,8 @@ class CommandTests(TestSetUp):
                       '.CompositeLedger.objects') as composite_obj, \
                 patch('core.management.commands.load_index_agents'
                       '.Elasticsearch') as es_construct, \
+                patch('core.management.commands.load_index_agents'
+                      '.json_doc_creation_for_xse', return_value=None), \
                 patch('core.management.commands.load_index_agents'
                       '.check_records_to_load_into_xse', return_value=None
                       ) as mock_check_records_to_load_into_xse:
