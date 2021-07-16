@@ -16,14 +16,8 @@ class TestSetUp(TestCase):
         # globally accessible data sets
         self.metadata_url = reverse('api:metadata')
         XISConfiguration.objects.create(target_schema='p2881_schema.json',
-                                        xse_host='http://3.208.136.89:8000	',
+                                        xse_host='http://es01:9200/',
                                         xse_index='testing_index')
-
-        # self.xis_configuration = XISConfiguration(
-        #     target_schema='p2881_schema.json',
-        #     xse_host='',
-        #     xse_index='testing_index')
-        #
 
         self.metadata = {
             "Course": {
@@ -92,7 +86,7 @@ class TestSetUp(TestCase):
             metadata_key=self.metadata_key,
             metadata_validation_status='Y',
             record_status='Active',
-            composite_ledger_transmission_status='Failed',
+            composite_ledger_transmission_status='Ready',
             provider_name='AGENT')
 
         self.supplemental_ledger = SupplementalLedger(
