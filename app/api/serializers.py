@@ -236,8 +236,8 @@ class CompositeLedgerSerializer(serializers.ModelSerializer):
         data['date_validated'] = timezone.now()
 
         if record_status_result == 'Inactive':
-            serializers.ValidationError('The data received is not valid, '
-                                        'no update')
+            raise serializers.ValidationError('The data received is not '
+                                              'valid, no update')
 
         return data
 
