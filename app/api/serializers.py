@@ -197,3 +197,52 @@ class CompositeLedgerSerializer(serializers.ModelSerializer):
         model = CompositeLedger
 
         fields = '__all__'
+
+    def validate(self, data):
+        """function to validate metadata field"""
+
+        # Call function to get required & recommended values
+        required_column_list, recommended_column_list = \
+            get_required_recommended_fields_for_validation()
+        json_metadata = data.get('metadata')
+        # access Metadata ledger values for validation
+        metadata = json_metadata['Metadata_Ledger']
+        validation_result = 'Y'
+        record_status_result = 'Active'
+        flattened_source_data = dict_flatten(metadata,
+                                             required_column_list)
+        #  looping through elements in the data
+        for item in flattened_source_data:
+            # validate for required values in data
+            if item in required_column_list:
+                # update validation and record status for invalid data
+                # Log out error for missing required values
+                if not flattened_source_data[item]:
+                    validation_result = 'N'
+                    record_status_result = 'Inactive'
+                    required_recommended_logs(data.get
+                                              ('unique_record_identifier'),
+                                              "Required", item)
+            # validate for recommended values in data
+            elif item in recommended_column_list:
+                # Log out warning for missing recommended values
+                if not flattened_source_data[item]:
+                    required_recommended_logs(data.
+                                              get('unique_record_identifier'),
+                                              "Recommended", item)
+
+        data['metadata_validation_status'] = validation_result
+        data['record_status'] = record_status_result
+        data['date_validated'] = timezone.now()
+
+        if record_status_result == 'Inactive':
+            serializers.ValidationError('The data received is not valid, '
+                                        'no update')
+
+        return data
+
+    def update(self, instance, validated_data):
+        instance.metadata = validated_data.get('metadata', instance.metadata)
+        instance.updated_by = 'Owner'
+        instance.save()
+        return instance

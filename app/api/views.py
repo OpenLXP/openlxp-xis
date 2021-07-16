@@ -133,27 +133,57 @@ def supplemental_list(request):
                     status=status.HTTP_201_CREATED)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 def record_for_requested_course_id(request, course_id):
-    """This method defines an API to fetch the record of the
+    """This method defines an API to fetch or modify the record of the
     corresponding course id"""
-    errorMsg = {
-        "message": "error: no record for corresponding course id; " +
-                   "please check the logs"
-    }
+    logger.info('in function')
+    if request.method == 'GET':
+        errorMsg = {
+            "message": "error: no record for corresponding course id; " +
+                       "please check the logs"
+        }
 
-    try:
-        queryset = CompositeLedger.objects.order_by() \
-            .get(unique_record_identifier=course_id, record_status='Active')
-        serializer_class = CompositeLedgerSerializer(queryset)
-    except HTTPError as http_err:
-        logger.error(http_err)
-        return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
-    except Exception as err:
-        logger.error(err)
-        return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
-    else:
-        return Response(serializer_class.data, status.HTTP_200_OK)
+        try:
+            queryset = CompositeLedger.objects.order_by() \
+                .get(unique_record_identifier=course_id,
+                     record_status='Active')
+            serializer_class = CompositeLedgerSerializer(queryset)
+        except HTTPError as http_err:
+            logger.error(http_err)
+            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as err:
+            logger.error(err)
+            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response(serializer_class.data, status.HTTP_200_OK)
+
+    elif request.method == 'PATCH':
+        errorMsg = {
+            "message": "error: no record for corresponding course id; " +
+                       "please check the logs"
+        }
+
+        try:
+            queryset = CompositeLedger.objects.\
+                get(unique_record_identifier=course_id, record_status='Active')
+            logger.info(queryset)
+        except HTTPError as http_err:
+            logger.error(http_err)
+            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as err:
+            logger.error(err)
+            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+
+            serializer = CompositeLedgerSerializer(queryset,
+                                                   data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                res = {"message": "Data updated successfully"}
+                return Response(res, status.HTTP_200_OK)
+            res = {"message": "Data is not valid for update"}
+            return Response(res, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
