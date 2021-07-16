@@ -8,8 +8,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.utils import json
 
-from api.serializers import CompositeLedgerSerializer, \
-    MetadataLedgerSerializer, SupplementalLedgerSerializer
+from api.serializers import (CompositeLedgerSerializer,
+                             MetadataLedgerSerializer,
+                             SupplementalLedgerSerializer)
 from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
 from core.tasks import xis_workflow
 
@@ -167,7 +168,6 @@ def record_for_requested_course_id(request, course_id):
         try:
             queryset = CompositeLedger.objects.\
                 get(unique_record_identifier=course_id, record_status='Active')
-            logger.info(queryset)
         except HTTPError as http_err:
             logger.error(http_err)
             return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)

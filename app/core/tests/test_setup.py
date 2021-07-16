@@ -3,8 +3,8 @@ from uuid import UUID
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import CompositeLedger, MetadataLedger, XISConfiguration, \
-    SupplementalLedger
+from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
+                         XISConfiguration)
 
 
 class TestSetUp(TestCase):

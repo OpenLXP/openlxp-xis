@@ -8,12 +8,12 @@ from django.test import tag
 
 from core.management.commands.conformance_alerts import send_log_email
 from core.management.commands.consolidate_ledgers import (
+    append_metadata_ledger_with_supplemental_ledger,
     check_metadata_ledger_transmission_ready_record,
-    put_metadata_ledger_into_composite_ledger,
-    append_metadata_ledger_with_supplemental_ledger)
+    put_metadata_ledger_into_composite_ledger)
 from core.management.commands.load_index_agents import (
-    check_records_to_load_into_xse, post_data_to_xse,
-    renaming_xis_for_posting_to_xse, json_doc_creation_for_xse)
+    check_records_to_load_into_xse, json_doc_creation_for_xse,
+    post_data_to_xse, renaming_xis_for_posting_to_xse)
 from core.models import (CompositeLedger, MetadataLedger,
                          ReceiverEmailConfiguration, SenderEmailConfiguration)
 
