@@ -7,7 +7,7 @@ from django.test import tag
 from core.management.commands.consolidate_ledgers import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
-from core.management.commands.load_index_agents import (
+from core.management.commands.load_metadata_into_xse import (
     check_records_to_load_into_xse, post_data_to_xse)
 from core.models import CompositeLedger, MetadataLedger
 
@@ -94,7 +94,7 @@ class CommandIntegration(TestSetUp):
             self.assertEqual(
                 mock_put_metadata_ledger_into_composite_ledger.call_count, 0)
 
-    """Test cases for load_index_agents """
+    """Test cases for load_metadata_into_xse """
 
     def test_post_data_to_xse_created(self):
         """Test for POSTing XIS composite_ledger to XSE in JSON format when
@@ -126,7 +126,7 @@ class CommandIntegration(TestSetUp):
     def test_check_records_to_load_into_xse_one_record(self):
         """Test to retrieve number of Composite_Ledger records in XIS to load
          into XSE and calls the post_data_to_xis accordingly"""
-        with patch('core.management.commands.load_index_agents'
+        with patch('core.management.commands.load_metadata_into_xse'
                    '.post_data_to_xse',
                    return_value=None) as mock_post_data_to_xse:
             self.composite_ledger.save()
@@ -137,7 +137,7 @@ class CommandIntegration(TestSetUp):
     def test_check_records_to_load_into_xse_zero_record(self):
         """Test to retrieve number of Composite_Ledger records in XIS to load
         into XSE and calls the post_data_to_xis accordingly"""
-        with patch('core.management.commands.load_index_agents'
+        with patch('core.management.commands.load_metadata_into_xse'
                    '.post_data_to_xse', return_value=None) as \
                 mock_post_data_to_xse:
             check_records_to_load_into_xse()

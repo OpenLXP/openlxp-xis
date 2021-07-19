@@ -29,7 +29,7 @@ def post_data_to_xse(data):
     # Traversing through each row one by one from data
     for row in data:
         # Creating nested json format for XSE
-        composite_ledger = json_doc_creation_for_xse(row)
+        composite_ledger = create_xse_json_document(row)
 
         data = renaming_xis_for_posting_to_xse(row)
         renamed_data = json.dumps(composite_ledger, cls=DjangoJSONEncoder)
@@ -70,7 +70,7 @@ def post_data_to_xse(data):
     check_records_to_load_into_xse()
 
 
-def json_doc_creation_for_xse(row):
+def create_xse_json_document(row):
     """ Function to Create nested json for XSE """
     composite_ledger_dict = {"Supplemental_Ledger": row['metadata'][
         'Supplemental_Ledger']}
