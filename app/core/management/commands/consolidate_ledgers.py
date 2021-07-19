@@ -42,13 +42,13 @@ def put_metadata_ledger_into_composite_ledger(data):
             unique_record_identifier=row['unique_record_identifier']).update(
             composite_ledger_transmission_status='Successful',
             composite_ledger_transmission_date=timezone.now())
-
-        # Updating existing transmission status in Supplemental Ledger
-        SupplementalLedger.objects.filter(
-            unique_record_identifier=supplemental_metadata[
-                'unique_record_identifier']).update(
-            composite_ledger_transmission_status='Successful',
-            composite_ledger_transmission_date=timezone.now())
+        if supplemental_metadata:
+            # Updating existing transmission status in Supplemental Ledger
+            SupplementalLedger.objects.filter(
+                unique_record_identifier=supplemental_metadata[
+                    'unique_record_identifier']).update(
+                composite_ledger_transmission_status='Successful',
+                composite_ledger_transmission_date=timezone.now())
 
     check_metadata_ledger_transmission_ready_record()
 
@@ -62,11 +62,14 @@ def append_metadata_ledger_with_supplemental_ledger(row):
         record_status='Active').values('metadata',
                                        'unique_record_identifier').first()
 
-    # Consolidating Metadata Ledger with Supplement Ledger
-    composite_ledger_dict = {"Metadata_Ledger": row['metadata'],
-                             "Supplemental_Ledger": supplemental_metadata[
-                                 'metadata']}
-
+    if supplemental_metadata:
+        # Consolidating Metadata Ledger with Supplemental Ledger
+        composite_ledger_dict = {"Metadata_Ledger": row['metadata'],
+                                 "Supplemental_Ledger": supplemental_metadata[
+                                     'metadata']}
+    else:
+        composite_ledger_dict = {"Metadata_Ledger": row['metadata'],
+                                 "Supplemental_Ledger": None}
     return composite_ledger_dict, supplemental_metadata
 
 
