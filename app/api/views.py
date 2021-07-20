@@ -103,7 +103,7 @@ def metadata_list(request):
 
 
 @api_view(['POST'])
-def supplemental_list(request):
+def create_supplemental_metadata_record(request):
     """Handles creating metadata record"""
 
     # Obtaining key value for comparison of records in metadata ledger

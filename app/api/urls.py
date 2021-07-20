@@ -10,7 +10,7 @@ app_name = 'api'
 urlpatterns = [
     path('metadata/', views.metadata_list,
          name='metadata'),
-    path('supplemental-data/', views.supplemental_list,
+    path('supplemental-data/', views.create_supplemental_metadata_record,
          name='supplemental-data'),
     path('catalogs/', views.get_course_providers),
     path('metadata/<str:course_id>/', views.record_for_requested_course_id,
