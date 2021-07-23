@@ -77,13 +77,15 @@ class MetadataLedger(models.Model):
 
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
+    RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
+                                          ('Pending', 'P'), ('Ready', 'R')]
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
     composite_ledger_transmission_status = \
         models.CharField(max_length=10,
                          blank=True,
-                         default='N',
-                         choices=METADATA_VALIDATION_CHOICES)
+                         default='Ready',
+                         choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     date_validated = models.DateTimeField(blank=True, null=True)
@@ -104,26 +106,23 @@ class MetadataLedger(models.Model):
 class SupplementalLedger(models.Model):
     """Model for SupplementalLedger"""
 
-    METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    agent_name = models.CharField(max_length=255)
+    RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
+                                          ('Pending', 'P'), ('Ready', 'R')]
+
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
     composite_ledger_transmission_status = \
         models.CharField(max_length=10,
                          blank=True,
-                         default='N',
-                         choices=METADATA_VALIDATION_CHOICES)
+                         default='Ready',
+                         choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
-    date_validated = models.DateTimeField(blank=True, null=True)
     metadata = models.JSONField(blank=True)
     metadata_hash = models.TextField(max_length=200)
     metadata_key = models.TextField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
-    metadata_validation_status = \
-        models.CharField(max_length=10, blank=True,
-                         choices=METADATA_VALIDATION_CHOICES)
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)

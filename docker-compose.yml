@@ -36,7 +36,6 @@ services:
       REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.pem'
       AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.pem'
       SECRET_KEY_VAL: "${SECRET_KEY_VAL}"
-      ES_ENDPOINT: "${ES_ENDPOINT}"
       LOG_PATH: "${LOG_PATH}"
       CELERY_BROKER_URL: "${CELERY_BROKER_URL}"
       CELERY_RESULT_BACKEND: "${CELERY_RESULT_BACKEND}"
@@ -61,6 +60,8 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
+    networks:
+      - openlxp
 
   redis:
     image: redis:alpine

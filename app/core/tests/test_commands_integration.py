@@ -1,15 +1,14 @@
 import logging
-import os
 from unittest.mock import patch
 
 from ddt import ddt
 from django.test import tag
 
-from core.management.commands.load_index_agents import (
-    check_records_to_load_into_xse, post_data_to_xse)
-from core.management.commands.merge_metadata_in_composite_ledger import (
+from core.management.commands.consolidate_ledgers import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
+from core.management.commands.load_metadata_into_xse import (
+    check_records_to_load_into_xse, post_data_to_xse)
 from core.models import CompositeLedger, MetadataLedger
 
 from .test_setup import TestSetUp
@@ -20,73 +19,16 @@ logger = logging.getLogger('dict_config_logger')
 @tag('integration')
 @ddt
 class CommandIntegration(TestSetUp):
-    """Test cases for merge_metadata_in_composite_ledger """
-    meta_value = {"metadata": {
-        "Course": {
-            "CourseCode": "apr_06_a03_bs_enus",
-            "CourseType": "",
-            "CourseTitle": "Appium Concepts with Mac OS X",
-            "CourseAudience": "Users who need to enter GF ",
-            "DepartmentName": "DSS/CDSE",
-            "CourseDescription": "course description",
-            "CourseProviderName": "DAU",
-            "EducationalContext": "",
-            "CourseSectionDeliveryMode": "JKO"
-        },
-        "CourseInstance": {
-            "CourseURL": "https://example@data"
-        },
-        "General_Information": {
-            "EndDate": "end_date",
-            "StartDate": "start_date"
-        }
-    }}
-
-    changed_meta_value = {"metadata": {
-        "Course": {
-            "CourseCode": "apr_06_a03_bs_enus",
-            "CourseType": "",
-            "CourseTitle": "Appium Concepts with Mac OS X",
-            "CourseAudience": "Users who need to enter GF ",
-            "DepartmentName": "DSS/CDSE",
-            "CourseDescription": "course description",
-            "CourseProviderName": "DAU",
-            "EducationalContext": "",
-            "CourseSectionDeliveryMode": "JKO"
-        },
-        "CourseInstance": {
-            "CourseURL": "https://example123@data"
-        },
-        "General_Information": {
-            "EndDate": "end_date",
-            "StartDate": "start_date"
-        }
-    }}
-
-    metadata_ledger = MetadataLedger(
-        unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
-        metadata=meta_value,
-        metadata_hash='205b2df155a2dd4783087af1ad07bca8',
-        metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
-        metadata_key='DAU_oper_24_a02_bs_enus',
-        metadata_validation_status='Y',
-        record_status='Active',
-        composite_ledger_transmission_status='N', provider_name='XYZ')
-
-    composite_ledger = CompositeLedger(
-        unique_record_identifier='fe16decc-a982-40b2-bd2b-e8ab98b80a6f',
-        metadata=meta_value,
-        metadata_key_hash='52c6a7eacac672e03e6a8c60c5fa39c2',
-        record_status='Active',
-        provider_name='XYZ')
+    """Test cases for consolidate_ledgers """
 
     def test_put_metadata_ledger_into_composite_ledger(self):
         """Test to take Metadata_Ledger data to post to Composite_Ledger """
         self.metadata_ledger.save()
+        self.supplemental_ledger.save()
         data = MetadataLedger.objects.filter(
             metadata_validation_status='Y',
             record_status='Active',
-            composite_ledger_transmission_status='N').values(
+            composite_ledger_transmission_status='Ready').values(
             'unique_record_identifier',
             'metadata_key',
             'metadata_key_hash',
@@ -128,28 +70,31 @@ class CommandIntegration(TestSetUp):
         self.assertEquals(data[0].get('provider_name'),
                           result_query_composite_ledger.get('provider_name'))
 
-    @patch('core.management.commands.merge_metadata_in_composite_ledger'
-           '.put_metadata_ledger_into_composite_ledger', return_value=None)
     def test_check_metadata_ledger_transmission_ready_record_one_record(
-            self, mock_put_metadata_ledger_into_composite_ledger):
+            self):
         """Test to retrieve number of Metadata_Ledger transmission ready
         records in XIS to load into Composite_Ledger """
-        self.metadata_ledger.save()
-        check_metadata_ledger_transmission_ready_record()
-        self.assertEqual(
-            mock_put_metadata_ledger_into_composite_ledger.call_count, 1)
+        with patch('core.management.commands.consolidate_ledgers'
+                   '.put_metadata_ledger_into_composite_ledger',
+                   return_value=None
+                   ) as mock_put_metadata_ledger_into_composite_ledger:
+            self.metadata_ledger.save()
+            check_metadata_ledger_transmission_ready_record()
+            self.assertEqual(
+                mock_put_metadata_ledger_into_composite_ledger.call_count, 1)
 
-    @patch('core.management.commands.merge_metadata_in_composite_ledger'
-           '.put_metadata_ledger_into_composite_ledger', return_value=None)
-    def test_check_metadata_ledger_transmission_ready_record_zero_record(
-            self, mock_put_metadata_ledger_into_composite_ledger):
+    def test_check_metadata_ledger_transmission_ready_record_zero_record(self):
         """Test to retrieve number of Metadata_Ledger transmission ready
         records in XIS to load into Composite_Ledger """
-        check_metadata_ledger_transmission_ready_record()
-        self.assertEqual(
-            mock_put_metadata_ledger_into_composite_ledger.call_count, 0)
+        with patch('core.management.commands.consolidate_ledgers'
+                   '.put_metadata_ledger_into_composite_ledger',
+                   return_value=None
+                   ) as mock_put_metadata_ledger_into_composite_ledger:
+            check_metadata_ledger_transmission_ready_record()
+            self.assertEqual(
+                mock_put_metadata_ledger_into_composite_ledger.call_count, 0)
 
-    """Test cases for load_index_agents """
+    """Test cases for load_metadata_into_xse """
 
     def test_post_data_to_xse_created(self):
         """Test for POSTing XIS composite_ledger to XSE in JSON format when
@@ -163,43 +108,38 @@ class CommandIntegration(TestSetUp):
             'metadata_key_hash',
             'metadata')
 
-        with patch('core.management.commands.load_index_agents.'
-                   'get_elasticsearch_endpoint',
-                   return_value=os.environ.get('ES_ENDPOINT')), \
-                patch('core.management.commands.load_index_agents.'
-                      'get_elasticsearch_index', return_value='testing'):
-            post_data_to_xse(data)
+        post_data_to_xse(data)
 
-            result_query = CompositeLedger.objects.values(
-                'metadata_transmission_status_code',
-                'metadata_transmission_status',
-                'date_transmitted').filter(
-                metadata_key_hash=self.metadata_key_hash).first()
+        result_query = CompositeLedger.objects.values(
+            'metadata_transmission_status_code',
+            'metadata_transmission_status',
+            'date_transmitted').filter(
+            metadata_key_hash=self.metadata_key_hash).first()
 
-            self.assertTrue(result_query.get(
-                'metadata_transmission_status_code'))
-            self.assertEqual('Successful', result_query.get(
-                'metadata_transmission_status'))
-            self.assertTrue(result_query.get(
-                'date_transmitted'))
+        self.assertTrue(result_query.get(
+            'metadata_transmission_status_code'))
+        self.assertEqual('Successful', result_query.get(
+            'metadata_transmission_status'))
+        self.assertTrue(result_query.get(
+            'date_transmitted'))
 
-    @patch('core.management.commands.load_index_agents'
-           '.post_data_to_xse', return_value=None)
-    def test_check_records_to_load_into_xse_one_record(self,
-                                                       mock_post_data_to_xse):
+    def test_check_records_to_load_into_xse_one_record(self):
         """Test to retrieve number of Composite_Ledger records in XIS to load
          into XSE and calls the post_data_to_xis accordingly"""
-        self.composite_ledger.save()
-        check_records_to_load_into_xse()
-        self.assertEqual(
-            mock_post_data_to_xse.call_count, 1)
+        with patch('core.management.commands.load_metadata_into_xse'
+                   '.post_data_to_xse',
+                   return_value=None) as mock_post_data_to_xse:
+            self.composite_ledger.save()
+            check_records_to_load_into_xse()
+            self.assertEqual(
+                mock_post_data_to_xse.call_count, 1)
 
-    @patch('core.management.commands.load_index_agents'
-           '.post_data_to_xse', return_value=None)
-    def test_check_records_to_load_into_xse_zero_record(self,
-                                                        mock_post_data_to_xse):
+    def test_check_records_to_load_into_xse_zero_record(self):
         """Test to retrieve number of Composite_Ledger records in XIS to load
         into XSE and calls the post_data_to_xis accordingly"""
-        check_records_to_load_into_xse()
-        self.assertEqual(
-            mock_post_data_to_xse.call_count, 0)
+        with patch('core.management.commands.load_metadata_into_xse'
+                   '.post_data_to_xse', return_value=None) as \
+                mock_post_data_to_xse:
+            check_records_to_load_into_xse()
+            self.assertEqual(
+                mock_post_data_to_xse.call_count, 0)

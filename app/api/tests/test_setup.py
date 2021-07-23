@@ -161,6 +161,18 @@ class TestSetUp(APITestCase):
             "metadata_key_hash": "4f2a7da4f872e9807079ac7cb42aefb5"
         }
 
+        self.supplemental_data = {
+            "provider_name": "DAU",
+            "unique_record_identifier": "fe16decc-a982-40b2-bd2b-e8ab98b80a6f",
+            "metadata": {
+                "supplemental_data1": "sample1",
+                "supplemental_data2": "sample2"
+            },
+            "metadata_hash": "4f2a7da4f872e9807079ac7cb42aefb4",
+            "metadata_key": "DAU_apr_06_a03_bs_enus",
+            "metadata_key_hash": "4f2a7da4f872e9807079ac7cb42aefb5"
+        }
+
         self.unique_record_identifier = UUID(
             '09edea0e-6c83-40a6-951e-2acee3e99502')
         self.metadata_hash = 'df0b51d7b45ca29682e930d236963584',
@@ -192,9 +204,32 @@ class TestSetUp(APITestCase):
             }
         }
 
+        self.composite_ledger_metadata = \
+            {"Metadata_Ledger": self.metadataLedger_data_valid,
+             "Supplemental_Ledger": self.supplemental_data}
+        self.composite_ledger_metadata_invalid = \
+            {"Metadata_Ledger": self.metadataLedger_data_invalid,
+             "Supplemental_Ledger": self.supplemental_data}
+
         self.composite_ledger = CompositeLedger(
             unique_record_identifier=self.unique_record_identifier,
             metadata=self.metadata_1,
+            metadata_key=self.metadata_key,
+            metadata_key_hash=self.metadata_key_hash,
+            record_status='Active',
+            provider_name='AGENT')
+
+        self.composite_ledger_valid_data = CompositeLedger(
+            unique_record_identifier=self.unique_record_identifier,
+            metadata=self.composite_ledger_metadata,
+            metadata_key=self.metadata_key,
+            metadata_key_hash=self.metadata_key_hash,
+            record_status='Active',
+            provider_name='AGENT')
+
+        self.composite_ledger_invalid_data = CompositeLedger(
+            unique_record_identifier=self.unique_record_identifier,
+            metadata=self.composite_ledger_metadata_invalid,
             metadata_key=self.metadata_key,
             metadata_key_hash=self.metadata_key_hash,
             record_status='Active',

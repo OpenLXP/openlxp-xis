@@ -3,7 +3,8 @@ from uuid import UUID
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import CompositeLedger, MetadataLedger, XISConfiguration
+from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
+                         XISConfiguration)
 
 
 class TestSetUp(TestCase):
@@ -14,7 +15,9 @@ class TestSetUp(TestCase):
 
         # globally accessible data sets
         self.metadata_url = reverse('api:metadata')
-        XISConfiguration.objects.create(target_schema='p2881_schema.json')
+        XISConfiguration.objects.create(target_schema='p2881_schema.json',
+                                        xse_host='http://es01:9200/',
+                                        xse_index='testing_index')
 
         self.metadata = {
             "Course": {
@@ -69,6 +72,12 @@ class TestSetUp(TestCase):
                 "StartDate": "start_date"
             }
         }
+        self.supplement_metadata = {
+            "Field1": "ABC",
+            "Field2": "123",
+            "Field3": "ABC-123"
+        }
+
         self.metadata_ledger = MetadataLedger(
             unique_record_identifier=self.unique_record_identifier,
             metadata=self.metadata,
@@ -77,11 +86,32 @@ class TestSetUp(TestCase):
             metadata_key=self.metadata_key,
             metadata_validation_status='Y',
             record_status='Active',
-            composite_ledger_transmission_status='N', provider_name='AGENT')
+            composite_ledger_transmission_status='Ready',
+            provider_name='AGENT')
+
+        self.supplemental_ledger = SupplementalLedger(
+            unique_record_identifier=self.unique_record_identifier,
+            metadata=self.supplement_metadata,
+            metadata_hash=self.metadata_hash,
+            metadata_key_hash=self.metadata_key_hash,
+            metadata_key=self.metadata_key,
+            record_status='Active',
+            composite_ledger_transmission_status='Ready',
+            provider_name='AGENT')
+
+        self.composite_ledger_dict = {"Metadata_Ledger": self.metadata,
+                                      "Supplemental_Ledger":
+                                          self.supplement_metadata}
+
+        self.composite_ledger_dict_xse = {
+            "Supplemental_Ledger": self.supplement_metadata}
+
+        self.composite_ledger_dict_xse_updated = \
+            self.composite_ledger_dict_xse.update(self.metadata)
 
         self.composite_ledger = CompositeLedger(
             unique_record_identifier=self.unique_record_identifier,
-            metadata=self.metadata,
+            metadata=self.composite_ledger_dict,
             metadata_key=self.metadata_key,
             metadata_key_hash=self.metadata_key_hash,
             record_status='Active',
@@ -140,7 +170,6 @@ class TestSetUp(TestCase):
                 }
             },
             '_id': '6acf7689ea81a1f792e7668a23b1acf5'
-
         }
 
         self.test_required_column_names = []
