@@ -62,6 +62,21 @@ def metadata_list(request):
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
+
+        # case a list of metadata key hashes sent as query parameter e.g a,b,c
+        if request.GET.get('metadata_key_hash'):
+            metadata_key_hash_param = request.GET.get('metadata_key_hash')
+            hashes = metadata_key_hash_param.split(',')
+            querySet = querySet.filter(metadata_key_hash__in=hashes)
+
+            if not querySet:
+                errorMsg = {
+                    "message": "Error; no metadata key hash found for: "
+                    + metadata_key_hash_param
+                }
+
+                return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
+
         try:
             serializer_class = CompositeLedgerSerializer(querySet, many=True)
         except HTTPError as http_err:
