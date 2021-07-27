@@ -292,3 +292,32 @@ class ViewTests(TestSetUp):
 
             self.assertEqual(response.status_code,
                              status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def test_get_record_by_key_hashes(self):
+        """Test that the /api/metadata/?metadata_key_hash_list= returns a
+            list of records for each found hash"""
+        key_list = self.metadata_key_hash[0]
+        self.composite_ledger_valid_data.save()
+        url = "%s?metadata_key_hash_list=%s" \
+            % (reverse('api:metadata'), key_list)
+
+        response = self.client.get(url)
+        responseDict = json.loads(response.content)
+
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+        self.assertEqual(len(responseDict), 1)
+        self.assertEqual(responseDict[0]["metadata_key_hash"],
+                         self.metadata_key_hash[0])
+
+    def test_get_record_by_key_hashes_not_found(self):
+        """Test that the /api/metadata/?metadata_key_hash_list= returns an
+            error if no record is found"""
+        key_list = "1234,456,789"
+        url = "%s?metadata_key_hash_list=%s" \
+            % (reverse('api:metadata'), key_list)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code,
+                         status.HTTP_400_BAD_REQUEST)

@@ -63,16 +63,17 @@ def metadata_list(request):
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
 
-        # case a list of metadata key hashes sent as query parameter e.g a,b,c
-        if request.GET.get('metadata_key_hash'):
-            metadata_key_hash_param = request.GET.get('metadata_key_hash')
+        # case where a list of metadata key hashes is sent as query parameter
+        # e.g a,b,c
+        if request.GET.get('metadata_key_hash_list'):
+            metadata_key_hash_param = request.GET.get('metadata_key_hash_list')
             hashes = metadata_key_hash_param.split(',')
             querySet = querySet.filter(metadata_key_hash__in=hashes)
 
             if not querySet:
                 errorMsg = {
-                    "message": "Error; no metadata key hash found for: "
-                    + metadata_key_hash_param
+                    "message": "Error; no record found for any of the "
+                    + "following key hashes: " + metadata_key_hash_param
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)

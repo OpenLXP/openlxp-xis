@@ -223,7 +223,7 @@ class TestSetUp(APITestCase):
             unique_record_identifier=self.unique_record_identifier,
             metadata=self.composite_ledger_metadata,
             metadata_key=self.metadata_key,
-            metadata_key_hash=self.metadata_key_hash,
+            metadata_key_hash=self.metadata_key_hash[0],
             record_status='Active',
             provider_name='AGENT')
 
