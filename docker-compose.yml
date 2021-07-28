@@ -41,7 +41,6 @@ services:
       CELERY_RESULT_BACKEND: "${CELERY_RESULT_BACKEND}"
     volumes:
       - ./app:/opt/app/openlxp-xis
-      - ${CERT_VOLUME}:/etc/ssl/certs/ca-certificates.pem
     depends_on:
       - db_xis
     networks:
@@ -75,7 +74,6 @@ services:
     command: celery -A openlxp_xis_project worker -l info
     volumes:
       - ./app:/opt/app/openlxp-xis
-      - ${CERT_VOLUME}:/etc/ssl/certs/ca-certificates.pem
     environment:
       REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.pem'
       AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.pem'
@@ -95,7 +93,6 @@ services:
     command: celery -A openlxp_xis_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info --pidfile=/tmp/celerybeat.pid
     volumes:
       - ./app:/opt/app/openlxp-xis
-      - ${CERT_VOLUME}:/etc/ssl/certs/ca-certificates.pem
     environment:
       REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.pem'
       AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.pem'
