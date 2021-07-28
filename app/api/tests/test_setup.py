@@ -235,6 +235,16 @@ class TestSetUp(APITestCase):
             record_status='Active',
             provider_name='AGENT')
 
+        self.composite_ledger_valid_data_dict = {
+            "unique_record_identifier": "09edea0e-6c83-40a6-951e-2acee3e99502",
+            "metadata": self.composite_ledger_metadata,
+            "metadata_key": self.metadata_key[0],
+            "metadata_key_hash": self.metadata_key_hash[0],
+            "record_status": 'Active',
+            "provider_name": 'AGENT',
+            "metadata_hash": "4f2a7da4f872e9807079ac7cb42aefb4"
+        }
+
         return super().setUp()
 
     def tearDown(self):

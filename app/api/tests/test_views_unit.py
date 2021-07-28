@@ -148,22 +148,22 @@ class ViewTests(TestSetUp):
     def test_patch_record_for_course_id(self):
         """Test that the /api/metadata/ID endpoint updates record with
             the matching id"""
-        doc_id = '123456'
-        url = reverse('api:record_for_requested_course_id', args=(doc_id,))
+        self.composite_ledger_valid_data.save()
+        id = self.composite_ledger_valid_data.unique_record_identifier
+        url = reverse('api:record_for_requested_course_id', args=(id,))
 
-        with patch('api.views.CompositeLedger.objects') as compositeObj, \
-                patch('api.views.CompositeLedgerSerializer') as serializer:
-            compositeObj.return_value = compositeObj
-            compositeObj.order_by.return_value = compositeObj
-            compositeObj.get.return_value = self.composite_ledger_valid_data
+        with patch('api.serializers'
+                   '.get_required_recommended_fields_for_validation') \
+                as get_lists:
+            rec_fields = []
+            req_fields = []
+            get_lists.return_value = rec_fields, req_fields
 
-            serializer.return_value = serializer
-            serializer.is_valid.return_value = True
-            serializer.save.return_value = serializer
-            serializer.data = self.composite_ledger_metadata
-            dataJSON = json.dumps(self.composite_ledger_metadata)
+            dataJSON = json.dumps(self.composite_ledger_valid_data_dict)
 
-            response = self.client.patch(url, json=dataJSON)
+            response = self.client.patch(url,
+                                         data=dataJSON,
+                                         content_type='application/json')
             responseDict = json.loads(response.content)
 
             self.assertEqual(response.status_code,
@@ -187,29 +187,34 @@ class ViewTests(TestSetUp):
             serializer.is_valid.return_value = False
             serializer.save.return_value = serializer
             serializer.data = self.composite_ledger_metadata_invalid
+            serializer.errors = {}
             dataJSON = json.dumps(self.composite_ledger_metadata_invalid)
 
-            response = self.client.patch(url, json=dataJSON)
+            response = self.client.patch(url,
+                                         data=dataJSON,
+                                         content_type='application/json')
             responseDict = json.loads(response.content)
 
             self.assertEqual(response.status_code,
                              status.HTTP_500_INTERNAL_SERVER_ERROR)
-            self.assertEqual(responseDict,
-                             {"message": "Data is not valid for update"})
+            self.assertEqual(responseDict["message"],
+                             "Data is not valid for update")
 
     def test_post_record_valid(self):
         """Test that sending a POST request to the /api/metadata endpoint
             succeeds and returns unique record identifier for the new record"""
         url = reverse('api:metadata')
 
-        with patch('api.views.MetadataLedgerSerializer') as serializer:
-            serializer.return_value = serializer
-            serializer.is_valid.return_value = True
-            serializer.save.return_value = serializer
-            serializer.data = self.metadataLedger_data_valid
+        with patch('api.serializers'
+                   '.get_required_recommended_fields_for_validation') \
+                as get_lists:
+            rec_fields = []
+            req_fields = []
+            get_lists.return_value = rec_fields, req_fields
             dataJSON = json.dumps(self.metadataLedger_data_valid)
 
-            response = self.client.post(url, json=dataJSON)
+            response = self.client.post(url, dataJSON,
+                                        content_type='application/json')
             responseDict = json.loads(response.content)
             uid = self.metadataLedger_data_valid['unique_record_identifier']
 
@@ -243,14 +248,16 @@ class ViewTests(TestSetUp):
         record"""
         url = reverse('api:supplemental-data')
 
-        with patch('api.views.SupplementalLedgerSerializer') as serializer:
-            serializer.return_value = serializer
-            serializer.is_valid.return_value = True
-            serializer.save.return_value = serializer
-            serializer.data = self.supplemental_data
+        with patch('api.serializers'
+                   '.get_required_recommended_fields_for_validation') \
+                as get_lists:
+            rec_fields = []
+            req_fields = []
+            get_lists.return_value = rec_fields, req_fields
             dataJSON = json.dumps(self.supplemental_data)
 
-            response = self.client.post(url, json=dataJSON)
+            response = self.client.post(url, dataJSON,
+                                        content_type='application/json')
             responseDict = json.loads(response.content)
             uid = self.supplemental_data['unique_record_identifier']
 
