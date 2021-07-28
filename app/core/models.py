@@ -2,7 +2,7 @@ from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
 
-from core.utils.notification import email_verification
+from core.management.utils.notification import email_verification
 
 
 class XISConfiguration(models.Model):

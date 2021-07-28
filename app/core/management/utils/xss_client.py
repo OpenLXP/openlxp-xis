@@ -4,8 +4,8 @@ import os
 
 import boto3
 
+from core.management.utils.xis_internal import dict_flatten
 from core.models import XISConfiguration
-from core.utils.xis_internal import dict_flatten
 
 logger = logging.getLogger('dict_config_logger')
 

@@ -3,13 +3,14 @@ from unittest.mock import patch
 from ddt import data, ddt
 from django.test import tag
 
+from core.management.utils.notification import send_notifications
+from core.management.utils.xis_internal import (dict_flatten,
+                                                flatten_dict_object,
+                                                flatten_list_object,
+                                                update_flattened_object)
+from core.management.utils.xse_client import (get_elasticsearch_endpoint,
+                                              get_elasticsearch_index)
 from core.models import XISConfiguration
-from core.utils.notification import send_notifications
-from core.utils.xis_internal import (dict_flatten, flatten_dict_object,
-                                     flatten_list_object,
-                                     update_flattened_object)
-from core.utils.xse_client import (get_elasticsearch_endpoint,
-                                   get_elasticsearch_index)
 
 from .test_setup import TestSetUp
 
@@ -27,11 +28,11 @@ class UtilsTests(TestSetUp):
                           "key3": [{"sub_key2": "sub_value2"},
                                    {"sub_key3": "sub_value3"}]}
 
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -53,11 +54,11 @@ class UtilsTests(TestSetUp):
         prefix = 'a'
         flatten_dict = {}
         required_list = ['a.b', 'a.c', 'd']
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -77,11 +78,11 @@ class UtilsTests(TestSetUp):
         prefix = 'a'
         flatten_dict = {}
         required_list = ['a.b', 'd']
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_update_flattened
             mock_flatten_dict.return_value = mock_flatten_list()
@@ -96,11 +97,11 @@ class UtilsTests(TestSetUp):
         """Test the function to flatten list object when the value is list"""
         prefix = 'test'
         flatten_dict = []
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -119,11 +120,11 @@ class UtilsTests(TestSetUp):
         """Test the function to flatten list object when the value is dict"""
         prefix = 'test'
         flatten_dict = []
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -142,11 +143,11 @@ class UtilsTests(TestSetUp):
         """Test the function to flatten list object when the value is string"""
         prefix = 'test'
         flatten_dict = []
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -165,11 +166,11 @@ class UtilsTests(TestSetUp):
         a dict"""
         prefix = 'test'
         flatten_dict = []
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -189,11 +190,11 @@ class UtilsTests(TestSetUp):
         a list"""
         prefix = 'test'
         flatten_dict = []
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -213,11 +214,11 @@ class UtilsTests(TestSetUp):
         a string"""
         prefix = 'test'
         flatten_dict = []
-        with patch('core.utils.xis_internal.flatten_list_object') \
+        with patch('core.management.utils.xis_internal.flatten_list_object') \
                 as mock_flatten_list, \
-                patch('core.utils.xis_internal.flatten_dict_'
+                patch('core.management.utils.xis_internal.flatten_dict_'
                       'object') as mock_flatten_dict, \
-                patch('core.utils.xis_internal.update_flattened_'
+                patch('core.management.utils.xis_internal.update_flattened_'
                       'object') as mock_update_flattened:
             mock_flatten_list.return_value = mock_flatten_list
             mock_flatten_list.return_value = None
@@ -244,8 +245,8 @@ class UtilsTests(TestSetUp):
     def test_get_elasticsearch_endpoint(self):
         """This test is to check if function returns the elasticsearch
         endpoint """
-        with patch('core.utils.xse_client.XISConfiguration.objects') as \
-                xis_config:
+        with patch('core.management.utils.xse_client.XISConfiguration.objects'
+                   ) as xis_config:
             configObj = XISConfiguration(target_schema="test.json",
                                          xse_host="host:8080",
                                          xse_index="test-index")
@@ -256,8 +257,8 @@ class UtilsTests(TestSetUp):
 
     def test_get_elasticsearch_index(self):
         """This test is to check if function returns the elasticsearch index"""
-        with patch('core.utils.xse_client.XISConfiguration.objects') as \
-                xis_config:
+        with patch('core.management.utils.xse_client.XISConfiguration.objects'
+                   ) as xis_config:
             configObj = XISConfiguration(target_schema="test.json",
                                          xse_host="host:8080",
                                          xse_index="test-index")
@@ -269,9 +270,9 @@ class UtilsTests(TestSetUp):
 # Test cases for NOTIFICATION
     def test_send_notifications(self):
         """Test for function to send emails of log file to personas"""
-        with patch('core.utils.notification'
+        with patch('core.management.utils.notification'
                    '.EmailMessage') as mock_send, \
-                patch('core.utils.notification'
+                patch('core.management.utils.notification'
                       '.boto3.client'):
             send_notifications(self.receive_email_list, self.sender_email)
             self.assertEqual(mock_send.call_count, 2)

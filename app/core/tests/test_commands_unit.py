@@ -12,8 +12,8 @@ from core.management.commands.consolidate_ledgers import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
 from core.management.commands.load_metadata_into_xse import (
-    check_records_to_load_into_xse, create_xse_json_document,
-    post_data_to_xse, renaming_xis_for_posting_to_xse)
+    check_records_to_load_into_xse, create_xse_json_document, post_data_to_xse,
+    renaming_xis_for_posting_to_xse)
 from core.models import (CompositeLedger, MetadataLedger,
                          ReceiverEmailConfiguration, SenderEmailConfiguration)
 

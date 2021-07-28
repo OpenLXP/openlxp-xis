@@ -7,9 +7,9 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 
+from core.management.utils.xse_client import (get_elasticsearch_endpoint,
+                                              get_elasticsearch_index)
 from core.models import CompositeLedger
-from core.utils.xse_client import (get_elasticsearch_endpoint,
-                                   get_elasticsearch_index)
 
 es = Elasticsearch()
 
