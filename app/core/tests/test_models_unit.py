@@ -1,13 +1,13 @@
-from django.test import SimpleTestCase, tag
+from django.test import TestCase, tag
 from django.utils import timezone
-
+from django.core.exceptions import ValidationError
 from core.models import (CompositeLedger, MetadataLedger,
                          ReceiverEmailConfiguration, SenderEmailConfiguration,
                          SupplementalLedger, XISConfiguration)
 
 
 @tag('unit')
-class ModelTests(SimpleTestCase):
+class ModelTests(TestCase):
 
     def test_create_xis_configuration(self):
         """Test that creating a new XIS Configuration entry is successful
@@ -180,3 +180,12 @@ class ModelTests(SimpleTestCase):
             email_address=email_address)
         self.assertEqual(receiver_email_Config.email_address,
                          email_address)
+
+    def test_create_two_xis_configuration(self):
+        """Test that trying to create more than one XIS Configuration throws
+        ValidationError """
+        with self.assertRaises(ValidationError):
+            xisConfig = XISConfiguration(target_schema="example1.json")
+            xisConfig2 = XISConfiguration(target_schema="example2.json")
+            xisConfig.save()
+            xisConfig2.save()

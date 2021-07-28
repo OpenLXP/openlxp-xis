@@ -5,7 +5,6 @@ logger = logging.getLogger('dict_config_logger')
 
 def required_recommended_logs(id_num, category, field):
     """logs the missing required and recommended """
-
     # Logs the missing required columns
     if category == 'Required':
         logger.error(

@@ -50,24 +50,9 @@ class CommandTests(TestSetUp):
         """Test for POSTing XIA metadata_ledger to XIS metadata_ledger
         when data is not present"""
         data = []
-        with patch(
-                'core.management.commands.consolidate_ledgers'
-                '.MetadataLedger.objects') as meta_obj, \
-                patch(
-                    'core.management.commands.'
-                    'consolidate_ledgers.CompositeLedger.'
-                    'objects') as composite_obj, \
-                patch('core.management.commands.'
-                      'consolidate_ledgers'
-                      '.check_metadata_ledger_transmission_ready_record',
-                      return_value=None) as mock_check_records_to_load:
-            composite_obj.return_value = composite_obj
-            meta_obj.return_value = meta_obj
-            composite_obj.exclude.return_value = composite_obj
-            composite_obj.update.return_value = composite_obj
-            composite_obj.filter.side_effect = [composite_obj, composite_obj,
-                                                composite_obj]
-
+        with patch('core.management.commands.consolidate_ledgers'
+                   '.check_metadata_ledger_transmission_ready_record',
+                   return_value=None) as mock_check_records_to_load:
             put_metadata_ledger_into_composite_ledger(data)
             self.assertEqual(mock_check_records_to_load.call_count, 1)
 
