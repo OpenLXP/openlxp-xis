@@ -145,6 +145,25 @@ class CommandTests(TestSetUp):
                 self.assertEquals(self.supplement_metadata,
                                   supplemental_metadata)
 
+    def test_append_metadata_ledger_without_supplemental_ledger(self):
+        """Test to get supplemental metadata to further merge it into metadata
+        ledger"""
+        with patch('core.management.commands.'
+                   'consolidate_ledgers.SupplementalLedger.objects',
+                   return_value=None), \
+                patch('core.management.commands.consolidate_ledgers.'
+                      'MetadataLedger.objects') as meta_obj:
+            meta_obj.return_value = meta_obj
+            meta_obj.filter.return_value = self.metadata_ledger
+            meta_obj.first.return_value = meta_obj
+
+            for row in meta_obj:
+                composite_ledger_dict, supplemental_metadata = \
+                    append_metadata_ledger_with_supplemental_ledger(row)
+
+                self.assertTrue(composite_ledger_dict)
+                self.assertTrue(supplemental_metadata)
+
     """Test cases for load_metadata_into_xse """
 
     def test_renaming_xis_for_posting_to_xse(self):
