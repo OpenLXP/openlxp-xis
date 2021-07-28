@@ -41,7 +41,6 @@ services:
       CELERY_RESULT_BACKEND: "${CELERY_RESULT_BACKEND}"
     volumes:
       - ./app:/opt/app/openlxp-xis
-      - ${CERT_VOLUME}:/etc/ssl/certs/ca-certificates.pem 
     depends_on:
       - db_xis
     networks:
