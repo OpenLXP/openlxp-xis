@@ -1,12 +1,13 @@
-from django.test import SimpleTestCase, tag
+from django.test import TestCase, tag
 from django.utils import timezone
-
-from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
-                         XISConfiguration)
+from django.core.exceptions import ValidationError
+from core.models import (CompositeLedger, MetadataLedger,
+                         ReceiverEmailConfiguration, SenderEmailConfiguration,
+                         SupplementalLedger, XISConfiguration)
 
 
 @tag('unit')
-class ModelTests(SimpleTestCase):
+class ModelTests(TestCase):
 
     def test_create_xis_configuration(self):
         """Test that creating a new XIS Configuration entry is successful
@@ -161,3 +162,30 @@ class ModelTests(SimpleTestCase):
                          record_status)
         self.assertEqual(composite_ledger.date_deleted,
                          date_deleted)
+
+    def test_create_sender_email_config(self):
+        """Test that creating a new Sender Email Configuration entry is
+            successful with defaults """
+        sender_email_address = 'example@test.com'
+        sender_email_Config = SenderEmailConfiguration(
+            sender_email_address=sender_email_address)
+        self.assertEqual(sender_email_Config.sender_email_address,
+                         sender_email_address)
+
+    def test_create_receiver_email_config(self):
+        """Test that creating a new Receiver Email Configuration entry is
+            successful with defaults """
+        email_address = 'example@test.com'
+        receiver_email_Config = ReceiverEmailConfiguration(
+            email_address=email_address)
+        self.assertEqual(receiver_email_Config.email_address,
+                         email_address)
+
+    def test_create_two_xis_configuration(self):
+        """Test that trying to create more than one XIS Configuration throws
+        ValidationError """
+        with self.assertRaises(ValidationError):
+            xisConfig = XISConfiguration(target_schema="example1.json")
+            xisConfig2 = XISConfiguration(target_schema="example2.json")
+            xisConfig.save()
+            xisConfig2.save()

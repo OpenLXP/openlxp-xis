@@ -12,8 +12,8 @@ from core.management.commands.consolidate_ledgers import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
 from core.management.commands.load_metadata_into_xse import (
-    check_records_to_load_into_xse, create_xse_json_document,
-    post_data_to_xse, renaming_xis_for_posting_to_xse)
+    check_records_to_load_into_xse, create_xse_json_document, post_data_to_xse,
+    renaming_xis_for_posting_to_xse)
 from core.models import (CompositeLedger, MetadataLedger,
                          ReceiverEmailConfiguration, SenderEmailConfiguration)
 
@@ -50,24 +50,9 @@ class CommandTests(TestSetUp):
         """Test for POSTing XIA metadata_ledger to XIS metadata_ledger
         when data is not present"""
         data = []
-        with patch(
-                'core.management.commands.consolidate_ledgers'
-                '.MetadataLedger.objects') as meta_obj, \
-                patch(
-                    'core.management.commands.'
-                    'consolidate_ledgers.CompositeLedger.'
-                    'objects') as composite_obj, \
-                patch('core.management.commands.'
-                      'consolidate_ledgers'
-                      '.check_metadata_ledger_transmission_ready_record',
-                      return_value=None) as mock_check_records_to_load:
-            composite_obj.return_value = composite_obj
-            meta_obj.return_value = meta_obj
-            composite_obj.exclude.return_value = composite_obj
-            composite_obj.update.return_value = composite_obj
-            composite_obj.filter.side_effect = [composite_obj, composite_obj,
-                                                composite_obj]
-
+        with patch('core.management.commands.consolidate_ledgers'
+                   '.check_metadata_ledger_transmission_ready_record',
+                   return_value=None) as mock_check_records_to_load:
             put_metadata_ledger_into_composite_ledger(data)
             self.assertEqual(mock_check_records_to_load.call_count, 1)
 
@@ -144,6 +129,25 @@ class CommandTests(TestSetUp):
                 self.assertTrue(composite_ledger_dict)
                 self.assertEquals(self.supplement_metadata,
                                   supplemental_metadata)
+
+    def test_append_metadata_ledger_without_supplemental_ledger(self):
+        """Test to get supplemental metadata to further merge it into metadata
+        ledger"""
+        with patch('core.management.commands.'
+                   'consolidate_ledgers.SupplementalLedger.objects',
+                   return_value=None), \
+                patch('core.management.commands.consolidate_ledgers.'
+                      'MetadataLedger.objects') as meta_obj:
+            meta_obj.return_value = meta_obj
+            meta_obj.filter.return_value = self.metadata_ledger
+            meta_obj.first.return_value = meta_obj
+
+            for row in meta_obj:
+                composite_ledger_dict, supplemental_metadata = \
+                    append_metadata_ledger_with_supplemental_ledger(row)
+
+                self.assertTrue(composite_ledger_dict)
+                self.assertTrue(supplemental_metadata)
 
     """Test cases for load_metadata_into_xse """
 

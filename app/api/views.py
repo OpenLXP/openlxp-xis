@@ -62,6 +62,22 @@ def metadata_list(request):
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
+
+        # case where a list of metadata key hashes is sent as query parameter
+        # e.g a,b,c
+        if request.GET.get('metadata_key_hash_list'):
+            metadata_key_hash_param = request.GET.get('metadata_key_hash_list')
+            hashes = metadata_key_hash_param.split(',')
+            querySet = querySet.filter(metadata_key_hash__in=hashes)
+
+            if not querySet:
+                errorMsg = {
+                    "message": "Error; no record found for any of the "
+                    + "following key hashes: " + metadata_key_hash_param
+                }
+
+                return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
+
         try:
             serializer_class = CompositeLedgerSerializer(querySet, many=True)
         except HTTPError as http_err:
@@ -182,7 +198,10 @@ def record_for_requested_course_id(request, course_id):
                 serializer.save()
                 res = {"message": "Data updated successfully"}
                 return Response(res, status.HTTP_200_OK)
-            res = {"message": "Data is not valid for update"}
+            res = {
+                    "message": "Data is not valid for update",
+                    "errors": serializer.errors
+            }
             return Response(res, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

@@ -6,8 +6,8 @@ from core.management.commands.conformance_alerts import \
     Command as conformance_alerts
 from core.management.commands.consolidate_ledgers import \
     Command as consolidate_ledgers
-from core.management.commands.load_metadata_into_xse \
-    import Command as load_metadata
+from core.management.commands.load_metadata_into_xse import \
+    Command as load_metadata
 
 logger = logging.getLogger('dict_config_logger')
 

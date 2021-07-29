@@ -3,10 +3,11 @@ import logging
 from django.utils import timezone
 from rest_framework import serializers
 
-from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
-from core.utils.xis_internal import dict_flatten, required_recommended_logs
-from core.utils.xss_client import \
+from core.management.utils.xis_internal import (dict_flatten,
+                                                required_recommended_logs)
+from core.management.utils.xss_client import \
     get_required_recommended_fields_for_validation
+from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
 
 logger = logging.getLogger('dict_config_logger')
 

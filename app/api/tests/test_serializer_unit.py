@@ -14,12 +14,13 @@ class SerializerTests(TestSetUp):
 
     def test_MetadataLedgerSerializer_validate(self):
         """Test to check validation in metadata serializer"""
-        with patch('core.utils.xss_client'
+        with patch('core.management.utils.xss_client'
                    '.get_required_recommended_fields_for_validation') as \
                 mock_validate_list, \
-                patch('core.utils.xss_client.get_target_validation_schema',
+                patch('core.management.utils.xss_client.'
+                      'get_target_validation_schema',
                       return_value=self.target_data_dict), \
-                patch('core.utils.xss_client.read_json_data',
+                patch('core.management.utils.xss_client.read_json_data',
                       return_value=None):
             mock_validate_list.return_value = self.required_dict, \
                                               self.recommended_dict

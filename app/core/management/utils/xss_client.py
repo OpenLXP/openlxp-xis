@@ -4,13 +4,14 @@ import os
 
 import boto3
 
+from core.management.utils.xis_internal import dict_flatten
 from core.models import XISConfiguration
-from core.utils.xis_internal import dict_flatten
 
 logger = logging.getLogger('dict_config_logger')
 
 
 def aws_get():
+    """Function to get aws bucket name from env file"""
     bucket_name = os.environ.get('BUCKET_NAME')
     return bucket_name
 
@@ -26,7 +27,7 @@ def read_json_data(file_name):
 
 
 def get_target_validation_schema():
-    """Retrieve target validation schema from XIA configuration """
+    """Retrieve target validation schema from XIS configuration """
     logger.info("Configuration of schemas and files")
     data = XISConfiguration.objects.first()
     target_validation_schema = data.target_schema

@@ -3,10 +3,12 @@ name: Docker CD
 on:
   push:
     branches: 
-      - main
+#      - main
+      - key-hash-api
   pull_request:
     branches: 
-      - main
+#      - main
+      - key-hash-api
 jobs:
   code-test:
 # Kicks off the workflow and prepares Github to run coverage test using a ubuntu-latest container.
