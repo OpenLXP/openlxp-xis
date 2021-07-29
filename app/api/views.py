@@ -200,7 +200,7 @@ def record_for_requested_course_id(request, course_id):
                 return Response(res, status.HTTP_200_OK)
             res = {
                     "message": "Data is not valid for update",
-                    "erors": serializer.errors
+                    "errors": serializer.errors
             }
             return Response(res, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
