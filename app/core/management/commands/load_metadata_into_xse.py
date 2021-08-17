@@ -85,8 +85,7 @@ def check_records_to_load_into_xse():
     calls the post_data_to_xis accordingly"""
 
     data = CompositeLedger.objects.filter(
-        record_status='Active',
-        metadata_transmission_status='Ready').values(
+        record_status='Active').values(
         'metadata_key_hash',
         'metadata')
 
