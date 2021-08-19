@@ -1,11 +1,15 @@
 import json
 import logging
+import socket
+
+import elasticsearch
 from django.db.models import Q
 import requests
 from django.core.management.base import BaseCommand
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from elasticsearch import Elasticsearch
+from urllib.error import HTTPError
 
 from core.management.utils.xse_client import (get_elasticsearch_endpoint,
                                               get_elasticsearch_index)
@@ -71,6 +75,14 @@ def post_data_to_xse(data):
                 metadata_key_hash=metadata_key_hash_val).update(
                 metadata_transmission_status='Failed')
             raise SystemExit('Exiting! Can not make connection with XSE.')
+
+        except elasticsearch.exceptions.ConnectionError as e:
+            logging.error(e)
+            CompositeLedger.objects.filter(
+                metadata_key_hash=metadata_key_hash_val).update(
+                metadata_transmission_status='Failed')
+            raise SystemExit('Exiting! Connection error with elastic search')
+
     check_records_to_load_into_xse()
 
 
