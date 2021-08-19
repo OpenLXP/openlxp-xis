@@ -1,6 +1,6 @@
 import json
 import logging
-
+from django.db.models import Q
 import requests
 from django.core.management.base import BaseCommand
 from django.core.serializers.json import DjangoJSONEncoder
@@ -66,6 +66,10 @@ def post_data_to_xse(data):
 
         except requests.exceptions.RequestException as e:
             logger.error(e)
+            # Updating status in XIS metadata_ledger to 'Failed'
+            CompositeLedger.objects.filter(
+                metadata_key_hash=metadata_key_hash_val).update(
+                metadata_transmission_status='Failed')
             raise SystemExit('Exiting! Can not make connection with XSE.')
     check_records_to_load_into_xse()
 
@@ -84,9 +88,12 @@ def check_records_to_load_into_xse():
     """Retrieve number of Composite_Ledger records in XIS to load into XSE and
     calls the post_data_to_xis accordingly"""
 
-    data = CompositeLedger.objects.filter(
-        record_status='Active',
-        metadata_transmission_status='Ready').values(
+    combined_query = CompositeLedger.objects.filter(
+        Q(metadata_transmission_status='Ready') | Q(
+            metadata_transmission_status='Failed'))
+
+    data = combined_query.filter(
+        record_status='Active').values(
         'metadata_key_hash',
         'metadata')
 
