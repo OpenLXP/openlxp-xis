@@ -1,6 +1,5 @@
 import json
 import logging
-import socket
 
 import elasticsearch
 from django.db.models import Q
@@ -9,7 +8,6 @@ from django.core.management.base import BaseCommand
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from elasticsearch import Elasticsearch
-from urllib.error import HTTPError
 
 from core.management.utils.xse_client import (get_elasticsearch_endpoint,
                                               get_elasticsearch_index)
@@ -88,8 +86,18 @@ def post_data_to_xse(data):
 
 def create_xse_json_document(row):
     """ Function to Create nested json for XSE """
-    composite_ledger_dict = {"Supplemental_Ledger": row['metadata'][
-        'Supplemental_Ledger']}
+
+    # Removing empty/Null data fields in supplemental data to be sent to XSE
+    supplemental_data = {k: v for k, v in row['metadata'][
+        'Supplemental_Ledger'].items() if v}
+
+    composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
+
+    for item in row['metadata']['Metadata_Ledger']:
+        # Removing empty/Null data fields in metadata to be sent to XSE
+        for item_nested in row['metadata']['Metadata_Ledger'][item]:
+            if not row['metadata']['Metadata_Ledger'][item][item_nested]:
+                row['metadata']['Metadata_Ledger'][item][item_nested] = None
 
     composite_ledger_dict.update(row['metadata']['Metadata_Ledger'])
 
