@@ -80,6 +80,12 @@ def post_data_to_xse(data):
                 metadata_key_hash=metadata_key_hash_val).update(
                 metadata_transmission_status='Failed')
             raise SystemExit('Exiting! Connection error with elastic search')
+        except elasticsearch.exceptions.RequestError as e:
+            logging.error(e)
+            CompositeLedger.objects.filter(
+                metadata_key_hash=metadata_key_hash_val).update(
+                metadata_transmission_status='Pending')
+            continue
 
     check_records_to_load_into_xse()
 
@@ -119,6 +125,10 @@ def check_records_to_load_into_xse():
 
     # Checking available no. of records in XIA to load into XIS is Zero or not
     if len(data) == 0:
+        # Making Pending records to failed
+        status_update = CompositeLedger.objects.filter(
+            metadata_transmission_status='Pending').update(
+            metadata_transmission_status='Failed')
         logger.info("Data Loading in XSE is complete, Zero records are "
                     "available in XIS to transmit")
     else:
