@@ -90,7 +90,7 @@ DATABASES = {
 
 EMAIL_BACKEND = 'django_ses.SESBackend'
 
-DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
