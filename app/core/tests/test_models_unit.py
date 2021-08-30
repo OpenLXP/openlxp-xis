@@ -2,7 +2,6 @@ from django.test import TestCase, tag
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from core.models import (CompositeLedger, MetadataLedger,
-                         ReceiverEmailConfiguration, SenderEmailConfiguration,
                          SupplementalLedger, XISConfiguration)
 
 
@@ -162,24 +161,6 @@ class ModelTests(TestCase):
                          record_status)
         self.assertEqual(composite_ledger.date_deleted,
                          date_deleted)
-
-    def test_create_sender_email_config(self):
-        """Test that creating a new Sender Email Configuration entry is
-            successful with defaults """
-        sender_email_address = 'example@test.com'
-        sender_email_Config = SenderEmailConfiguration(
-            sender_email_address=sender_email_address)
-        self.assertEqual(sender_email_Config.sender_email_address,
-                         sender_email_address)
-
-    def test_create_receiver_email_config(self):
-        """Test that creating a new Receiver Email Configuration entry is
-            successful with defaults """
-        email_address = 'example@test.com'
-        receiver_email_Config = ReceiverEmailConfiguration(
-            email_address=email_address)
-        self.assertEqual(receiver_email_Config.email_address,
-                         email_address)
 
     def test_create_two_xis_configuration(self):
         """Test that trying to create more than one XIS Configuration throws

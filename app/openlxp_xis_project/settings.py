@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
+    'openlxp_notifications',
     'core',
     'api',
     'django_celery_beat',
@@ -88,6 +89,8 @@ DATABASES = {
 }
 
 EMAIL_BACKEND = 'django_ses.SESBackend'
+
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -142,6 +145,7 @@ CACHES = {
 }
 
 LOG_PATH = os.environ.get('LOG_PATH')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

@@ -220,9 +220,6 @@ class TestSetUp(TestCase):
                 'Thumbnail': 'Recommended'
             }
         }
-        self.receive_email_list = ['receiver1@openlxp.com',
-                                   'receiver1@openlxp.com']
-        self.sender_email = "sender@openlxp.com"
 
         return super().setUp()
 

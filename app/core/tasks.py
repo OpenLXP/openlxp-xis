@@ -2,7 +2,7 @@ import logging
 
 from celery import shared_task
 
-from core.management.commands.conformance_alerts import \
+from openlxp_notifications.management.commands.conformance_alerts import \
     Command as conformance_alerts
 from core.management.commands.consolidate_ledgers import \
     Command as consolidate_ledgers
