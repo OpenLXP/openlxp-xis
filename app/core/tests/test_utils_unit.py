@@ -3,8 +3,6 @@ from unittest.mock import patch
 from ddt import data, ddt
 from django.test import tag
 
-from core.management.utils.notification import send_notifications, \
-    check_if_email_verified
 from core.management.utils.xis_internal import (required_recommended_logs,
                                                 dict_flatten,
                                                 flatten_dict_object,
@@ -289,34 +287,6 @@ class UtilsTests(TestSetUp):
             result_api_es_index = get_elasticsearch_index()
 
             self.assertTrue(result_api_es_index)
-
-    # Test cases for NOTIFICATION
-    def test_send_notifications(self):
-        """Test for function to send emails of log file to personas"""
-        with patch('core.management.utils.notification'
-                   '.EmailMessage') as mock_send, \
-                patch('core.management.utils.notification'
-                      '.boto3.client'):
-            send_notifications(self.receive_email_list, self.sender_email)
-            self.assertEqual(mock_send.call_count, 2)
-
-    def test_check_if_email_verified(self):
-        """Test to check if email id from user is verified """
-        with patch('core.management.utils.notification'
-                   '.list_email_verified') as mock_list:
-            mock_list.return_value = self.receive_email_list
-            email_value = 'receiver1@openlxp.com'
-            return_val = check_if_email_verified(email_value)
-            self.assertFalse(return_val)
-
-    def test_check_if_email_not_verified(self):
-        """Test to check if email id from user is verified """
-        with patch('core.management.utils.notification'
-                   '.list_email_verified') as mock_list:
-            mock_list.return_value = self.receive_email_list
-            email_value = 'receiver2@openlxp.com'
-            return_val = check_if_email_verified(email_value)
-            self.assertTrue(return_val)
 
     # Test cases for XSS
 
