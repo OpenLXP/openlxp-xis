@@ -69,7 +69,7 @@ To run this project, you will need to add the following environment variables to
 
 1. Clone the Github repository:
 
-    https://github.com/OpenLXP/openlxp-xis.git
+   [GitHub-XIS](https://github.com/OpenLXP/openlxp-xis.git)
 
 2. Open terminal at the root directory of the project.
     
@@ -101,8 +101,7 @@ To run this project, you will need to add the following environment variables to
     
     `Xse index:`: Index Name for the Experience Search Engine
     
-        (Note: Please make sure to upload schema file in the Experience Schema Server (XSS). 
-        In this case, upload schema files into the S3 bucket. )
+#### Note: Please make sure to upload schema file in the Experience Schema Server (XSS). In this case, upload schema files into the S3 bucket. )
 
 5. `Add sender email configuration`: Configure the sender email address from which conformance alerts are sent.
 
@@ -120,7 +119,7 @@ To run tasks run below API:
     
 http://localhost:8080/api/xis-workflow
         
-    (Note: Change localhost with XIS host)
+#### Note: Change localhost with XIS host
 
 2. Periodically through celery beat: 
  On the admin page add periodic task and it's schedule. On selected time interval celery task will run.
