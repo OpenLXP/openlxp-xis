@@ -101,7 +101,7 @@ To run this project, you will need to add the following environment variables to
     
     `Xse index:`: Index Name for the Experience Search Engine
     
-#### Note: Please make sure to upload schema file in the Experience Schema Server (XSS). In this case, upload schema files into the S3 bucket. )
+#### Note: Please make sure to upload schema file in the Experience Schema Server (XSS). In this case, upload schema files into the S3 bucket. 
 
 5. `Add sender email configuration`: Configure the sender email address from which conformance alerts are sent.
 
