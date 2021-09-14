@@ -93,7 +93,7 @@ To run this project, you will need to add the following environment variables to
 1. On the Admin page, log in with the admin credentials 
 
 
-2.  `Add xis configuration` : Configure Experience Index Service(XIA):
+2.  `Add xis configuration` : Configure Experience Index Service(XIS):
 
     `Target schema:`: Schema file name for source to target mapping schema file
     
