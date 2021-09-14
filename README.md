@@ -7,7 +7,7 @@ The goal of the ECC is a learning experience discovery service designed to aggre
 
 ECC system architecture comprises multiple independently deployable components.Each component offers its unique data architecture.
 
-`Experience Index Service`
+### Experience Index Service
 
 XIS is the primary funnel for learning experience metadata collected by the XIA components. In addition, the XIS can receive supplemental learning experience metadata – field name/value overrides and augmentations – from the XMS.  
 
@@ -112,6 +112,7 @@ Add an email list to send conformance alerts. When the email gets added, an emai
 
 # Running Of XIS Tasks:
 
+### Running Tasks
 Consolidations and loading of Metadata and Supplemental Metadata into Compositing Ledger and loading it into XSE can be run through two ways:
 
 1. Through API Endpoint:
@@ -123,6 +124,17 @@ http://localhost:8080/api/xis-workflow
 
 2. Periodically through celery beat: 
  On the admin page add periodic task and it's schedule. On selected time interval celery task will run.
+
+### API's 
+ XIS supports API's endpoints which can get called from other components
+
+    1. http://localhost:8080/api/catalogs/
+    
+This API fetch the names of all course providers
+
+    2.http://localhost:8080/api/metadata/%3Cstr:course_id%3E/
+    
+This API fetch or modify the record of the corresponding course id
 
 # Logs
 To check the running of celery tasks, check the logs of application and celery container.
