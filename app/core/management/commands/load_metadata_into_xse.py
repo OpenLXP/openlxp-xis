@@ -2,10 +2,10 @@ import json
 import logging
 
 import elasticsearch
-from django.db.models import Q
 import requests
 from django.core.management.base import BaseCommand
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Q
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 
@@ -92,21 +92,22 @@ def post_data_to_xse(data):
 
 def create_xse_json_document(row):
     """ Function to Create nested json for XSE """
-
+    composite_ledger_dict = {}
     # Removing empty/Null data fields in supplemental data to be sent to XSE
-    supplemental_data = {k: v for k, v in row['metadata'][
-        'Supplemental_Ledger'].items() if v}
-
-    composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
-
+    if row['metadata']['Supplemental_Ledger']:
+        supplemental_data = {k: v for k, v in row['metadata'][
+            'Supplemental_Ledger'].items() if v != "NaT" and v and v != "null"}
+        composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
     for item in row['metadata']['Metadata_Ledger']:
         # Removing empty/Null data fields in metadata to be sent to XSE
         for item_nested in row['metadata']['Metadata_Ledger'][item]:
-            if not row['metadata']['Metadata_Ledger'][item][item_nested]:
+            if not row['metadata']['Metadata_Ledger'][item][item_nested] or \
+                    row['metadata']['Metadata_Ledger'][item][item_nested] == \
+                    "NaT" or \
+                    row['metadata']['Metadata_Ledger'][item][item_nested] == \
+                    "null":
                 row['metadata']['Metadata_Ledger'][item][item_nested] = None
-
     composite_ledger_dict.update(row['metadata']['Metadata_Ledger'])
-
     return composite_ledger_dict
 
 

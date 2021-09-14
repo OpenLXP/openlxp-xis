@@ -3,16 +3,16 @@ from unittest.mock import patch
 from ddt import data, ddt
 from django.test import tag
 
-from core.management.utils.xis_internal import (required_recommended_logs,
-                                                dict_flatten,
+from core.management.utils.xis_internal import (dict_flatten,
                                                 flatten_dict_object,
                                                 flatten_list_object,
+                                                required_recommended_logs,
                                                 update_flattened_object)
 from core.management.utils.xse_client import (get_elasticsearch_endpoint,
                                               get_elasticsearch_index)
 from core.management.utils.xss_client import (
-    aws_get, get_target_validation_schema,
-    get_required_recommended_fields_for_validation)
+    aws_get, get_required_recommended_fields_for_validation,
+    get_target_validation_schema)
 from core.models import XISConfiguration
 
 from .test_setup import TestSetUp
