@@ -132,7 +132,7 @@ http://localhost:8080/api/xis-workflow
     
 This API fetch the names of all course providers
 
-    2.http://localhost:8080/api/metadata/%3Cstr:course_id%3E/
+    2.http://localhost:8080/api/metadata/<str:course_id>/
     
 This API fetch or modify the record of the corresponding course id
 
