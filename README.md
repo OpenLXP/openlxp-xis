@@ -95,7 +95,7 @@ To run this project, you will need to add the following environment variables to
 
 2.  `Add xis configuration` : Configure Experience Index Service(XIS):
 
-    `Target schema:`: Schema file name for source to target mapping schema file
+    `Target schema:`: Schema file name target validation schema file
     
     `Xse host:`: Host for the Experience Search Engine
     
