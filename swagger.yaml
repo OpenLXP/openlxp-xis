@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Swagger Experience Index Service APIs
   version: 1.0.0
-  description: APIs For Access To Openlxp Experience Index Service Information
+  description: APIs For Access To OpenLXP Experience Index Service Information
   contact:
     email: "openlxphost@gmail.com"
   license:
@@ -101,8 +101,8 @@ paths:
     patch:
       tags:
       - "Metadata"
-      summary: "Add New Metadata Record"
-      description: "Add New Metadata Record"
+      summary: "Update/Edit Existing Metadata Record"
+      description: "Update/Edit Existing Metadata Record"
       parameters:
         - in: path
           name: id
@@ -156,12 +156,12 @@ paths:
           
   /catalogs/:
     summary: API to get catelogs list
-    description: ' Catelogs list'
+    description: ' Catalogs list'
     get:
       summary: Get A List Of Record Of Specified Catalogs
       description: Get A List Of Record Of Specified Catalogs
       tags:
-      - "Catelogs"
+      - "Catalogs"
       responses:
         '200':    # status code
           description: A JSON array of user names
