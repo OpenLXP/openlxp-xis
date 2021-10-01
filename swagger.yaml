@@ -6,8 +6,8 @@ info:
   contact:
     email: "openlxphost@gmail.com"
   license:
-    name: "Apache License"
-    url: "http://www.apache.org/licenses/LICENSE-2."
+    name: "Apache License, Version 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0"
 servers:
   - url: http://localhost:8080/api/
     variables: {}
@@ -15,7 +15,7 @@ servers:
 paths:
   /metadata/:
     summary: API to get records based on UUID
-    description: ' XIS api'
+    description: 'XIS API'
     get:
       summary: Get Record Based On Unique Record Identifier
       description: Get Record Based On Unique Record Identifier
@@ -39,7 +39,7 @@ paths:
             type: string
       responses:
         '200':    # status code
-          description: A JSON array of user names
+          description: A JSON Array Of Metadata Record/Records
           content:
             application/json:
               schema: 
@@ -67,7 +67,7 @@ paths:
                   type: string
       responses:
         '201':
-          description: "New Record Created"        
+          description: "New Meadata Record Created"        
         '400':    # status code
           description: Bad Request Sent
           
@@ -88,7 +88,7 @@ paths:
           required: true
       responses:
         '200':    # status code
-          description: A JSON array of user names
+          description: A JSON Array Of Metadata Record/Records
           content:
             application/json:
               schema: 
@@ -121,7 +121,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: "New Record Created"
+          description: "JSON Array of Updated Metadata Record"
           content:
             application/json:
               schema: 
@@ -150,7 +150,7 @@ paths:
                   type: string
       responses:
         '201':
-          description: "New Record Created"        
+          description: "New Supplemental Record Created"        
         '400':    # status code
           description: Bad Request Sent
           
@@ -164,7 +164,7 @@ paths:
       - "Catalogs"
       responses:
         '200':    # status code
-          description: A JSON array of user names
+          description: A JSON Array Of Catalogs Of Specified Provider
           content:
             application/json:
               schema: 
@@ -186,7 +186,7 @@ paths:
       - "XIS Workflow"
       responses:
         '200':    # status code
-          description: A JSON array of user names
+          description: A JSON Array Of Task ID
           content:
             application/json:
               schema: 
@@ -197,4 +197,3 @@ paths:
           description: Bad Request Sent
         '500':    # status code
           description: Internal Server Error        
-  
