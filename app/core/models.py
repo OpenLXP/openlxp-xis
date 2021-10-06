@@ -1,6 +1,7 @@
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
+from model_utils.models import TimeStampedModel
 
 
 class XISConfiguration(models.Model):
@@ -33,6 +34,28 @@ class XISConfiguration(models.Model):
         if not self.pk and XISConfiguration.objects.exists():
             raise ValidationError('XISConfiguration model already exists')
         return super(XISConfiguration, self).save(*args, **kwargs)
+
+
+class XISSyndication(TimeStampedModel):
+    """Model for XIS Syndication """
+
+    STATUS = [
+        ('ACTIVE', 'Active'),
+        ('INACTIVE', 'Inactive')]
+
+    xis_api_endpoint = models.CharField(
+        help_text='Enter the XIS Instance API endpoint',
+        max_length=200
+    )
+
+    xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.id}'
+
+    def save(self, *args, **kwargs):
+        return super(XISSyndication, self).save(*args, **kwargs)
 
 
 class MetadataLedger(models.Model):

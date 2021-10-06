@@ -3,7 +3,7 @@ from django.test import TestCase, tag
 from django.utils import timezone
 
 from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
-                         XISConfiguration)
+                         XISConfiguration, XISSyndication)
 
 
 @tag('unit')
@@ -171,3 +171,18 @@ class ModelTests(TestCase):
             xisConfig2 = XISConfiguration(target_schema="example2.json")
             xisConfig.save()
             xisConfig2.save()
+
+    def test_xis_syndication(self):
+        """Test for a new XISSyndication entry is successful with defaults"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'Active'
+
+        xis_syndication = XISSyndication(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status)
+
+        self.assertEqual(xis_syndication.xis_api_endpoint,
+                         xis_api_endpoint)
+        self.assertEqual(xis_syndication.xis_api_endpoint_status,
+                         xis_api_endpoint_status)
