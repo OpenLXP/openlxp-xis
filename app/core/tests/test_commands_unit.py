@@ -10,10 +10,16 @@ from core.management.commands.consolidate_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
+from core.management.commands.load_metadata_into_neo4j import (
+    check_records_to_load_into_neo4j, post_data_to_neo4j,
+    connect_to_neo4j_driver, post_metadata_ledger_to_neo4j,
+    post_supplemental_ledger_to_neo4j)
 from core.management.commands.load_metadata_into_xse import (
     check_records_to_load_into_xse, create_xse_json_document, post_data_to_xse,
     renaming_xis_for_posting_to_xse)
+
 from core.models import CompositeLedger, MetadataLedger
+from neo4j import GraphDatabase
 
 from .test_setup import TestSetUp
 
@@ -275,3 +281,129 @@ class CommandTests(TestSetUp):
             post_data_to_xse(data)
             self.assertEqual(es_instance.index.call_count, 2)
             self.assertEqual(mock_check_records_to_load_into_xse.call_count, 1)
+
+    """Test cases for load_metadata_into_neo4j """
+
+    def test_check_records_to_load_into_neo4j_one_record(self):
+        """Test to Retrieve number of Composite_Ledger records in XIS to load
+        into Neo4j and calls the post_data_to_neo4j accordingly for one
+        record"""
+        with patch('core.management.commands.load_metadata_into_neo4j'
+                   '.post_data_to_neo4j', return_value=None)as \
+                mock_post_data_to_neo4j, \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.CompositeLedger.objects') as composite_obj:
+            composite_data = CompositeLedger(
+                record_status='Active',
+                metadata_transmission_status='Ready',
+                metadata_key_hash=self.metadata_key_hash,
+                metadata=self.metadata)
+            composite_obj.return_value = composite_obj
+            composite_obj.exclude.return_value = composite_obj
+            composite_obj.values.return_value = [composite_data]
+            composite_obj.filter.side_effect = [composite_obj, composite_obj]
+            check_records_to_load_into_neo4j()
+            self.assertEqual(
+                mock_post_data_to_neo4j.call_count, 1)
+
+    def test_check_records_to_load_into_neo4j_zero(self):
+        """Test to Retrieve number of Composite_Ledger records in XIS to load
+        into neo4j and calls the post_data_to_neo4j accordingly for
+        zero records"""
+        with patch('core.management.commands.load_metadata_into_neo4j'
+                   '.post_data_to_neo4j', return_value=None)as \
+                mock_post_data_to_neo4j, \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.CompositeLedger.objects') as meta_obj:
+            meta_obj.return_value = meta_obj
+            meta_obj.exclude.return_value = meta_obj
+            meta_obj.update.return_value = meta_obj
+            meta_obj.filter.side_effect = [meta_obj, meta_obj, meta_obj]
+            check_records_to_load_into_neo4j()
+            self.assertEqual(
+                mock_post_data_to_neo4j.call_count, 0)
+
+    def test_post_data_to_neo4j_zero(self):
+        """Test for POSTing XIS composite_ledger to Neo4j in JSON format"""
+        data = []
+        with patch('core.management.commands.load_metadata_into_neo4j'
+                   '.connect_to_neo4j_driver',
+                   return_value=None), \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.CompositeLedger.objects') as composite_obj, \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.post_metadata_ledger_to_neo4j', return_value=None) \
+                as mock_post_metadata_ledger_to_neo4j, \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.post_supplemental_ledger_to_neo4j', return_value=None
+                      ) as mock_post_supplemental_ledger_to_neo4j:
+            composite_obj.return_value = composite_obj
+            composite_obj.exclude.return_value = composite_obj
+            composite_obj.update.return_value = composite_obj
+            composite_obj.filter.side_effect = [composite_obj, composite_obj,
+                                                composite_obj,
+                                                composite_obj]
+
+            post_data_to_neo4j(data)
+            self.assertEqual(mock_post_metadata_ledger_to_neo4j.call_count, 0)
+            self.assertEqual(mock_post_supplemental_ledger_to_neo4j.call_count,
+                             0)
+
+    def test_post_data_to_neo4j_more_than_one(self):
+        """Test for POSTing XIS composite_ledger to Neo4j in JSON format
+        when more than one rows are passing"""
+        data = [self.xis_data,
+                self.xis_data]
+        with patch('core.management.commands.load_metadata_into_neo4j'
+                   '.connect_to_neo4j_driver',
+                   return_value=None), \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.CompositeLedger.objects') as composite_obj, \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.post_metadata_ledger_to_neo4j', return_value=None) \
+                as mock_post_metadata_ledger_to_neo4j, \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.post_supplemental_ledger_to_neo4j', return_value=None
+                      ) as mock_post_supplemental_ledger_to_neo4j:
+            composite_obj.return_value = composite_obj
+            composite_obj.exclude.return_value = composite_obj
+            composite_obj.update.return_value = composite_obj
+            composite_obj.filter.side_effect = [composite_obj, composite_obj,
+                                                composite_obj,
+                                                composite_obj]
+
+            post_data_to_neo4j(data)
+            self.assertEqual(mock_post_metadata_ledger_to_neo4j.call_count, 2)
+            self.assertEqual(mock_post_supplemental_ledger_to_neo4j.call_count,
+                             2)
+
+    def test_connect_to_neo4j_driver(self):
+        """Test of Connection with Neo4j Driver"""
+        with patch('core.management.commands.load_metadata_into_neo4j'
+                   '.get_neo4j_auth') as obj_get_neo4j_auth, \
+                patch('core.management.commands.load_metadata_into_neo4j'
+                      '.get_neo4j_endpoint', return_value='neo4j://neo4j:7007'
+                      ):
+            obj_get_neo4j_auth.return_value = 'user_id', 'pwd'
+            connection_driver = connect_to_neo4j_driver()
+            self.assertTrue(connection_driver)
+
+    def test_post_metadata_ledger_to_neo4j(self):
+        """Test of Connection with Neo4j Driver"""
+        with patch('neo4j.GraphDatabase.driver'):
+            driver_connection = GraphDatabase.driver(uri='bolt://neo4j:7007',
+                                                     auth=('user',
+                                                           'password'))
+            row = self.composite_ledger
+            post_metadata_ledger_to_neo4j(row, driver_connection)
+            self.assertTrue(driver_connection.session.run())
+
+    def test_post_supplemental_ledger_to_neo4j(self):
+        """Test of Connection with Neo4j Driver"""
+        with patch('neo4j.GraphDatabase.driver'):
+            driver_connection = GraphDatabase.driver(uri='bolt://neo4j:7007',
+                                                     auth=('user',
+                                                           'password'))
+            row = self.composite_ledger
+            post_supplemental_ledger_to_neo4j(row, driver_connection)
+            self.assertTrue(driver_connection.session.run())

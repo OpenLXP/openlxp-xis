@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from ddt import data, ddt
+from ddt import data, ddt, unpack
 from django.test import tag
 
 from core.management.utils.xis_internal import (dict_flatten,
@@ -13,7 +13,11 @@ from core.management.utils.xse_client import (get_elasticsearch_endpoint,
 from core.management.utils.xss_client import (
     aws_get, get_required_recommended_fields_for_validation,
     get_target_validation_schema)
-from core.models import XISConfiguration
+
+from core.management.utils.neo4j_client import (get_neo4j_endpoint,
+                                                get_neo4j_auth)
+
+from core.models import XISConfiguration, Neo4jConfiguration
 
 from .test_setup import TestSetUp
 
@@ -320,3 +324,34 @@ class UtilsTests(TestSetUp):
 
             self.assertTrue(required_column_name)
             self.assertTrue(recommended_column_name)
+
+    # This cases for neo4j_client.py
+
+    @data(('id', 'pwd'), ('user_id', 'password'))
+    @unpack
+    def test_get_neo4j_auth(self, first_value, second_value):
+        """This test is to Get user id and password to connect to Neo4j"""
+        with patch(
+                'core.management.utils.neo4j_client.Neo4jConfiguration.objects'
+        ) as neo4j_config:
+            neo4j_user = first_value
+            neo4j_pwd = second_value
+            configObj = Neo4jConfiguration(neo4j_uri="endpoint",
+                                           neo4j_user=neo4j_user,
+                                           neo4j_pwd=neo4j_pwd)
+            neo4j_config.first.return_value = configObj
+            user_id, pwd = get_neo4j_auth()
+
+            self.assertEqual(user_id, neo4j_user)
+            self.assertEqual(pwd, neo4j_pwd)
+
+    def test_get_neo4j_endpoint(self):
+        """This test is to check if function returns the Neo4j
+        endpoint """
+        with patch('core.management.utils.neo4j_client.Neo4jConfiguration.'
+                   'objects') as neo4j_config:
+            configObj = Neo4jConfiguration(neo4j_uri="test.json")
+            neo4j_config.first.return_value = configObj
+            result_api_es_endpoint = get_neo4j_endpoint()
+
+            self.assertTrue(result_api_es_endpoint)

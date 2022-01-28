@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from core.models import XISConfiguration, XISSyndication
+from core.models import XISConfiguration, XISSyndication, Neo4jConfiguration
 
 
 # Register your models here.
@@ -14,3 +14,9 @@ class XISConfigurationAdmin(admin.ModelAdmin):
 class XISSyndicationAdmin(admin.ModelAdmin):
     list_display = ('xis_api_endpoint', 'xis_api_endpoint_status')
     fields = [('xis_api_endpoint', 'xis_api_endpoint_status')]
+
+
+@admin.register(Neo4jConfiguration)
+class Neo4jConfigurationAdmin(admin.ModelAdmin):
+    list_display = ('neo4j_uri', 'neo4j_user', 'neo4j_pwd',)
+    fields = [('neo4j_uri', 'neo4j_user', 'neo4j_pwd',)]

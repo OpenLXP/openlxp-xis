@@ -2,12 +2,13 @@ import logging
 
 from celery.result import AsyncResult
 from django.http import HttpResponse, JsonResponse
+# from core.management.commands.load_metadata_into_neo4j import \
+#     Command as load_metadata_into_neo4j
 from requests.exceptions import HTTPError
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.utils import json
-
 from api.serializers import (CompositeLedgerSerializer,
                              MetadataLedgerSerializer,
                              SupplementalLedgerSerializer)
@@ -34,7 +35,7 @@ def metadata_list(request):
             "message": "Error fetching records please check the logs."
         }
         # initially fetch all active records
-        querySet = CompositeLedger.objects.all().order_by()\
+        querySet = CompositeLedger.objects.all().order_by() \
             .filter(record_status='Active')
 
         # case where provider sent as query parameter
@@ -45,7 +46,7 @@ def metadata_list(request):
             if not querySet:
                 errorMsg = {
                     "message": "Error; no provider name found for: " +
-                    request.GET.get('provider')
+                               request.GET.get('provider')
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
@@ -73,7 +74,8 @@ def metadata_list(request):
             if not querySet:
                 errorMsg = {
                     "message": "Error; no record found for any of the "
-                    + "following key hashes: " + metadata_key_hash_param
+                               + "following key hashes: " +
+                               metadata_key_hash_param
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
@@ -182,7 +184,7 @@ def record_for_requested_course_id(request, course_id):
         }
 
         try:
-            queryset = CompositeLedger.objects.\
+            queryset = CompositeLedger.objects. \
                 get(unique_record_identifier=course_id, record_status='Active')
         except HTTPError as http_err:
             logger.error(http_err)
@@ -199,8 +201,8 @@ def record_for_requested_course_id(request, course_id):
                 res = {"message": "Data updated successfully"}
                 return Response(res, status.HTTP_200_OK)
             res = {
-                    "message": "Data is not valid for update",
-                    "errors": serializer.errors
+                "message": "Data is not valid for update",
+                "errors": serializer.errors
             }
             return Response(res, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -221,3 +223,14 @@ def get_status(request, task_id):
         "task_result": task_result.result
     }
     return JsonResponse(result, status=200)
+
+
+# @api_view(['GET'])
+# def post_to_neo4j(request):
+#     """ API which post metadata from Composite_Ledger XIS to Neo4j Graph
+#     Database"""
+#     load_metadata_into_neo4j_class = load_metadata_into_neo4j()
+#
+#     function = load_metadata_into_neo4j_class.handle()
+#     function.delay()
+#     return Response('ok', status=200)

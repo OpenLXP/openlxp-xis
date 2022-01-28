@@ -221,6 +221,43 @@ class TestSetUp(TestCase):
             }
         }
 
+        self.composite_ledger = {
+            'metadata': {"Metadata_Ledger": {
+                "Course": {
+                    "CourseURL": "https://example.com",
+                    "CourseCode": "Test-007",
+                    "CourseTitle": "Test",
+                    "AccreditedBy": "Not Available",
+                    "CourseAudience": "Not Available",
+                    "CourseProviderName": "Test",
+                    "CoursePrerequisites": "Not Available",
+                    "CourseSubjectMatter": "Not Available",
+                    "CourseShortDescription": "Test",
+                    "EstimatedCompletionTime": "2.0"
+                },
+                "Course_Instance": {
+                    "EndDate": "1900-01-01T00:00:00-05:00",
+                    "CourseURL": "https://example.com",
+                    "StartDate": "1900-01-01T00:00:00-05:00",
+                    "CourseType": "Test",
+                    "Instructor": "Not Available"
+                },
+                "Lifecycle_Information": {
+                    "Provider": "Not Available",
+                    "Maintainer": "Not Available"
+                },
+                "Technical_Information": {
+                    "Location": "Not Available"
+                }
+            },
+                "Supplemental_Ledger": {
+                    "Instance": 1234
+                }
+            },
+            'metadata_key_hash': '6acf7689ea81a1f792e7668a23b1acf5',
+            'metadata_key': 'Test_Agent'
+
+        }
         return super().setUp()
 
     def tearDown(self):
