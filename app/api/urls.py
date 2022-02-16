@@ -16,4 +16,6 @@ urlpatterns = [
     path('metadata/<str:course_id>/', views.record_for_requested_course_id,
          name='record_for_requested_course_id'),
     path('xis-workflow/', views.xis_workflow_api),
+    # path('post_to_neo4j/', views.post_to_neo4j,
+    #      name='post_to_neo4j'),
 ]

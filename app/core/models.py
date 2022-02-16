@@ -36,6 +36,33 @@ class XISConfiguration(models.Model):
         return super(XISConfiguration, self).save(*args, **kwargs)
 
 
+class Neo4jConfiguration(models.Model):
+    """Model for Neo4j Configuration """
+
+    neo4j_uri = models.CharField(max_length=200,
+                                 help_text='Enter the host uri for the Neo4j '
+                                           '(Graph Database) to use.')
+    neo4j_user = models.CharField(
+        help_text='Enter the user ID to connect with Neo4j',
+        max_length=200)
+    neo4j_pwd = models.CharField(
+        help_text='Enter the user ID to connect with Neo4j',
+        max_length=200)
+
+    def get_absolute_url(self):
+        """ URL for displaying individual model records."""
+        return reverse('Configuration-detail', args=[str(self.id)])
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.id}'
+
+    def save(self, *args, **kwargs):
+        if not self.pk and Neo4jConfiguration.objects.exists():
+            raise ValidationError('Neo4jConfiguration model already exists')
+        return super(Neo4jConfiguration, self).save(*args, **kwargs)
+
+
 class XISSyndication(TimeStampedModel):
     """Model for XIS Syndication """
 
@@ -143,3 +170,7 @@ class CompositeLedger(models.Model):
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True,
                                   choices=RECORD_UPDATED_BY)
+    metadata_transmission_status_neo4j = \
+        models.CharField(max_length=10, blank=True,
+                         default='Ready',
+                         choices=RECORD_TRANSMISSION_STATUS_CHOICES)
