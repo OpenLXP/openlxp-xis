@@ -94,10 +94,11 @@ def create_xse_json_document(row):
     """ Function to Create nested json for XSE """
     composite_ledger_dict = {}
     # Removing empty/Null data fields in supplemental data to be sent to XSE
-    if row['metadata']['Supplemental_Ledger']:
+    supplemental_data = {}
+    if 'Supplemental_Ledger' in row['metadata']:
         supplemental_data = {k: v for k, v in row['metadata'][
             'Supplemental_Ledger'].items() if v != "NaT" and v and v != "null"}
-        composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
+    composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
     for item in row['metadata']['Metadata_Ledger']:
         # Removing empty/Null data fields in metadata to be sent to XSE
         for item_nested in row['metadata']['Metadata_Ledger'][item]:
