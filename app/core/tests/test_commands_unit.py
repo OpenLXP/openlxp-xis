@@ -1,24 +1,23 @@
 import logging
 from unittest.mock import patch
 
-from ddt import ddt
-from django.core.management import call_command
-from django.db.utils import OperationalError
-from django.test import tag
-
 from core.management.commands.consolidate_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
 from core.management.commands.load_metadata_into_neo4j import (
-    check_records_to_load_into_neo4j, post_data_to_neo4j,
-    connect_to_neo4j_driver, post_metadata_ledger_to_neo4j,
+    check_records_to_load_into_neo4j, connect_to_neo4j_driver,
+    post_data_to_neo4j, post_metadata_ledger_to_neo4j,
     post_supplemental_ledger_to_neo4j)
 from core.management.commands.load_metadata_into_xse import (
     check_records_to_load_into_xse, create_xse_json_document, post_data_to_xse,
-    renaming_xis_for_posting_to_xse)
-
+    renaming_xis_for_posting_to_xse, setup_index)
+from core.management.utils.xse_client import get_elasticsearch_index
 from core.models import CompositeLedger, MetadataLedger
+from ddt import ddt
+from django.core.management import call_command
+from django.db.utils import OperationalError
+from django.test import tag
 from neo4j import GraphDatabase
 
 from .test_setup import TestSetUp
@@ -155,6 +154,94 @@ class CommandTests(TestSetUp):
 
     """Test cases for load_metadata_into_xse """
 
+    def test_setup_index_no_index(self):
+        """Test to create index with mapping"""
+        with patch('core.management.commands.load_metadata_into_xse'
+                   '.check_records_to_load_into_xse', return_value=None)as \
+                mock_check_records_to_load_into_xse, \
+                patch('core.management.commands.load_metadata_into_xse'
+                      '.Elasticsearch') as mock_es:
+            mock_es.exists.return_value = False
+            mock_es.indices = mock_es
+            mock_es.indices.return_value = mock_es
+            setup_index()
+            self.assertEqual(
+                mock_check_records_to_load_into_xse.call_count, 1)
+            self.assertEqual(mock_es.create.call_count, 1)
+
+    def test_setup_index_add_mapping(self):
+        """Test to update index with mapping"""
+        with patch('core.management.commands.load_metadata_into_xse'
+                   '.check_records_to_load_into_xse', return_value=None)as \
+                mock_check_records_to_load_into_xse, \
+                patch('core.management.commands.load_metadata_into_xse'
+                      '.Elasticsearch') as mock_es:
+            mock_es.exists.return_value = True
+            mock_es.indices = mock_es
+            mock_es.indices.return_value = mock_es
+            mock_es.get_field_mapping.return_value = {
+                get_elasticsearch_index(): {'mappings': []}}
+            setup_index()
+            self.assertEqual(
+                mock_check_records_to_load_into_xse.call_count, 1)
+            self.assertEqual(mock_es.put_mapping.call_count, 1)
+
+    def test_setup_index_already_mapped(self):
+        """Test to not update index when already mapped"""
+        with patch('core.management.commands.load_metadata_into_xse'
+                   '.check_records_to_load_into_xse', return_value=None)as \
+                mock_check_records_to_load_into_xse, \
+                patch('core.management.commands.load_metadata_into_xse'
+                      '.Elasticsearch') as mock_es:
+            mock_es.exists.return_value = True
+            mock_es.indices = mock_es
+            mock_es.indices.return_value = mock_es
+            mock_es.get_field_mapping.return_value = {
+                get_elasticsearch_index(): {'mappings': {"properties": {
+                    "filter": {"type":  "keyword"}, "autocomplete": {
+                        "type": "completion", "contexts": [
+                            {"name": "filter", "type": "category", "path":
+                             "filter"}]}}}}}
+            setup_index()
+            self.assertEqual(
+                mock_check_records_to_load_into_xse.call_count, 1)
+            self.assertEqual(mock_es.put_mapping.call_count, 0)
+            self.assertEqual(mock_es.create.call_count, 0)
+
+    def test_setup_index_fails(self):
+        """Test exits when error raised"""
+        with patch('core.management.commands.load_metadata_into_xse'
+                   '.check_records_to_load_into_xse', return_value=None)as \
+                mock_check_records_to_load_into_xse, \
+                patch('core.management.commands.load_metadata_into_xse'
+                      '.Elasticsearch', side_effect=Exception()) as mock_es:
+            self.assertRaises(SystemExit, setup_index)
+            self.assertEqual(
+                mock_check_records_to_load_into_xse.call_count, 0)
+            self.assertEqual(mock_es.put_mapping.call_count, 0)
+            self.assertEqual(mock_es.create.call_count, 0)
+
+    def test_create_xse_json_document_empty(self):
+        """Test creation of XSE formatted data when no input"""
+
+        resp = create_xse_json_document({'metadata': {'Metadata_Ledger': {}}})
+        self.assertEqual(len(resp), 3)
+        self.assertEqual(resp['autocomplete'], "Not Available")
+        self.assertEqual(resp['filter'], "Not Available")
+        self.assertEqual(resp['Supplemental_Ledger'], {})
+
+    def test_create_xse_json_document_autocomplete_and_filter(self):
+        """Test creation of XSE formatted data with autocomplete and filter"""
+        exp_metadata = {'metadata': {'Metadata_Ledger': {
+            "Course": {"CourseTitle": "TestTitle"}}}}
+
+        resp = create_xse_json_document({**exp_metadata, "provider_name":
+                                         "TestProvider"})
+        self.assertEqual(len(resp), 4)
+        self.assertEqual(resp['autocomplete'], "TestTitle")
+        self.assertEqual(resp['filter'], "TestProvider")
+        self.assertEqual(resp['Supplemental_Ledger'], {})
+
     def test_renaming_xis_for_posting_to_xse(self):
         """Test for Renaming XIS column names to match with XSE"""
         return_data = renaming_xis_for_posting_to_xse(self.xis_data)
@@ -176,10 +263,7 @@ class CommandTests(TestSetUp):
                 metadata_transmission_status='Ready',
                 metadata_key_hash=self.metadata_key_hash,
                 metadata=self.metadata)
-            composite_obj.return_value = composite_obj
-            composite_obj.exclude.return_value = composite_obj
-            composite_obj.values.return_value = [composite_data]
-            composite_obj.filter.side_effect = [composite_obj, composite_obj]
+            composite_obj.filter.return_value = [composite_data]
             check_records_to_load_into_xse()
             self.assertEqual(
                 mock_post_data_to_xse.call_count, 1)
