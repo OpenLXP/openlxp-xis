@@ -17,3 +17,17 @@ def get_elasticsearch_index():
     configuration = XISConfiguration.objects.first()
     api_es_index = configuration.xse_index
     return api_es_index
+
+
+def get_autocomplete_field():
+    """Getting autocomplete field"""
+    configuration = XISConfiguration.objects.first()
+    autocomplete_field = configuration.autocomplete_field
+    return autocomplete_field
+
+
+def get_filter_field():
+    """Getting filter field"""
+    configuration = XISConfiguration.objects.first()
+    filter_field = configuration.filter_field
+    return filter_field
