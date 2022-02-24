@@ -263,7 +263,8 @@ class CommandTests(TestSetUp):
                 metadata_transmission_status='Ready',
                 metadata_key_hash=self.metadata_key_hash,
                 metadata=self.metadata)
-            composite_obj.filter.return_value = [composite_data]
+            composite_obj.filter.return_value = composite_obj
+            composite_obj.values.return_value = [composite_data]
             check_records_to_load_into_xse()
             self.assertEqual(
                 mock_post_data_to_xse.call_count, 1)

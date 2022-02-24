@@ -139,7 +139,7 @@ def check_records_to_load_into_xse():
     data = CompositeLedger.objects.filter((
         Q(metadata_transmission_status='Ready') | Q(
             metadata_transmission_status='Failed')) &
-        Q(record_status='Active'))
+        Q(record_status='Active')).values()
 
     # Checking available no. of records in XIA to load into XIS is Zero or not
     if len(data) == 0:
