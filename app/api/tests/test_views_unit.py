@@ -14,24 +14,36 @@ from .test_setup import TestSetUp
 @ddt
 class ViewTests(TestSetUp):
 
-    def test_get_records_provider_not_found(self):
-        """Test that the /api/metadata/ endpoint returns the correct error
-            if no provider name is found"""
-        url = "%s?provider=test" % (reverse('api:metadata'))
+    #  catalog composite fail and success
+    # metadata-catalog fail and success
 
-        with patch('api.views.CompositeLedger.objects') as compositeObj:
+    # api/metadata/
+
+    def test_get_records_no_param(self):
+        """Test that the /api/metadata/ endpoint returns a list of records
+           if no parameter is sent"""
+        url = reverse('api:metadata')
+        result_obj = {
+            "test": "test"
+        }
+
+        with patch('api.views.CompositeLedger.objects') as compositeObj, \
+                patch('api.views.CompositeLedgerSerializer') as serializer:
             compositeObj.return_value = compositeObj
-            compositeObj.filter.side_effect = [compositeObj, None]
+            compositeObj.filter.side_effect = [compositeObj, result_obj]
             compositeObj.all.return_value = compositeObj
             compositeObj.order_by.return_value = compositeObj
+            serializer.return_value = serializer
+            serializer.data = result_obj
 
             response = self.client.get(url)
             responseDict = json.loads(response.content)
-            expected_error = "Error; no provider name found for: test"
 
             self.assertEqual(response.status_code,
-                             status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(responseDict['message'], expected_error)
+                             status.HTTP_200_OK)
+            self.assertEqual(responseDict, result_obj)
+
+    # api/metadata/?provider=
 
     def test_get_records_provider_found(self):
         """Test that the /api/metadata/ endpoint returns an object
@@ -56,6 +68,27 @@ class ViewTests(TestSetUp):
             self.assertEqual(response.status_code,
                              status.HTTP_200_OK)
             self.assertEqual(responseDict, result_obj)
+
+    def test_get_records_provider_not_found(self):
+        """Test that the /api/metadata/ endpoint returns the correct error
+            if no provider name is found"""
+        url = "%s?provider=test" % (reverse('api:metadata'))
+
+        with patch('api.views.CompositeLedger.objects') as compositeObj:
+            compositeObj.return_value = compositeObj
+            compositeObj.filter.side_effect = [compositeObj, None]
+            compositeObj.all.return_value = compositeObj
+            compositeObj.order_by.return_value = compositeObj
+
+            response = self.client.get(url)
+            responseDict = json.loads(response.content)
+            expected_error = "Error; no provider name found for: test"
+
+            self.assertEqual(response.status_code,
+                             status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(responseDict['message'], expected_error)
+
+    # api/metadata/?id=
 
     def test_get_records_id_not_found(self):
         """Test that the /api/metadata/ endpoint returns the correct error
@@ -102,30 +135,6 @@ class ViewTests(TestSetUp):
                              status.HTTP_200_OK)
             self.assertEqual(responseDict, result_obj)
 
-    def test_get_records_no_param(self):
-        """Test that the /api/metadata/ endpoint returns a list of records
-           if no parameter is sent"""
-        url = reverse('api:metadata')
-        result_obj = {
-            "test": "test"
-        }
-
-        with patch('api.views.CompositeLedger.objects') as compositeObj, \
-                patch('api.views.CompositeLedgerSerializer') as serializer:
-            compositeObj.return_value = compositeObj
-            compositeObj.filter.side_effect = [compositeObj, result_obj]
-            compositeObj.all.return_value = compositeObj
-            compositeObj.order_by.return_value = compositeObj
-            serializer.return_value = serializer
-            serializer.data = result_obj
-
-            response = self.client.get(url)
-            responseDict = json.loads(response.content)
-
-            self.assertEqual(response.status_code,
-                             status.HTTP_200_OK)
-            self.assertEqual(responseDict, result_obj)
-
     def test_record_for_requested_course_id(self):
         """Test that the /api/metadata/ID endpoint returns a single record with
             the matching id"""
@@ -145,60 +154,61 @@ class ViewTests(TestSetUp):
             self.assertEqual(responseDict['unique_record_identifier'],
                              str(self.unique_record_identifier))
 
-    def test_patch_record_for_course_id(self):
-        """Test that the /api/metadata/ID endpoint updates record with
-            the matching id"""
-        self.composite_ledger_valid_data.save()
-        id = self.composite_ledger_valid_data.unique_record_identifier
-        url = reverse('api:record_for_requested_course_id', args=(id,))
+    # def test_patch_record_for_course_id(self):
+    #     """Test that the /api/metadata/ID endpoint updates record with
+    #         the matching id"""
+    #     self.composite_ledger_valid_data.save()
+    #     id = self.composite_ledger_valid_data.unique_record_identifier
+    #     url = reverse('api:record_for_requested_course_id', args=(id,))
+    #
+    #     with patch('api.serializers'
+    #                '.get_required_recommended_fields_for_validation') \
+    #             as get_lists:
+    #         rec_fields = []
+    #         req_fields = []
+    #         get_lists.return_value = rec_fields, req_fields
+    #
+    #         dataJSON = json.dumps(self.composite_ledger_valid_data_dict)
+    #
+    #         response = self.client.patch(url,
+    #                                      data=dataJSON,
+    #                                      content_type='application/json')
+    #         responseDict = json.loads(response.content)
+    #
+    #         self.assertEqual(response.status_code,
+    #                          status.HTTP_200_OK)
+    #         self.assertEqual(responseDict,
+    #                          {"message": "Data updated successfully"})
 
-        with patch('api.serializers'
-                   '.get_required_recommended_fields_for_validation') \
-                as get_lists:
-            rec_fields = []
-            req_fields = []
-            get_lists.return_value = rec_fields, req_fields
-
-            dataJSON = json.dumps(self.composite_ledger_valid_data_dict)
-
-            response = self.client.patch(url,
-                                         data=dataJSON,
-                                         content_type='application/json')
-            responseDict = json.loads(response.content)
-
-            self.assertEqual(response.status_code,
-                             status.HTTP_200_OK)
-            self.assertEqual(responseDict,
-                             {"message": "Data updated successfully"})
-
-    def test_patch_record_for_course_id_invalid(self):
-        """Test that the /api/metadata/ID endpoint does not update invalid
-        record with the matching id"""
-        doc_id = '123456'
-        url = reverse('api:record_for_requested_course_id', args=(doc_id,))
-
-        with patch('api.views.CompositeLedger.objects') as compositeObj, \
-                patch('api.views.CompositeLedgerSerializer') as serializer:
-            compositeObj.return_value = compositeObj
-            compositeObj.order_by.return_value = compositeObj
-            compositeObj.get.return_value = self.composite_ledger_valid_data
-
-            serializer.return_value = serializer
-            serializer.is_valid.return_value = False
-            serializer.save.return_value = serializer
-            serializer.data = self.composite_ledger_metadata_invalid
-            serializer.errors = {}
-            dataJSON = json.dumps(self.composite_ledger_metadata_invalid)
-
-            response = self.client.patch(url,
-                                         data=dataJSON,
-                                         content_type='application/json')
-            responseDict = json.loads(response.content)
-
-            self.assertEqual(response.status_code,
-                             status.HTTP_500_INTERNAL_SERVER_ERROR)
-            self.assertEqual(responseDict["message"],
-                             "Data is not valid for update")
+    # def test_patch_record_for_course_id_invalid(self):
+    #     """Test that the /api/metadata/ID endpoint does not update invalid
+    #     record with the matching id"""
+    #
+    #     doc_id = '123456'
+    #     url = reverse('api:record_for_requested_course_id', args=(doc_id,))
+    #
+    #     with patch('api.views.CompositeLedger.objects') as compositeObj, \
+    #             patch('api.views.CompositeLedgerSerializer') as serializer:
+    #         compositeObj.return_value = compositeObj
+    #         compositeObj.order_by.return_value = compositeObj
+    #         compositeObj.get.return_value = self.composite_ledger_valid_data
+    #
+    #         serializer.return_value = serializer
+    #         serializer.is_valid.return_value = False
+    #         serializer.save.return_value = serializer
+    #         serializer.data = self.composite_ledger_metadata_invalid
+    #         serializer.errors = {}
+    #         dataJSON = json.dumps(self.composite_ledger_metadata_invalid)
+    #
+    #         response = self.client.patch(url,
+    #                                      data=dataJSON,
+    #                                      content_type='application/json')
+    #         responseDict = json.loads(response.content)
+    #
+    #         self.assertEqual(response.status_code,
+    #                          status.HTTP_500_INTERNAL_SERVER_ERROR)
+    #         self.assertEqual(responseDict["message"],
+    #                          "Data is not valid for update")
 
     def test_post_record_valid(self):
         """Test that sending a POST request to the /api/metadata endpoint
@@ -242,7 +252,7 @@ class ViewTests(TestSetUp):
                              status.HTTP_201_CREATED)
             self.assertEqual(responseDict, uid)
 
-    def test_post_composite_record_valid(self):
+    def test_post_supplemental_record_valid(self):
         """Test that sending a POST request to the /api/supplemental-data
         endpoint succeeds and returns unique record identifier for the new
         record"""
@@ -265,24 +275,24 @@ class ViewTests(TestSetUp):
                              status.HTTP_201_CREATED)
             self.assertEqual(responseDict, uid)
 
-    def test_patch_record_for_course_id_fail(self):
-        """Test that the /api/metadata/ID endpoint returns a 500 error if an
-            exception is thrown"""
-        doc_id = '123456'
-        url = reverse('api:record_for_requested_course_id', args=(doc_id,))
-
-        with patch('api.views.CompositeLedger.objects') as compositeObj, \
-                patch('api.views.CompositeLedgerSerializer'):
-            compositeObj.return_value = compositeObj
-            compositeObj.order_by.return_value = compositeObj
-            compositeObj.get.side_effect = HTTPError
-
-            dataJSON = json.dumps(self.composite_ledger_metadata_invalid)
-
-            response = self.client.patch(url, json=dataJSON)
-
-            self.assertEqual(response.status_code,
-                             status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # def test_patch_record_for_course_id_fail(self):
+    #     """Test that the /api/metadata/ID endpoint returns a 500 error if an
+    #         exception is thrown"""
+    #     doc_id = '123456'
+    #     url = reverse('api:record_for_requested_course_id', args=(doc_id,))
+    #
+    #     with patch('api.views.CompositeLedger.objects') as compositeObj, \
+    #             patch('api.views.CompositeLedgerSerializer'):
+    #         compositeObj.return_value = compositeObj
+    #         compositeObj.order_by.return_value = compositeObj
+    #         compositeObj.get.side_effect = HTTPError
+    #
+    #         dataJSON = json.dumps(self.composite_ledger_metadata_invalid)
+    #
+    #         response = self.client.patch(url, json=dataJSON)
+    #
+    #         self.assertEqual(response.status_code,
+    #                          status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def test_record_for_requested_course_id_fail(self):
         """Test that the /api/metadata/ID endpoint returns a 500 error if an
@@ -301,12 +311,12 @@ class ViewTests(TestSetUp):
                              status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def test_get_record_by_key_hashes(self):
-        """Test that the /api/metadata/?metadata_key_hash_list= returns a
+        """Test that the /api/metadata/?metadata_key_hash= returns a
             list of records for each found hash"""
         key_list = self.metadata_key_hash[0]
         self.composite_ledger_valid_data.save()
-        url = "%s?metadata_key_hash_list=%s" \
-            % (reverse('api:metadata'), key_list)
+        url = "%s?metadata_key_hash=%s" \
+              % (reverse('api:metadata'), key_list)
 
         response = self.client.get(url)
         responseDict = json.loads(response.content)
@@ -318,11 +328,11 @@ class ViewTests(TestSetUp):
                          self.metadata_key_hash[0])
 
     def test_get_record_by_key_hashes_not_found(self):
-        """Test that the /api/metadata/?metadata_key_hash_list= returns an
+        """Test that the /api/metadata/?metadata_key_hasht= returns an
             error if no record is found"""
         key_list = "1234,456,789"
-        url = "%s?metadata_key_hash_list=%s" \
-            % (reverse('api:metadata'), key_list)
+        url = "%s?metadata_key_hash=%s" \
+              % (reverse('api:metadata'), key_list)
 
         response = self.client.get(url)
 

@@ -8,13 +8,14 @@ router = DefaultRouter()
 app_name = 'api'
 
 urlpatterns = [
-    path('metadata/', views.metadata_list,
-         name='metadata'),
-    path('supplemental-data/', views.create_supplemental_metadata_record,
+    path('catalogs/', views.CatalogDataView.as_view(), name='catalog'),
+    path('metadata-catalogs/', views.ProviderDataView.as_view()),
+    path('metadata/', views.MetaDataView.as_view(), name='metadata'),
+    path('supplemental-data/', views.SupplementalDataView.as_view(),
          name='supplemental-data'),
-    path('catalogs/', views.get_course_providers),
-    path('metadata/<str:course_id>/', views.record_for_requested_course_id,
+    path('metadata/<str:course_id>/', views.UUIDDataView.as_view(),
          name='record_for_requested_course_id'),
+    path('managed-data/', views.ManageDataView.as_view(), name='managed-data'),
     path('xis-workflow/', views.xis_workflow_api),
     # path('post_to_neo4j/', views.post_to_neo4j,
     #      name='post_to_neo4j'),

@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from django.utils import timezone
 from rest_framework import serializers
@@ -12,12 +13,32 @@ from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
 logger = logging.getLogger('dict_config_logger')
 
 
-class MetadataLedgerSerializer(serializers.ModelSerializer):
+class DynamicFieldsModelSerializer(serializers.ModelSerializer):
+    """
+    A ModelSerializer that takes an additional `fields` argument that
+    controls which fields should be displayed.
+    """
+
+    def __init__(self, *args, **kwargs):
+        # Don't pass the 'fields' arg up to the superclass
+        fields = kwargs.pop('fields', None)
+
+        # Instantiate the superclass normally
+        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
+
+        if fields is not None:
+            # Drop any fields that are not specified in the `fields` argument.
+            allowed = set(fields)
+            existing = set(self.fields.keys())
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+
+class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
     """Serializes an entry into the Metadata Ledger"""
 
     class Meta:
         model = MetadataLedger
-
         fields = '__all__'
 
     def validate(self, data):
@@ -59,7 +80,6 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Updates the older record in table based on validation result"""
-
         # Check if older record is the same to skip updating
         if validated_data['metadata_hash'] != self.instance.metadata_hash:
             if validated_data.get('record_status') == 'Active':
@@ -73,6 +93,12 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """creates new record in table"""
+        # assigning a new UUID primary key for data created
+        if MetadataLedger.objects.filter(
+                unique_record_identifier=validated_data
+                ['unique_record_identifier']).exists():
+            logger.info("Assigning new UUID to updated value")
+            validated_data['unique_record_identifier'] = uuid.uuid4()
 
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()
@@ -83,6 +109,14 @@ class MetadataLedgerSerializer(serializers.ModelSerializer):
         try:
             # Here is the important part! Creating new object!
             instance = MetadataLedger.objects.create(**validated_data)
+
+            # assigning the updated by update to corresponding
+            # supplemental ledger
+            SupplementalLedger.objects. \
+                filter(metadata_key_hash=validated_data['metadata_key_hash'],
+                       record_status='Active'). \
+                update(composite_ledger_transmission_status='Ready',
+                       updated_by=validated_data['updated_by'])
         except TypeError:
             raise TypeError('Cannot create record')
 
@@ -147,6 +181,12 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """creates new record in table"""
 
+        # assigning a new UUID primary key for data created
+        if SupplementalLedger.objects.filter(
+                unique_record_identifier=validated_data
+                ['unique_record_identifier']).exists():
+            validated_data['unique_record_identifier'] = uuid.uuid4()
+
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()
         logger.info(validated_data)
@@ -157,6 +197,15 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         try:
             # Here is the important part! Creating new object!
             instance = SupplementalLedger.objects.create(**validated_data)
+
+            # assigning the updated by update to corresponding
+            # metadata ledger
+            MetadataLedger.objects. \
+                filter(metadata_key_hash=validated_data['metadata_key_hash'],
+                       record_status='Active').\
+                update(composite_ledger_transmission_status='Ready',
+                       updated_by=validated_data['updated_by'])
+
         except TypeError:
             raise TypeError('Cannot create record')
 
