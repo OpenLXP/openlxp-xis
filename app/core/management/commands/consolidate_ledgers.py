@@ -20,7 +20,7 @@ def put_metadata_ledger_into_composite_ledger(data):
             append_metadata_ledger_with_supplemental_ledger(row)
 
         # Hashing the composite metadata
-        composite_metadata_hash = hashlib.md5(
+        composite_metadata_hash = hashlib.sha512(
             str(composite_ledger_dict).encode('utf-8')).hexdigest()
 
         # Setting record_status & deleted_date for updated record

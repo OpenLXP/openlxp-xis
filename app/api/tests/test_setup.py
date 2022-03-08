@@ -119,15 +119,15 @@ class TestSetUp(APITestCase):
         self.metadata_valid_json = json.loads(r)
 
         self.provider_name_valid = 'AGENT_1'
-        self.metadata_hash_valid = str(hashlib.md5(str(self.metadata_valid).
-                                                   encode('utf-8')).
+        self.metadata_hash_valid = str(hashlib.sha512(str(self.metadata_valid).
+                                                      encode('utf-8')).
                                        hexdigest())
         field_values = [self.metadata_valid["Course"]["CourseCode"],
                         self.provider_name_valid]
         self.metadata_key_valid = '_'.join(field_values)
         self.metadata_key_hash_valid = \
-            str(hashlib.md5(str(self.metadata_key_valid).
-                            encode('utf-8')).hexdigest())
+            str(hashlib.sha512(str(self.metadata_key_valid).
+                               encode('utf-8')).hexdigest())
 
         self.metadataLedger_data_valid = {
             "provider_name": self.provider_name_valid,
@@ -144,8 +144,8 @@ class TestSetUp(APITestCase):
             "supplemental_data2": "sample2"
         }
         self.supplemental_metadata_hash_valid = \
-            hashlib.md5(str(self.supplemental_metadata_valid).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.supplemental_metadata_valid).
+                           encode('utf-8')).hexdigest()
 
         self.supplemental_data_valid = {
             "provider_name": self.provider_name_valid,
@@ -161,8 +161,8 @@ class TestSetUp(APITestCase):
             {"Metadata_Ledger": self.metadataLedger_data_valid['metadata'],
              "Supplemental_Ledger": self.supplemental_data_valid['metadata']}
         self.composite_ledger_metadata_hash_valid = \
-            hashlib.md5(str(self.composite_ledger_metadata_valid).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.composite_ledger_metadata_valid).
+                           encode('utf-8')).hexdigest()
 
         self.composite_data_valid = {
             "provider_name": self.provider_name_valid,
@@ -230,13 +230,14 @@ class TestSetUp(APITestCase):
         }
         self.provider_name_valid_2 = 'AGENT_2'
         self.metadata_hash_valid_2 = \
-            hashlib.md5(str(self.metadata_valid_2).encode('utf-8')).hexdigest()
+            hashlib.sha512(
+                str(self.metadata_valid_2).encode('utf-8')).hexdigest()
         field_values = [self.metadata_valid_2["Course"]["CourseCode"],
                         self.provider_name_valid_2]
         self.metadata_key_valid_2 = '_'.join(field_values)
         self.metadata_key_hash_valid_2 = \
-            hashlib.md5(str(self.metadata_key_valid_2).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.metadata_key_valid_2).
+                           encode('utf-8')).hexdigest()
 
         self.metadataLedger_data_valid_2 = {
             "provider_name": self.provider_name_valid_2,
@@ -252,8 +253,8 @@ class TestSetUp(APITestCase):
             "supplemental_data2": "sample2_2"
         }
         self.supplemental_metadata_hash_valid_2 = \
-            hashlib.md5(str(self.supplemental_metadata_valid_2).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.supplemental_metadata_valid_2).
+                           encode('utf-8')).hexdigest()
 
         self.supplemental_data_valid_2 = {
             "provider_name": self.provider_name_valid_2,
@@ -268,8 +269,8 @@ class TestSetUp(APITestCase):
             {"Metadata_Ledger": self.metadataLedger_data_valid_2['metadata'],
              "Supplemental_Ledger": self.supplemental_data_valid_2['metadata']}
         self.composite_ledger_metadata_hash_valid_2 = \
-            hashlib.md5(str(self.composite_ledger_metadata_valid_2).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.composite_ledger_metadata_valid_2).
+                           encode('utf-8')).hexdigest()
 
         self.composite_data_valid_2 = {
             "provider_name": self.provider_name_valid_2,
@@ -326,13 +327,14 @@ class TestSetUp(APITestCase):
 
         self.provider_name_invalid = 'AGENT_3'
         self.metadata_hash_invalid = \
-            hashlib.md5(str(self.metadata_invalid).encode('utf-8')).hexdigest()
+            hashlib.sha512(
+                str(self.metadata_invalid).encode('utf-8')).hexdigest()
         field_values = [self.metadata_invalid["Course"]["CourseCode"],
                         self.provider_name_invalid]
         self.metadata_key_invalid = '_'.join(field_values)
         self.metadata_key_hash_invalid = \
-            hashlib.md5(str(self.metadata_key_invalid).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.metadata_key_invalid).
+                           encode('utf-8')).hexdigest()
 
         self.metadataLedger_data_invalid = {
             "provider_name": self.provider_name_invalid,
@@ -349,8 +351,8 @@ class TestSetUp(APITestCase):
             "supplemental_data2": "sample2_invalid"
         }
         self.supplemental_metadata_hash_invalid = \
-            hashlib.md5(str(self.supplemental_metadata_invalid).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.supplemental_metadata_invalid).
+                           encode('utf-8')).hexdigest()
 
         self.supplemental_data_invalid = {
             "provider_name": self.provider_name_invalid,
@@ -367,8 +369,8 @@ class TestSetUp(APITestCase):
              "Supplemental_Ledger": self.supplemental_data_invalid['metadata']}
 
         self.composite_ledger_metadata_hash_invalid = \
-            hashlib.md5(str(self.composite_ledger_metadata_invalid).
-                        encode('utf-8')).hexdigest()
+            hashlib.sha512(str(self.composite_ledger_metadata_invalid).
+                           encode('utf-8')).hexdigest()
 
         self.composite_data_invalid = {
             "provider_name": self.provider_name_invalid,

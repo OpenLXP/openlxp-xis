@@ -334,10 +334,10 @@ class ManageDataView(APIView):
             detach_metadata_ledger_from_supplemental_ledger(request.data)
 
         # create hash values of metadata and supplemental data
-        metadata_hash = hashlib.md5(str(metadata_data['metadata']).encode(
+        metadata_hash = hashlib.sha512(str(metadata_data['metadata']).encode(
             'utf-8')).hexdigest()
-        supplemental_hash = hashlib.md5(str(supplemental_data['metadata'])
-                                        .encode('utf-8')).hexdigest()
+        supplemental_hash = hashlib.sha512(str(supplemental_data['metadata'])
+                                           .encode('utf-8')).hexdigest()
 
         # assign hash values to hash key in data
         metadata_data['metadata_hash'] = metadata_hash

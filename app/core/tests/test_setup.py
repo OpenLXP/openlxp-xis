@@ -48,14 +48,14 @@ class TestSetUp(TestCase):
         self.updated_by = 'System'
         self.unique_record_identifier = UUID(
             '09edea0e-6c83-40a6-951e-2acee3e99502')
-        self.metadata_hash = str(hashlib.md5(str(self.metadata).
-                                             encode('utf-8')).
+        self.metadata_hash = str(hashlib.sha512(str(self.metadata).
+                                                encode('utf-8')).
                                  hexdigest()),
         field_values = [self.metadata["Course"]["CourseCode"],
                         self.provider_name]
         self.metadata_key = '_'.join(field_values)
-        self.metadata_key_hash = str(hashlib.md5(str(self.metadata_key).
-                                                 encode('utf-8')).
+        self.metadata_key_hash = str(hashlib.sha512(str(self.metadata_key).
+                                                    encode('utf-8')).
                                      hexdigest()),
 
         self.metadata_1 = {
@@ -122,8 +122,8 @@ class TestSetUp(TestCase):
             self.composite_ledger_dict_xse.update(self.metadata)
 
         self.composite_ledger_metadata_hash_valid = \
-            str(hashlib.md5(str(self.composite_ledger_dict).
-                            encode('utf-8')).hexdigest())
+            str(hashlib.sha512(str(self.composite_ledger_dict).
+                               encode('utf-8')).hexdigest())
 
         self.composite_data_valid = {
             "provider_name": self.provider_name,
