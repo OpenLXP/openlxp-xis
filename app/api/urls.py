@@ -9,7 +9,8 @@ app_name = 'api'
 
 urlpatterns = [
     path('catalogs/', views.CatalogDataView.as_view(), name='catalog'),
-    path('metadata-catalogs/', views.ProviderDataView.as_view()),
+    path('metadata-catalogs/', views.ProviderDataView.as_view(),
+         name='metadata-catalog'),
     path('metadata/', views.MetaDataView.as_view(), name='metadata'),
     path('supplemental-data/', views.SupplementalDataView.as_view(),
          name='supplemental-data'),

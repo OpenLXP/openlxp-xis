@@ -1,4 +1,5 @@
 import logging
+
 from core.models import SupplementalLedger
 
 logger = logging.getLogger('dict_config_logger')
@@ -47,8 +48,10 @@ def detach_metadata_ledger_from_supplemental_ledger(data):
 
     # assigning the metadata and supplemental data to be saved in the ledgers
     if data:
-        metadata_data = {key: data[key] for key in metadata_fields}
-        supplemental_data = {key: data[key] for key in supplemental_fields}
+        metadata_data = {key: data[key] if key in data else ''
+                         for key in metadata_fields}
+        supplemental_data = {key: data[key] if key in data else ''
+                             for key in supplemental_fields}
 
         metadata_data['metadata'] = data['metadata']['Metadata_Ledger']
         supplemental_data['metadata'] = data['metadata']['Supplemental_Ledger']

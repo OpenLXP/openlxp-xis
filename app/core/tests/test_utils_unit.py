@@ -3,6 +3,8 @@ from unittest.mock import patch
 from ddt import data, ddt, unpack
 from django.test import tag
 
+from core.management.utils.neo4j_client import (get_neo4j_auth,
+                                                get_neo4j_endpoint)
 from core.management.utils.xis_internal import (dict_flatten,
                                                 flatten_dict_object,
                                                 flatten_list_object,
@@ -13,12 +15,11 @@ from core.management.utils.xse_client import (get_elasticsearch_endpoint,
 from core.management.utils.xss_client import (
     aws_get, get_required_recommended_fields_for_validation,
     get_target_validation_schema)
+from core.models import MetadataLedger, Neo4jConfiguration, XISConfiguration
 
-from core.management.utils.neo4j_client import (get_neo4j_endpoint,
-                                                get_neo4j_auth)
-
-from core.models import XISConfiguration, Neo4jConfiguration
-
+from ..management.utils.transform_ledgers import (
+    append_metadata_ledger_with_supplemental_ledger,
+    detach_metadata_ledger_from_supplemental_ledger)
 from .test_setup import TestSetUp
 
 
@@ -355,3 +356,49 @@ class UtilsTests(TestSetUp):
             result_api_es_endpoint = get_neo4j_endpoint()
 
             self.assertTrue(result_api_es_endpoint)
+
+    # Cases for transform_ledger.py
+
+    def test_append_metadata_ledger_with_supplemental_ledger(self):
+        """This tests to check method which finds
+        supplemental metadata and consolidate it with metadata ledger data"""
+
+        self.supplemental_ledger.save()
+        self.metadata_ledger.save()
+
+        metadata = MetadataLedger.objects.filter(
+            metadata_validation_status='Y',
+            record_status='Active',
+            composite_ledger_transmission_status='Ready').values(
+            'metadata_key',
+            'metadata_key_hash',
+            'metadata_hash',
+            'metadata',
+            'provider_name',
+            'updated_by')
+        for metadata_instance in metadata:
+            composite_data, supplemental_data = \
+                append_metadata_ledger_with_supplemental_ledger(
+                    metadata_instance)
+
+            self.assertEqual(self.supplement_metadata,
+                             supplemental_data['metadata'])
+            self.assertEqual(self.metadata,
+                             composite_data["Metadata_Ledger"])
+            self.assertEqual(self.supplement_metadata,
+                             composite_data["Supplemental_Ledger"])
+
+    def test_detach_metadata_ledger_from_supplemental_ledger(self):
+        """This test checks method to Detach supplemental metadata
+        and metadata from consolidated data"""
+
+        meta_data, supplemental_data = \
+            detach_metadata_ledger_from_supplemental_ledger(
+                self.composite_data_valid)
+
+        self.assertEqual(meta_data["metadata"], self.metadata)
+        self.assertEqual(meta_data["metadata_key"], self.metadata_key)
+        self.assertEqual(supplemental_data["metadata"],
+                         self.supplement_metadata)
+        self.assertEqual(supplemental_data["metadata_key"],
+                         self.metadata_key)

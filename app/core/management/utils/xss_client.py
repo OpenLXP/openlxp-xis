@@ -51,8 +51,12 @@ def get_required_recommended_fields_for_validation():
     #  Adding values to required and recommended list based on schema
     for column, value in flattened_schema_dict.items():
         if value == "Required":
+            if column.endswith(".use"):
+                column = column[:-len(".use")]
             required_column_list.append(column)
         elif value == "Recommended":
+            if column.endswith(".use"):
+                column = column[:-len(".use")]
             recommended_column_list.append(column)
 
     # Returning required and recommended list for validation

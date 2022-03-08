@@ -1,5 +1,6 @@
-from django.db import models
 import uuid
+
+from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
 from model_utils.models import TimeStampedModel

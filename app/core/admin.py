@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from core.models import XISConfiguration, XISSyndication, Neo4jConfiguration
+from core.models import Neo4jConfiguration, XISConfiguration, XISSyndication
 
 
 # Register your models here.

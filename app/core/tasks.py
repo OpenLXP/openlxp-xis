@@ -6,11 +6,10 @@ from openlxp_notifications.management.commands.conformance_alerts import \
 
 from core.management.commands.consolidate_ledgers import \
     Command as consolidate_ledgers
-from core.management.commands.load_metadata_into_xse import \
-    Command as load_metadata
-
 from core.management.commands.load_metadata_into_neo4j import \
     Command as load_metadata_into_neo4j
+from core.management.commands.load_metadata_into_xse import \
+    Command as load_metadata
 
 logger = logging.getLogger('dict_config_logger')
 

@@ -2,7 +2,7 @@ import hashlib
 import logging
 
 from celery.result import AsyncResult
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 # from core.management.commands.load_metadata_into_neo4j import \
 #     Command as load_metadata_into_neo4j
 from requests.exceptions import HTTPError
@@ -15,9 +15,9 @@ from rest_framework.views import APIView
 from api.serializers import (CompositeLedgerSerializer,
                              MetadataLedgerSerializer,
                              SupplementalLedgerSerializer)
-from core.management.utils.transform_ledgers import \
-    append_metadata_ledger_with_supplemental_ledger, \
-    detach_metadata_ledger_from_supplemental_ledger
+from core.management.utils.transform_ledgers import (
+    append_metadata_ledger_with_supplemental_ledger,
+    detach_metadata_ledger_from_supplemental_ledger)
 from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
 from core.tasks import xis_workflow
 
@@ -69,12 +69,29 @@ class CatalogDataView(APIView):
     def get(self, request):
         """This method defines an API to fetch the names of all
          course providers"""
+        errorMsg = {
+            "message": "Error fetching records please check the logs."
+        }
 
-        providers = list(CompositeLedger.objects.order_by()
-                         .values_list('provider_name', flat=True).distinct())
+        providers = list(CompositeLedger.objects.order_by().
+                         values_list('provider_name', flat=True).distinct())
         result = json.dumps(providers)
 
-        return HttpResponse(result, content_type="application/json")
+        try:
+            if not bool(providers):
+                raise ValueError
+        except HTTPError as http_err:
+            logger.error(http_err)
+            return Response(errorMsg,
+                            status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ValueError:
+            errorMsg = {
+                "message": "No catalogs present"
+            }
+            logger.error(errorMsg)
+            return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(result, status.HTTP_200_OK)
 
 
 class ProviderDataView(APIView):
@@ -83,12 +100,29 @@ class ProviderDataView(APIView):
     def get(self, request):
         """This method defines an API to fetch the names of all
          course providers"""
+        errorMsg = {
+            "message": "Error fetching records please check the logs."
+        }
 
         providers = list(MetadataLedger.objects.order_by()
                          .values_list('provider_name', flat=True).distinct())
         result = json.dumps(providers)
 
-        return HttpResponse(result, content_type="application/json")
+        try:
+            if not bool(providers):
+                raise ValueError
+        except HTTPError as http_err:
+            logger.error(http_err)
+            return Response(errorMsg,
+                            status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ValueError:
+            errorMsg = {
+                "message": "No catalogs present"
+            }
+            logger.error(errorMsg)
+            return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(result, status.HTTP_200_OK)
 
 
 class MetaDataView(APIView):
@@ -104,6 +138,12 @@ class MetaDataView(APIView):
         # initially fetch all active records
         querySet = CompositeLedger.objects.all().order_by() \
             .filter(record_status='Active')
+        if not querySet:
+            errorMsg = {
+                "message": "Error no records found"
+            }
+
+            return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
 
         # case where provider sent as query parameter
         if request.GET.get('provider'):
@@ -164,12 +204,10 @@ class MetaDataView(APIView):
 
         # Tracking source of changes to metadata/supplementary data
         request.data['updated_by'] = "System"
-
         serializer = add_metadata_ledger(request.data)
 
         if not serializer.is_valid():
             # If not received send error and bad request status
-            logger.error("Not valid")
             logger.info(json.dumps(request.data))
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
@@ -311,12 +349,14 @@ class ManageDataView(APIView):
         if not metadata_serializer.is_valid():
             # If not received send error and bad request status
             logger.info(json.dumps(metadata_data))
+            logger.error(metadata_serializer.errors)
             return Response(metadata_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
         if not supplemental_serializer.is_valid():
             # If not received send error and bad request status
             logger.info(json.dumps(supplemental_data))
+            logger.error(supplemental_serializer.errors)
             return Response(supplemental_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -332,7 +372,7 @@ class ManageDataView(APIView):
 @api_view(['GET'])
 @permission_classes((permissions.AllowAny,))
 def xis_workflow_api(request):
-    print('XIS workflow api')
+    logger.info('XIS workflow api')
     task = xis_workflow.delay()
     return JsonResponse({"task_id": task.id}, status=202)
 
