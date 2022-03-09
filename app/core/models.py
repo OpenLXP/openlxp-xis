@@ -23,6 +23,13 @@ class XISConfiguration(models.Model):
             to query.',
         max_length=200
     )
+    autocomplete_field = models.CharField(
+        default='metadata.Metadata_Ledger.Course.CourseTitle', max_length=200,
+        help_text='Enter the field to support '
+                  'autocomplete on in XSE.')
+    filter_field = models.CharField(
+        default='provider_name', max_length=200,
+        help_text='Enter the field to filter XSE queries by.')
 
     def get_absolute_url(self):
         """ URL for displaying individual model records."""

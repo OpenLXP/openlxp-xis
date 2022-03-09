@@ -10,8 +10,10 @@ from core.management.utils.xis_internal import (dict_flatten,
                                                 flatten_list_object,
                                                 required_recommended_logs,
                                                 update_flattened_object)
-from core.management.utils.xse_client import (get_elasticsearch_endpoint,
-                                              get_elasticsearch_index)
+from core.management.utils.xse_client import (get_autocomplete_field,
+                                              get_elasticsearch_endpoint,
+                                              get_elasticsearch_index,
+                                              get_filter_field)
 from core.management.utils.xss_client import (
     aws_get, get_required_recommended_fields_for_validation,
     get_target_validation_schema)
@@ -20,6 +22,7 @@ from core.models import MetadataLedger, Neo4jConfiguration, XISConfiguration
 from ..management.utils.transform_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
     detach_metadata_ledger_from_supplemental_ledger)
+
 from .test_setup import TestSetUp
 
 
@@ -292,6 +295,31 @@ class UtilsTests(TestSetUp):
             result_api_es_index = get_elasticsearch_index()
 
             self.assertTrue(result_api_es_index)
+
+    def test_get_autocomplete_field(self):
+        """This test is to check if function returns the autocomplete field"""
+        with patch('core.management.utils.xse_client.XISConfiguration.objects'
+                   ) as xis_config:
+            configObj = XISConfiguration(target_schema="test.json",
+                                         xse_host="host:8080",
+                                         xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result = get_autocomplete_field()
+
+            self.assertEquals(result,
+                              "metadata.Metadata_Ledger.Course.CourseTitle")
+
+    def test_get_filter_field(self):
+        """This test is to check if function returns the filter field"""
+        with patch('core.management.utils.xse_client.XISConfiguration.objects'
+                   ) as xis_config:
+            configObj = XISConfiguration(target_schema="test.json",
+                                         xse_host="host:8080",
+                                         xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result = get_filter_field()
+
+            self.assertEquals(result, "provider_name")
 
     # Test cases for XSS
 

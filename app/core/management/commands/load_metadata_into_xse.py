@@ -1,17 +1,19 @@
+import copy
 import json
 import logging
 
 import elasticsearch
 import requests
+from core.management.utils.xse_client import (get_autocomplete_field,
+                                              get_elasticsearch_endpoint,
+                                              get_elasticsearch_index,
+                                              get_filter_field)
+from core.models import CompositeLedger
 from django.core.management.base import BaseCommand
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.utils import timezone
 from elasticsearch import Elasticsearch
-
-from core.management.utils.xse_client import (get_elasticsearch_endpoint,
-                                              get_elasticsearch_index)
-from core.models import CompositeLedger
 
 es = Elasticsearch()
 
@@ -109,6 +111,24 @@ def create_xse_json_document(row):
                     "null":
                 row['metadata']['Metadata_Ledger'][item][item_nested] = None
     composite_ledger_dict.update(row['metadata']['Metadata_Ledger'])
+    try:
+        autocomplete_path = get_autocomplete_field().split('.')
+        autocomplete = copy.deepcopy(row)
+        for step in autocomplete_path:
+            autocomplete = autocomplete[step]
+        composite_ledger_dict['autocomplete'] = autocomplete
+    except Exception as e:
+        composite_ledger_dict['autocomplete'] = "Not Available"
+        logging.error(e)
+    try:
+        filter_path = get_filter_field().split('.')
+        filter = copy.deepcopy(row)
+        for step in filter_path:
+            filter = filter[step]
+        composite_ledger_dict['filter'] = filter
+    except Exception as e:
+        composite_ledger_dict['filter'] = "Not Available"
+        logging.error(e)
     return composite_ledger_dict
 
 
@@ -116,14 +136,10 @@ def check_records_to_load_into_xse():
     """Retrieve number of Composite_Ledger records in XIS to load into XSE and
     calls the post_data_to_xis accordingly"""
 
-    combined_query = CompositeLedger.objects.filter(
+    data = CompositeLedger.objects.filter((
         Q(metadata_transmission_status='Ready') | Q(
-            metadata_transmission_status='Failed'))
-
-    data = combined_query.filter(
-        record_status='Active').values(
-        'metadata_key_hash',
-        'metadata')
+            metadata_transmission_status='Failed')) &
+        Q(record_status='Active')).values()
 
     # Checking available no. of records in XIA to load into XIS is Zero or not
     if len(data) == 0:
@@ -137,11 +153,39 @@ def check_records_to_load_into_xse():
         post_data_to_xse(data)
 
 
+def setup_index():
+    """Sets up index and mapping if needed"""
+    try:
+        es = Elasticsearch(get_elasticsearch_endpoint()).indices
+
+        # create index with mapping if needed
+        if not es.exists(index=get_elasticsearch_index()):
+            es.create(index=get_elasticsearch_index(
+            ), body='{"mappings": {"properties": {"filter": {' +
+                '"type":  "keyword"},"autocomplete": {"type": "completion"' +
+                ',"contexts": [{"name": "filter","type": "category","path":' +
+                ' "filter"}]}}}}')
+        # add mapping if needed
+        elif len(es.get_field_mapping(fields='autocomplete',
+                                      index=get_elasticsearch_index())
+                 [get_elasticsearch_index()]['mappings']) == 0:
+            es.put_mapping(index=get_elasticsearch_index(
+            ), body='{"mappings": {"properties": {"filter": {' +
+                '"type":  "keyword"},"autocomplete": {"type": "completion"' +
+                ',"contexts": [{"name": "filter","type": "category","path":' +
+                ' "filter"}]}}}}')
+
+        # continue workflow
+        check_records_to_load_into_xse()
+    except Exception as e:
+        logging.error(e)
+        raise SystemExit('Exiting! Connection error with elastic search')
+
+
 class Command(BaseCommand):
     """Django command to load Composite_Ledger in the Experience Search Engine
         (XSE)"""
 
     def handle(self, *args, **options):
         """Metadata load from XIS Composite_Ledger to XSE"""
-
-        check_records_to_load_into_xse()
+        setup_index()
