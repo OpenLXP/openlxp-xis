@@ -1,6 +1,16 @@
 import hashlib
+import logging
 
+from requests import HTTPError
+from rest_framework import status
+from rest_framework.response import Response
+
+from api.serializers import MetadataLedgerSerializer
+from core.management.utils.transform_ledgers import \
+    append_metadata_ledger_with_supplemental_ledger
 from core.models import MetadataLedger, SupplementalLedger
+
+logger = logging.getLogger('dict_config_logger')
 
 
 def add_metadata_ledger(data, experience_id):
@@ -61,3 +71,34 @@ def add_supplemental_ledger(data, experience_id):
             data['metadata_key'] = record_in_table.metadata_key
 
     return data, record_in_table
+
+
+def get_managed_data(querySet):
+    """Function to respond with consolidated data to be managed"""
+
+    errorMsg = {
+        "message": "Error fetching records please check the logs."
+    }
+
+    fields = ('unique_record_identifier', 'metadata_key',
+              'metadata_key_hash', 'metadata_hash', 'metadata',
+              'provider_name')
+
+    try:
+        serializer_data = MetadataLedgerSerializer(querySet,
+                                                   many=True,
+                                                   fields=fields).data
+        transformed_metadata = \
+            append_metadata_ledger_with_supplemental_ledger(
+                serializer_data[0])[0]
+        serializer_data[0]['metadata'] = transformed_metadata
+
+    except HTTPError as http_err:
+        logger.error(http_err)
+        return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as err:
+        logger.error(err)
+        return Response(errorMsg,
+                        status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        return Response(serializer_data, status.HTTP_200_OK)

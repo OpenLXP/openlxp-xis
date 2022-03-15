@@ -13,11 +13,11 @@ from rest_framework.utils import json
 from rest_framework.views import APIView
 
 from api.management.utils.api_helper_functions import (add_metadata_ledger,
-                                                       add_supplemental_ledger)
+                                                       add_supplemental_ledger,
+                                                       get_managed_data)
 from api.serializers import CompositeLedgerSerializer, \
     MetadataLedgerSerializer, SupplementalLedgerSerializer
 from core.management.utils.transform_ledgers import (
-    append_metadata_ledger_with_supplemental_ledger,
     detach_metadata_ledger_from_supplemental_ledger)
 from core.models import CompositeLedger, MetadataLedger
 from core.tasks import xis_workflow
@@ -101,6 +101,7 @@ class MetaDataView(APIView):
         errorMsg = {
             "message": "Error fetching records please check the logs."
         }
+
         # initially fetch all active records
         querySet = CompositeLedger.objects.all().order_by() \
             .filter(record_status='Active')
@@ -244,17 +245,10 @@ class UUIDDataView(APIView):
 
 class ManagedCatalogDataView(APIView):
     """Handles HTTP requests for Managing catalog data from XMS"""
-    errorMsg = {
-        "message": "Error fetching records please check the logs."
-    }
 
     def get(self, request, provider_id):
         """This method defines the API's to retrieve data to be managed
          from XMS"""
-
-        fields = ('unique_record_identifier', 'metadata_key',
-                  'metadata_key_hash', 'metadata_hash', 'metadata',
-                  'provider_name')
 
         querySet = MetadataLedger.objects.filter(
             provider_name=provider_id,
@@ -267,40 +261,17 @@ class ManagedCatalogDataView(APIView):
             logger.error(errorMsg)
             return Response(errorMsg, status.HTTP_404_NOT_FOUND)
 
-        try:
-            serializer_data = MetadataLedgerSerializer(querySet,
-                                                       many=True,
-                                                       fields=fields).data
-            transformed_metadata = \
-                append_metadata_ledger_with_supplemental_ledger(
-                    serializer_data[0])[0]
-            serializer_data[0]['metadata'] = transformed_metadata
+        catalog_data_response = get_managed_data(querySet)
 
-        except HTTPError as http_err:
-            logger.error(http_err)
-            return Response(self.errorMsg,
-                            status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as err:
-            logger.error(err)
-            return Response(self.errorMsg,
-                            status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response(serializer_data, status.HTTP_200_OK)
+        return catalog_data_response
 
 
 class ManageDataView(APIView):
     """Handles HTTP requests for Managing data from XMS"""
-    errorMsg = {
-        "message": "Error fetching records please check the logs."
-    }
 
     def get(self, request, provider_id, experience_id):
         """This method defines the API's to retrieve data to be managed
          from XMS"""
-
-        fields = ('unique_record_identifier', 'metadata_key',
-                  'metadata_key_hash', 'metadata_hash', 'metadata',
-                  'provider_name')
 
         querySet = MetadataLedger.objects.filter(
             metadata_key_hash=experience_id,
@@ -312,28 +283,11 @@ class ManageDataView(APIView):
             errorMsg = {"Error; no active records found for metadata key " +
                         experience_id + " in provider " + provider_id}
             logger.error(errorMsg)
-
             return Response(errorMsg, status.HTTP_404_NOT_FOUND)
 
-        try:
-            serializer_data = MetadataLedgerSerializer(querySet,
-                                                       many=True,
-                                                       fields=fields).data
-            transformed_metadata = \
-                append_metadata_ledger_with_supplemental_ledger(
-                    serializer_data[0])[0]
-            serializer_data[0]['metadata'] = transformed_metadata
+        manage_data_response = get_managed_data(querySet)
 
-        except HTTPError as http_err:
-            logger.error(http_err)
-            return Response(self.errorMsg,
-                            status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as err:
-            logger.error(err)
-            return Response(self.errorMsg,
-                            status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response(serializer_data, status.HTTP_200_OK)
+        return manage_data_response
 
     def post(self, request, provider_id, experience_id):
         """This method defines the API's to save data
