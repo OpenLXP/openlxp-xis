@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 
 from requests import HTTPError
@@ -102,3 +103,34 @@ def get_managed_data(querySet):
                         status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
         return Response(serializer_data, status.HTTP_200_OK)
+
+
+def get_catalog_list(ledger):
+    """Function to respond with catalog list"""
+
+    errorMsg = {
+        "message": "Error fetching records please check the logs."
+    }
+
+    try:
+        providers = list(ledger.objects.
+                         order_by().values_list('provider_name',
+                                                flat=True).distinct())
+
+        if not providers:
+            errorMsg = {
+                "message": "No catalogs present in records"
+            }
+            return Response(errorMsg, status.HTTP_404_NOT_FOUND)
+
+        result = json.dumps(providers)
+
+    except HTTPError as http_err:
+        logger.error(http_err)
+        return Response(errorMsg,
+                        status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as err:
+        logger.error(err)
+        return Response(errorMsg, status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(result, status.HTTP_200_OK)

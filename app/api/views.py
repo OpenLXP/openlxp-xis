@@ -14,11 +14,13 @@ from rest_framework.views import APIView
 
 from api.management.utils.api_helper_functions import (add_metadata_ledger,
                                                        add_supplemental_ledger,
+                                                       get_catalog_list,
                                                        get_managed_data)
-from api.serializers import CompositeLedgerSerializer, \
-    MetadataLedgerSerializer, SupplementalLedgerSerializer
-from core.management.utils.transform_ledgers import (
-    detach_metadata_ledger_from_supplemental_ledger)
+from api.serializers import (CompositeLedgerSerializer,
+                             MetadataLedgerSerializer,
+                             SupplementalLedgerSerializer)
+from core.management.utils.transform_ledgers import \
+    detach_metadata_ledger_from_supplemental_ledger
 from core.models import CompositeLedger, MetadataLedger
 from core.tasks import xis_workflow
 
@@ -31,31 +33,10 @@ class CatalogDataView(APIView):
     def get(self, request):
         """This method defines an API to fetch the names of all
          course providers"""
-        errorMsg = {
-            "message": "Error fetching records please check the logs."
-        }
-        try:
-            providers = list(CompositeLedger.objects.
-                             order_by().values_list('provider_name',
-                                                    flat=True).distinct())
 
-            if not providers:
-                errorMsg = {
-                    "message": "No catalogs present in records"
-                }
-                return Response(errorMsg, status.HTTP_404_NOT_FOUND)
+        catalog_list_response = get_catalog_list(CompositeLedger)
 
-            result = json.dumps(providers)
-
-        except HTTPError as http_err:
-            logger.error(http_err)
-            return Response(errorMsg,
-                            status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as err:
-            logger.error(err)
-            return Response(errorMsg, status.HTTP_404_NOT_FOUND)
-        else:
-            return Response(result, status.HTTP_200_OK)
+        return catalog_list_response
 
 
 class ManagedCatalogListView(APIView):
@@ -64,31 +45,10 @@ class ManagedCatalogListView(APIView):
     def get(self, request):
         """This method defines an API to fetch the names of all
          course providers"""
-        errorMsg = {
-            "message": "Error fetching records please check the logs."
-        }
-        try:
-            providers = list(MetadataLedger.objects.
-                             order_by().values_list('provider_name',
-                                                    flat=True).distinct())
 
-            if not providers:
-                errorMsg = {
-                    "message": "No catalogs present in records"
-                }
-                return Response(errorMsg, status.HTTP_404_NOT_FOUND)
+        managed_catalog_list_response = get_catalog_list(MetadataLedger)
 
-            result = json.dumps(providers)
-
-        except HTTPError as http_err:
-            logger.error(http_err)
-            return Response(errorMsg,
-                            status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as err:
-            logger.error(err)
-            return Response(errorMsg, status.HTTP_404_NOT_FOUND)
-        else:
-            return Response(result, status.HTTP_200_OK)
+        return managed_catalog_list_response
 
 
 class MetaDataView(APIView):
