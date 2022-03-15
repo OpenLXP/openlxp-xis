@@ -204,6 +204,121 @@ class TestSetUp(APITestCase):
             record_status='Active',
             provider_name=self.provider_name_valid)
 
+        # composite value 1 update
+
+        # metadata values 1 update
+
+        self.metadata_valid_updated = {
+            "Course": {
+                "CourseCode": "course_code_1",
+                "CourseType": "",
+                "CourseTitle": "Appium Concepts with Mac OS X",
+                "CourseAudience": "Users who need to enter GF ",
+                "DepartmentName": "DSS/CDSE",
+                "CourseDescription": "course description updated",
+                "CourseProviderName": "AGENT_1",
+                "EducationalContext": "",
+                "CourseSectionDeliveryMode": "AGENT_1"
+            },
+            "CourseInstance": {
+                "CourseURL": "https://example@data"
+            },
+            "General_Information": {
+                "EndDate": "end_date",
+                "StartDate": "start_date"
+            }
+        }
+
+        r = json.dumps(self.metadata_valid)
+        self.metadata_valid_json_updated = json.loads(r)
+
+        self.provider_name_valid_updated = 'AGENT_1'
+        self.metadata_hash_valid_updated = str(hashlib.sha512(str(
+            self.metadata_valid_updated).encode('utf-8')).hexdigest())
+        field_values = [self.metadata_valid_updated["Course"]["CourseCode"],
+                        self.provider_name_valid_updated]
+        self.metadata_key_valid_updated = '_'.join(field_values)
+        self.metadata_key_hash_valid_updated = \
+            str(hashlib.sha512(str(self.metadata_key_valid_updated).
+                               encode('utf-8')).hexdigest())
+
+        self.metadataLedger_data_valid_updated = {
+            "provider_name": self.provider_name_valid_updated,
+            "unique_record_identifier": "fe16decc-a982-40b2-bd2b-f8ab98b80a6f",
+            "metadata_hash": self.metadata_hash_valid_updated,
+            "metadata_key": self.metadata_key_valid_updated,
+            "metadata_key_hash": self.metadata_key_hash_valid_updated,
+            "metadata": self.metadata_valid_json_updated,
+            "updated_by": "System"
+        }
+
+        self.supplemental_metadata_valid_updated = {
+            "supplemental_data1": "sample1 updated",
+            "supplemental_data2": "sample2"
+        }
+        self.supplemental_metadata_hash_valid_updated = \
+            hashlib.sha512(str(self.supplemental_metadata_valid_updated).
+                           encode('utf-8')).hexdigest()
+
+        self.supplemental_data_valid_updated = {
+            "provider_name": self.provider_name_valid_updated,
+            "unique_record_identifier": "fe16decc-a982-40b2-bd2b-g8ab98b80a6l",
+            "metadata": self.supplemental_metadata_valid_updated,
+            "metadata_hash": self.supplemental_metadata_hash_valid_updated,
+            "metadata_key": self.metadata_key_valid_updated,
+            "metadata_key_hash": self.metadata_key_hash_valid_updated,
+            "updated_by": "System"
+        }
+
+        self.composite_ledger_metadata_valid_updated = \
+            {"Metadata_Ledger": self.
+                metadataLedger_data_valid_updated['metadata'],
+             "Supplemental_Ledger":
+                 self.supplemental_data_valid_updated['metadata']}
+        self.composite_ledger_metadata_hash_valid_updated = \
+            hashlib.sha512(str(self.composite_ledger_metadata_valid_updated).
+                           encode('utf-8')).hexdigest()
+
+        self.composite_data_valid_updated = {
+            "provider_name": self.provider_name_valid_updated,
+            "unique_record_identifier": str(
+                unique_record_identifier_generator()),
+            "metadata": self.composite_ledger_metadata_valid_updated,
+            "metadata_hash": self.composite_ledger_metadata_hash_valid_updated,
+            "metadata_key": self.metadata_key_valid_updated,
+            "record_status": "Active",
+            "metadata_key_hash": self.metadata_key_hash_valid_updated,
+            "updated_by": "System"
+        }
+
+        self.supplemental_ledger_valid_data_updated = SupplementalLedger(
+            unique_record_identifier=unique_record_identifier_generator(),
+            metadata=self.supplemental_data_valid_updated,
+            metadata_hash=self.supplemental_metadata_hash_valid_updated,
+            metadata_key=self.metadata_key_valid_updated,
+            record_status="Active",
+            metadata_key_hash=self.metadata_key_hash_valid_updated,
+            provider_name=self.provider_name_valid_updated)
+
+        self.metadata_ledger_valid_data_updated = MetadataLedger(
+            unique_record_identifier=unique_record_identifier_generator(),
+            metadata=self.metadata_valid_updated,
+            metadata_hash=self.metadata_hash_valid_updated,
+            metadata_key=self.metadata_key_valid_updated,
+            record_status="Active",
+            metadata_validation_status='Y',
+            metadata_key_hash=self.metadata_key_hash_valid_updated,
+            provider_name=self.provider_name_valid_updated)
+
+        self.composite_ledger_valid_data_updated = CompositeLedger(
+            unique_record_identifier="09edea0f-6c83-40a6-951e-2acee3e99502",
+            metadata=self.composite_ledger_metadata_valid_updated,
+            metadata_hash=self.composite_ledger_metadata_hash_valid_updated,
+            metadata_key=self.metadata_key_valid_updated,
+            metadata_key_hash=self.metadata_key_hash_valid_updated,
+            record_status='Active',
+            provider_name=self.provider_name_valid_updated)
+
         # composite value 2
 
         # metadata values 2

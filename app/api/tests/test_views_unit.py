@@ -41,16 +41,16 @@ class ViewTests(TestSetUp):
         responseDict = json.loads(response.content)
 
         self.assertEqual(response.status_code,
-                         status.HTTP_400_BAD_REQUEST)
+                         status.HTTP_404_NOT_FOUND)
         self.assertTrue(responseDict)
 
-    # metadata-catalog fail and success
+    # managed-data fail and success
 
     def test_get_metadata_catalog_list(self):
-        """Test that the /api/metadata-catalog/ endpoint returns a list of
+        """Test that the /api/managed-data/ endpoint returns a list of
         catalogs from composite ledger"""
 
-        url = reverse('api:metadata-catalog')
+        url = reverse('api:managed-catalog')
         self.metadata_ledger_valid_data.save()
         self.metadata_ledger_valid_data_2.save()
 
@@ -63,15 +63,15 @@ class ViewTests(TestSetUp):
         self.assertTrue(self.provider_name_valid_2 in responseDict)
 
     def test_get_metadata_catalog_list_no_catalogs(self):
-        """Test that the /api/metadata-catalog/ endpoint returns a list of
+        """Test that the /api/managed-data/ endpoint returns a list of
         catalogs from composite ledger HTTP error"""
 
-        url = reverse('api:metadata-catalog')
+        url = reverse('api:managed-catalog')
         response = self.client.get(url)
         responseDict = json.loads(response.content)
 
         self.assertEqual(response.status_code,
-                         status.HTTP_400_BAD_REQUEST)
+                         status.HTTP_404_NOT_FOUND)
         self.assertTrue(responseDict)
 
     # api/metadata/
@@ -193,7 +193,7 @@ class ViewTests(TestSetUp):
             list of records for each found hash"""
         key_list = self.metadata_key_hash_valid
         self.composite_ledger_valid_data.save()
-        url = "%s?metadata_key_hash=%s" \
+        url = "%s?metadata_key_hash_list=%s" \
               % (reverse('api:metadata'), key_list)
 
         response = self.client.get(url)
@@ -324,8 +324,8 @@ class ViewTests(TestSetUp):
         key_list = self.metadata_key_hash_valid
         self.metadata_ledger_valid_data.save()
         self.supplemental_ledger_valid_data.save()
-        url = "%s?metadata_key_hash=%s" \
-              % (reverse('api:managed-data'), key_list)
+        url = reverse('api:managed-data', args=(self.provider_name_valid,
+                                                key_list,))
 
         response = self.client.get(url)
         responseDict = json.loads(response.content)
@@ -337,16 +337,16 @@ class ViewTests(TestSetUp):
                          self.metadata_key_hash_valid)
 
     def test_get_managed_metadata_key_hashes_not_found(self):
-        """Test that the /api/managed-data/?metadata_key_hasht= returns an
+        """Test that the /api/managed-data/?metadata_key_hash returns an
             error if no record is found"""
         key_list = "1234,456,789"
-        url = "%s?metadata_key_hash=%s" \
-              % (reverse('api:managed-data'), key_list)
+        url = reverse('api:managed-data', args=(self.provider_name_valid,
+                                                key_list,))
 
         response = self.client.get(url)
 
         self.assertEqual(response.status_code,
-                         status.HTTP_400_BAD_REQUEST)
+                         status.HTTP_404_NOT_FOUND)
 
     # post /api/metadata/
     def test_post_record_valid(self):
@@ -384,18 +384,20 @@ class ViewTests(TestSetUp):
             dataJSON = json.loads(dataSTR)
             response = self.client.post(url, dataJSON, format="json")
             responseDict = json.loads(response.content)
-            uid = self.metadataLedger_data_invalid['unique_record_identifier']
 
             self.assertEqual(response.status_code,
                              status.HTTP_201_CREATED)
-            self.assertEqual(responseDict, uid)
+            self.assertTrue(responseDict)
 
     # api/managed-metadata
 
     def test_post_managed_metadata(self):
         """Test that sending a POST request to the /api/metadata endpoint
             succeeds and returns unique record identifier for the new record"""
-        url = reverse('api:managed-data')
+        self.metadata_ledger_valid_data_updated.save()
+
+        url = reverse('api:managed-data', args=(self.provider_name_valid,
+                                                self.metadata_key_hash_valid,))
 
         with patch('api.serializers'
                    '.get_required_recommended_fields_for_validation') \
@@ -417,7 +419,9 @@ class ViewTests(TestSetUp):
     def test_post_managed_metadata_invalid(self):
         """Test that sending a POST request to the /api/metadata endpoint
             succeeds and returns unique record identifier for the new record"""
-        url = reverse('api:managed-data')
+
+        url = reverse('api:managed-data', args=(
+            self.provider_name_invalid, self.metadata_key_hash_invalid,))
 
         with patch('api.views.MetadataLedgerSerializer') as serializer:
             serializer.return_value = serializer
@@ -428,11 +432,10 @@ class ViewTests(TestSetUp):
             dataJSON = json.loads(dataSTR)
             response = self.client.post(url, dataJSON, format="json")
             responseDict = json.loads(response.content)
-            uid = self.metadataLedger_data_invalid['metadata_key_hash']
 
             self.assertEqual(response.status_code,
-                             status.HTTP_201_CREATED)
-            self.assertEqual(responseDict, uid)
+                             status.HTTP_400_BAD_REQUEST)
+            self.assertTrue(responseDict)
 
     # post /api/supplemental-data/
 
@@ -440,6 +443,7 @@ class ViewTests(TestSetUp):
         """Test that sending a POST request to the /api/supplemental-data
         endpoint succeeds and returns unique record identifier for the new
         record"""
+        self.supplemental_ledger_valid_data_updated.save()
         url = reverse('api:supplemental-data')
 
         with patch('api.serializers'
@@ -453,7 +457,8 @@ class ViewTests(TestSetUp):
             response = self.client.post(url, dataJSON, format="json")
             responseDict = json.loads(response.content)
             uid = self.supplemental_data_valid['unique_record_identifier']
-
+            print("RESPONSE DICT")
+            print(responseDict)
             self.assertEqual(response.status_code,
                              status.HTTP_201_CREATED)
             self.assertEqual(responseDict, uid)

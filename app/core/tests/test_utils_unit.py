@@ -22,7 +22,6 @@ from core.models import MetadataLedger, Neo4jConfiguration, XISConfiguration
 from ..management.utils.transform_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
     detach_metadata_ledger_from_supplemental_ledger)
-
 from .test_setup import TestSetUp
 
 
