@@ -17,18 +17,17 @@ class SerializerTests(TestSetUp):
 
     def test_MetadataLedgerSerializer_validate(self):
         """Test to check validation in metadata serializer"""
-        with patch('core.management.utils.xss_client'
-                   '.get_required_recommended_fields_for_validation') as \
+
+        with patch('api.serializers.'
+                   'get_required_recommended_fields_for_validation') as \
                 mock_validate_list, \
-                patch('core.management.utils.xss_client.'
-                      'get_target_validation_schema',
-                      return_value=self.target_data_dict), \
-                patch('core.management.utils.xss_client.read_json_data',
-                      return_value=None):
+                patch('api.serializers.get_data_types_for_validation',
+                      return_value=[]):
             mock_validate_list.return_value = self.required_dict, \
                                               self.recommended_dict
+
             return_obj = MetadataLedgerSerializer. \
-                validate(self, self.metadataLedger_data_valid)
+                validate(self, {"metadata": self.metadata_valid})
 
             self.assertEqual(return_obj.get('metadata_validation_status'), 'Y')
             self.assertEqual(return_obj.get('record_status'), "Active")
@@ -36,18 +35,16 @@ class SerializerTests(TestSetUp):
 
     def test_MetadataLedgerSerializer_validate_invalid(self):
         """Test to check validation in metadata serializer invalid"""
-        with patch('core.management.utils.xss_client'
-                   '.get_required_recommended_fields_for_validation') as \
+        with patch('api.serializers.'
+                   'get_required_recommended_fields_for_validation') as \
                 mock_validate_list, \
-                patch('core.management.utils.xss_client.'
-                      'get_target_validation_schema',
-                      return_value=self.target_data_dict), \
-                patch('core.management.utils.xss_client.read_json_data',
-                      return_value=None):
+                patch('api.serializers.get_data_types_for_validation',
+                      return_value=[]):
             mock_validate_list.return_value = self.required_dict, \
                                               self.recommended_dict
+            # mock_metadata.return_value = self.metadata_valid
             return_obj = MetadataLedgerSerializer. \
-                validate(self, self.metadataLedger_data_invalid)
+                validate(self, {"metadata": self.metadata_invalid})
 
             self.assertEqual(return_obj.get('metadata_validation_status'), 'N')
             self.assertEqual(return_obj.get('record_status'), "Inactive")

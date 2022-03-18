@@ -19,14 +19,6 @@ class TestSetUp(APITestCase):
         self.composite_provider_url = reverse('api:metadata')
         self.required_dict = {'Course.CourseProviderName', 'Course.CourseCode',
                               'Course.CourseTitle', 'Course.CourseDescription',
-                              'Course.CourseShortDescription',
-                              'Course.CourseSubjectMatter',
-                              'CourseInstance.CourseCode',
-                              'CourseInstance.CourseTitle ',
-                              'CourseInstance.StartDate',
-                              'CourseInstance.EndDate',
-                              'CourseInstance.DeliveryMode',
-                              'CourseInstance.Instructor',
                               'General_Information.StartDate',
                               'General_Information.EndDate'}
         self.recommended_dict = {'CourseInstance.Thumbnail',
@@ -39,7 +31,7 @@ class TestSetUp(APITestCase):
                 'CourseCode': 'Required',
                 'CourseTitle': 'Required',
                 'CourseDescription': 'Required',
-                'CourseShortDescription': 'Required',
+                'CourseShortDescription': 'Optional',
                 'CourseFullDescription': 'Optional',
                 'CourseAudience': 'Optional',
                 'CourseSectionDeliveryMode': 'Optional',

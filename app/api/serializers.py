@@ -4,10 +4,11 @@ import uuid
 from django.utils import timezone
 from rest_framework import serializers
 
-from core.management.utils.xis_internal import (dict_flatten,
+from core.management.utils.xis_internal import (dict_flatten, is_date,
                                                 required_recommended_logs)
-from core.management.utils.xss_client import \
-    get_required_recommended_fields_for_validation
+from core.management.utils.xss_client import (
+    get_data_types_for_validation,
+    get_required_recommended_fields_for_validation)
 from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
 
 logger = logging.getLogger('dict_config_logger')
@@ -47,30 +48,62 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
         # Call function to get required & recommended values
         required_column_list, recommended_column_list = \
             get_required_recommended_fields_for_validation()
+        expected_data_types = get_data_types_for_validation()
         json_metadata = data.get('metadata')
         validation_result = 'Y'
         record_status_result = 'Active'
         flattened_source_data = dict_flatten(json_metadata,
                                              required_column_list)
-        #  looping through elements in the metadata
-        for item in flattened_source_data:
-            # validate for required values in data
-            if item in required_column_list:
-                # update validation and record status for invalid data
-                # Log out error for missing required values
-                if not flattened_source_data[item]:
+        # validate for required values in data
+        for item_name in required_column_list:
+            # update validation and record status for invalid data
+            # Log out error for missing required values
+            # item_name = item[:-len(".use")]
+            if item_name in flattened_source_data:
+                if not flattened_source_data[item_name]:
                     validation_result = 'N'
                     record_status_result = 'Inactive'
                     required_recommended_logs(data.get
                                               ('unique_record_identifier'),
-                                              "Required", item)
-            # validate for recommended values in data
-            elif item in recommended_column_list:
-                # Log out warning for missing recommended values
-                if not flattened_source_data[item]:
-                    required_recommended_logs(data.
-                                              get('unique_record_identifier'),
-                                              "Recommended", item)
+                                              "Required", item_name)
+            else:
+                validation_result = 'N'
+                record_status_result = 'Inactive'
+                required_recommended_logs(data.get
+                                          ('unique_record_identifier'),
+                                          "Required", item_name)
+
+        # validate for recommended values in data
+        for item_name in recommended_column_list:
+            # Log out warning for missing recommended values
+            # item_name = item[:-len(".use")]
+            if item_name in flattened_source_data:
+                if not flattened_source_data[item_name]:
+                    required_recommended_logs(data.get
+                                              ('unique_record_identifier'),
+                                              "Recommended", item_name)
+            else:
+                required_recommended_logs(data.get
+                                          ('unique_record_identifier'),
+                                          "Recommended", item_name)
+        # Type checking for values in metadata
+        for item in flattened_source_data:
+            # check if datatype has been assigned to field
+            if item in expected_data_types:
+                # type checking for datetime datatype fields
+                if expected_data_types[item] == "datetime":
+                    if not is_date(flattened_source_data[item]):
+                        required_recommended_logs(data.get
+                                                  ('unique_record_identifier'),
+                                                  "datatype",
+                                                  item)
+                # type checking for datatype fields(except datetime)
+                elif (not isinstance(flattened_source_data[item],
+                                     expected_data_types[item])):
+                    required_recommended_logs(data.get
+                                              ('unique_record_identifier'),
+                                              "datatype",
+                                              item)
 
         data['metadata_validation_status'] = validation_result
         data['record_status'] = record_status_result
@@ -202,7 +235,7 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
             # metadata ledger
             MetadataLedger.objects. \
                 filter(metadata_key_hash=validated_data['metadata_key_hash'],
-                       record_status='Active').\
+                       record_status='Active'). \
                 update(composite_ledger_transmission_status='Ready',
                        updated_by=validated_data['updated_by'])
 
