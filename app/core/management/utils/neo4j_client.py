@@ -1,4 +1,5 @@
 import logging
+
 from core.models import Neo4jConfiguration
 
 logger = logging.getLogger('dict_config_logger')

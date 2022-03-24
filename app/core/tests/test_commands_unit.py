@@ -1,6 +1,12 @@
 import logging
 from unittest.mock import patch
 
+from ddt import ddt
+from django.core.management import call_command
+from django.db.utils import OperationalError
+from django.test import tag
+from neo4j import GraphDatabase
+
 from core.management.commands.consolidate_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
     check_metadata_ledger_transmission_ready_record,
@@ -14,11 +20,6 @@ from core.management.commands.load_metadata_into_xse import (
     renaming_xis_for_posting_to_xse, setup_index)
 from core.management.utils.xse_client import get_elasticsearch_index
 from core.models import CompositeLedger, MetadataLedger
-from ddt import ddt
-from django.core.management import call_command
-from django.db.utils import OperationalError
-from django.test import tag
-from neo4j import GraphDatabase
 
 from .test_setup import TestSetUp
 
@@ -479,7 +480,7 @@ class CommandTests(TestSetUp):
             driver_connection = GraphDatabase.driver(uri='bolt://neo4j:7007',
                                                      auth=('user',
                                                            'password'))
-            row = self.composite_ledger
+            row = self.composite_data_valid
             post_metadata_ledger_to_neo4j(row, driver_connection)
             self.assertTrue(driver_connection.session.run())
 
@@ -489,6 +490,6 @@ class CommandTests(TestSetUp):
             driver_connection = GraphDatabase.driver(uri='bolt://neo4j:7007',
                                                      auth=('user',
                                                            'password'))
-            row = self.composite_ledger
+            row = self.composite_data_valid
             post_supplemental_ledger_to_neo4j(row, driver_connection)
             self.assertTrue(driver_connection.session.run())

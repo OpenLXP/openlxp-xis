@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
@@ -99,6 +101,7 @@ class MetadataLedger(models.Model):
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
                                           ('Pending', 'P'), ('Ready', 'R')]
+    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
     composite_ledger_transmission_status = \
@@ -121,6 +124,8 @@ class MetadataLedger(models.Model):
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=50,
                                                 primary_key=True)
+    updated_by = models.CharField(max_length=10, blank=True,
+                                  choices=RECORD_UPDATED_BY, default='System')
 
 
 class SupplementalLedger(models.Model):
@@ -129,6 +134,7 @@ class SupplementalLedger(models.Model):
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
                                           ('Pending', 'P'), ('Ready', 'R')]
+    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
 
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
@@ -148,6 +154,8 @@ class SupplementalLedger(models.Model):
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=50,
                                                 primary_key=True)
+    updated_by = models.CharField(max_length=10, blank=True,
+                                  choices=RECORD_UPDATED_BY, default='System')
 
 
 class CompositeLedger(models.Model):
@@ -173,8 +181,9 @@ class CompositeLedger(models.Model):
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
-    unique_record_identifier = models.CharField(max_length=50,
-                                                primary_key=True)
+    unique_record_identifier = models.UUIDField(primary_key=True,
+                                                default=uuid.uuid4,
+                                                editable=False)
     updated_by = models.CharField(max_length=10, blank=True,
                                   choices=RECORD_UPDATED_BY)
     metadata_transmission_status_neo4j = \

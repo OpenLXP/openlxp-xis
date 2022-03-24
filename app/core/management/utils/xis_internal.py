@@ -1,16 +1,19 @@
 import logging
 
+from dateutil.parser import parse
+
 logger = logging.getLogger('dict_config_logger')
 
 
 def required_recommended_logs(id_num, category, field):
     """logs the missing required and recommended """
+
     # Logs the missing required columns
     if category == 'Required':
         logger.error(
             "Record " + str(
                 id_num) + " does not have all " + category +
-            " fields."
+            " fields. "
             + field + " field is empty")
 
     # Logs the missing recommended columns
@@ -18,8 +21,15 @@ def required_recommended_logs(id_num, category, field):
         logger.warning(
             "Record " + str(
                 id_num) + " does not have all " + category +
-            " fields."
+            " fields. "
             + field + " field is empty")
+
+    # Logs the inaccurate datatype columns
+    if category == 'datatype':
+        logger.warning(
+            "Record " + str(
+                id_num) + " does not have the expected " + category +
+            " for the field " + field)
 
 
 def dict_flatten(data_dict, required_column_list):
@@ -45,6 +55,24 @@ def dict_flatten(data_dict, required_column_list):
 
     # Return the flattened json object
     return flatten_dict
+
+
+def is_date(string, fuzzy=False):
+    """
+    Return whether the string can be interpreted as a date.
+
+    :param string: str, string to check for date
+    :param fuzzy: bool, ignore unknown tokens in string if True
+    """
+    if isinstance(string, str):
+        try:
+            parse(string, fuzzy=fuzzy)
+            return True
+
+        except ValueError:
+            return False
+    else:
+        return False
 
 
 def flatten_list_object(list_obj, prefix, flatten_dict, required_column_list):

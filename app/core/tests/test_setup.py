@@ -1,3 +1,4 @@
+import hashlib
 from uuid import UUID
 
 from django.test import TestCase
@@ -42,13 +43,21 @@ class TestSetUp(TestCase):
                 "StartDate": "start_date"
             }
         }
-        self.unique_record_identifier = UUID(
-            '09edea0e-6c83-40a6-951e-2acee3e99502')
-        self.metadata_hash = 'df0b51d7b45ca29682e930d236963584',
-        self.metadata_key = 'TestData 123_AGENT',
-        self.metadata_key_hash = '6acf7689ea81a1f792e7668a23b1acf5',
+
         self.provider_name = 'AGENT'
         self.updated_by = 'System'
+        self.unique_record_identifier = UUID(
+            '09edea0e-6c83-40a6-951e-2acee3e99502')
+        self.metadata_hash = str(hashlib.sha512(str(self.metadata).
+                                                encode('utf-8')).
+                                 hexdigest()),
+        field_values = [self.metadata["Course"]["CourseCode"],
+                        self.provider_name]
+        self.metadata_key = '_'.join(field_values)
+        self.metadata_key_hash = str(hashlib.sha512(str(self.metadata_key).
+                                                    encode('utf-8')).
+                                     hexdigest()),
+
         self.metadata_1 = {
             "Course": {
                 "CourseCode": "TestData 123",
@@ -87,7 +96,9 @@ class TestSetUp(TestCase):
             metadata_validation_status='Y',
             record_status='Active',
             composite_ledger_transmission_status='Ready',
-            provider_name='AGENT')
+            provider_name='AGENT',
+            updated_by='System'
+        )
 
         self.supplemental_ledger = SupplementalLedger(
             unique_record_identifier=self.unique_record_identifier,
@@ -97,7 +108,8 @@ class TestSetUp(TestCase):
             metadata_key=self.metadata_key,
             record_status='Active',
             composite_ledger_transmission_status='Ready',
-            provider_name='AGENT')
+            provider_name='AGENT',
+            updated_by='System')
 
         self.composite_ledger_dict = {"Metadata_Ledger": self.metadata,
                                       "Supplemental_Ledger":
@@ -109,13 +121,29 @@ class TestSetUp(TestCase):
         self.composite_ledger_dict_xse_updated = \
             self.composite_ledger_dict_xse.update(self.metadata)
 
+        self.composite_ledger_metadata_hash_valid = \
+            str(hashlib.sha512(str(self.composite_ledger_dict).
+                               encode('utf-8')).hexdigest())
+
+        self.composite_data_valid = {
+            "provider_name": self.provider_name,
+            "unique_record_identifier": self.unique_record_identifier,
+            "metadata": self.composite_ledger_dict,
+            "metadata_hash": self.composite_ledger_metadata_hash_valid,
+            "metadata_key": self.metadata_key,
+            "record_status": "Active",
+            "metadata_key_hash": self.metadata_key_hash,
+            "updated_by": "System"
+        }
+
         self.composite_ledger = CompositeLedger(
             unique_record_identifier=self.unique_record_identifier,
             metadata=self.composite_ledger_dict,
             metadata_key=self.metadata_key,
             metadata_key_hash=self.metadata_key_hash,
             record_status='Active',
-            provider_name='AGENT')
+            provider_name='AGENT',
+            updated_by='System')
 
         self.xis_data = {
             'metadata': {
@@ -221,43 +249,6 @@ class TestSetUp(TestCase):
             }
         }
 
-        self.composite_ledger = {
-            'metadata': {"Metadata_Ledger": {
-                "Course": {
-                    "CourseURL": "https://example.com",
-                    "CourseCode": "Test-007",
-                    "CourseTitle": "Test",
-                    "AccreditedBy": "Not Available",
-                    "CourseAudience": "Not Available",
-                    "CourseProviderName": "Test",
-                    "CoursePrerequisites": "Not Available",
-                    "CourseSubjectMatter": "Not Available",
-                    "CourseShortDescription": "Test",
-                    "EstimatedCompletionTime": "2.0"
-                },
-                "Course_Instance": {
-                    "EndDate": "1900-01-01T00:00:00-05:00",
-                    "CourseURL": "https://example.com",
-                    "StartDate": "1900-01-01T00:00:00-05:00",
-                    "CourseType": "Test",
-                    "Instructor": "Not Available"
-                },
-                "Lifecycle_Information": {
-                    "Provider": "Not Available",
-                    "Maintainer": "Not Available"
-                },
-                "Technical_Information": {
-                    "Location": "Not Available"
-                }
-            },
-                "Supplemental_Ledger": {
-                    "Instance": 1234
-                }
-            },
-            'metadata_key_hash': '6acf7689ea81a1f792e7668a23b1acf5',
-            'metadata_key': 'Test_Agent'
-
-        }
         return super().setUp()
 
     def tearDown(self):

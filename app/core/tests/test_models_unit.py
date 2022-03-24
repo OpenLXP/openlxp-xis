@@ -2,8 +2,8 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
 from django.utils import timezone
 
-from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
-                         XISConfiguration, XISSyndication, Neo4jConfiguration)
+from core.models import (CompositeLedger, MetadataLedger, Neo4jConfiguration,
+                         SupplementalLedger, XISConfiguration, XISSyndication)
 
 
 @tag('unit')
