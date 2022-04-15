@@ -21,7 +21,7 @@ class TestSetUp(APITestCase):
                               'Course.CourseTitle', 'Course.CourseDescription',
                               'General_Information.StartDate',
                               'General_Information.EndDate'}
-        self.recommended_dict = {'CourseInstance.Thumbnail',
+        self.recommended_dict = {'Course_Instance.Thumbnail',
                                  'Technical_Information.Thumbnail'}
 
         self.target_data_dict = {
@@ -94,16 +94,32 @@ class TestSetUp(APITestCase):
                 "CourseAudience": "Users who need to enter GF ",
                 "DepartmentName": "DSS/CDSE",
                 "CourseDescription": "course description",
+                "CourseShortDescription": "course description",
                 "CourseProviderName": "AGENT_1",
+                "CoursePrerequisites": "CoursePrerequisites",
                 "EducationalContext": "",
+                "CourseURL": "https://example@data",
+                "CourseSubjectMatter": "CourseSubjectMatter",
+                "AccreditedBy": "AccreditedBy",
                 "CourseSectionDeliveryMode": "AGENT_1"
             },
-            "CourseInstance": {
-                "CourseURL": "https://example@data"
+            "Course_Instance": {
+                "CourseURL": "https://example@data",
+                "Thumbnail": "https://example@data",
+                "EndDate": "end_date",
+                "StartDate": "start_date",
+                "Instructor": "Instructor"
             },
             "General_Information": {
                 "EndDate": "end_date",
                 "StartDate": "start_date"
+            },
+            "Technical_Information": {
+                "Location": "Location"
+            },
+            "Lifecycle_Information": {
+                "Provider": "Provider",
+                "Maintainer": "Maintainer"
             }
         }
 
@@ -128,7 +144,8 @@ class TestSetUp(APITestCase):
             "metadata_key": self.metadata_key_valid,
             "metadata_key_hash": self.metadata_key_hash_valid,
             "metadata": self.metadata_valid_json,
-            "updated_by": "System"
+            "updated_by": "System",
+            "record_status": "Active"
         }
 
         self.supplemental_metadata_valid = {

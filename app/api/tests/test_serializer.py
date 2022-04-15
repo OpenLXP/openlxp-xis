@@ -20,10 +20,8 @@ class TestSerializer(TestSetUp):
                accurately  """
         valid_validated_data = MetadataLedgerSerializer. \
             validate(self, self.metadataLedger_data_valid)
-
         invalid_validated_data = MetadataLedgerSerializer. \
             validate(self, self.metadataLedger_data_invalid)
-
         self.assertEqual("Y",
                          valid_validated_data.get('metadata_validation_status')
                          )
@@ -79,8 +77,7 @@ class TestSerializer(TestSetUp):
 
         # finding previous valid instance of record from table
         self.record_in_table = MetadataLedger.objects.filter(
-            metadata_key_hash=self.active_data1.get('metadata_key_hash'),
-            record_status='Active').first()
+            metadata_key_hash=self.metadata_key_hash_valid).first()
 
         # passing through validation and updating record in table
         # for invalid data instance
@@ -91,15 +88,15 @@ class TestSerializer(TestSetUp):
         serializer_invalid.is_valid()
         # calling update function with previous instance
         # and invalid present instance
-        updated_invalid = serializer_invalid.update(self.record_in_table,
-                                                    self.inactive_data)
+
+        updated_invalid = serializer_invalid. \
+            update(self.record_in_table, self.inactive_data)
         #  previous instance of record remains Active
         self.assertEqual("Active", getattr(updated_invalid, 'record_status'))
 
         # finding previous valid instance of record from table
         self.record_in_table = MetadataLedger.objects.filter(
-            metadata_key_hash=self.active_data1.get('metadata_key_hash'),
-            record_status='Active').first()
+            metadata_key_hash=self.metadata_key_hash_valid).first()
 
         # passing through validation and updating record in table
         # for valid data instance
@@ -110,8 +107,8 @@ class TestSerializer(TestSetUp):
         # and valid present instance
         updated_valid = serializer_valid.update(self.record_in_table,
                                                 self.active_data2)
-        #  previous instance of record is updated to  Inactive
-        self.assertEqual("Inactive", getattr(updated_valid, 'record_status'))
+        #  previous instance of record is updated to Inactive
+        self.assertEqual("Active", getattr(updated_valid, 'record_status'))
 
     @patch('api.serializers.MetadataLedgerSerializer.create',
            return_value='True')
