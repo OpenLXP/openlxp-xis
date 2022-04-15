@@ -357,18 +357,23 @@ class ViewTests(TestSetUp):
         with patch('api.serializers'
                    '.get_required_recommended_fields_for_validation') \
                 as get_lists:
-            rec_fields = []
-            req_fields = []
-            get_lists.return_value = rec_fields, req_fields
-            dataSTR = json.dumps(self.metadataLedger_data_valid)
-            dataJSON = json.loads(dataSTR)
-            response = self.client.post(url, dataJSON, format="json")
-            responseDict = json.loads(response.content)
-            uid = self.metadataLedger_data_valid['unique_record_identifier']
+            with patch('api.serializers'
+                       '.get_data_types_for_validation') \
+                    as get_data_types:
+                get_data_types.return_value = {}
+                rec_fields = []
+                req_fields = []
+                get_lists.return_value = rec_fields, req_fields
+                dataSTR = json.dumps(self.metadataLedger_data_valid)
+                dataJSON = json.loads(dataSTR)
+                response = self.client.post(url, dataJSON, format="json")
+                responseDict = json.loads(response.content)
+                uid = \
+                    self.metadataLedger_data_valid['unique_record_identifier']
 
-            self.assertEqual(response.status_code,
-                             status.HTTP_201_CREATED)
-            self.assertEqual(responseDict, uid)
+                self.assertEqual(response.status_code,
+                                 status.HTTP_201_CREATED)
+                self.assertEqual(responseDict, uid)
 
     def test_post_record_invalid(self):
         """Test that sending a POST request to the /api/metadata endpoint
@@ -402,19 +407,23 @@ class ViewTests(TestSetUp):
         with patch('api.serializers'
                    '.get_required_recommended_fields_for_validation') \
                 as get_lists:
-            rec_fields = []
-            req_fields = []
-            get_lists.return_value = rec_fields, req_fields
-            dataSTR = json.dumps(self.composite_data_valid)
-            dataJSON = json.loads(dataSTR)
-            response = self.client.post(url, dataJSON, format="json")
-            responseDict = json.loads(response.content)
+            with patch('api.serializers'
+                       '.get_data_types_for_validation') \
+                    as get_data_types:
+                get_data_types.return_value = {}
+                rec_fields = []
+                req_fields = []
+                get_lists.return_value = rec_fields, req_fields
+                dataSTR = json.dumps(self.composite_data_valid)
+                dataJSON = json.loads(dataSTR)
+                response = self.client.post(url, dataJSON, format="json")
+                responseDict = json.loads(response.content)
 
-            key = self.composite_data_valid['metadata_key_hash']
+                key = self.composite_data_valid['metadata_key_hash']
 
-            self.assertEqual(response.status_code,
-                             status.HTTP_201_CREATED)
-            self.assertEqual(responseDict, key)
+                self.assertEqual(response.status_code,
+                                 status.HTTP_201_CREATED)
+                self.assertEqual(responseDict, key)
 
     def test_post_managed_metadata_invalid(self):
         """Test that sending a POST request to the /api/metadata endpoint

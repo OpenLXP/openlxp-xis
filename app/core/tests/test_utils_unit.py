@@ -8,7 +8,6 @@ from core.management.utils.neo4j_client import (get_neo4j_auth,
 from core.management.utils.xis_internal import (dict_flatten,
                                                 flatten_dict_object,
                                                 flatten_list_object,
-                                                required_recommended_logs,
                                                 update_flattened_object)
 from core.management.utils.xse_client import (get_autocomplete_field,
                                               get_elasticsearch_endpoint,
@@ -29,24 +28,6 @@ from .test_setup import TestSetUp
 @ddt
 class UtilsTests(TestSetUp):
     """This cases for xis_internal.py"""
-
-    def test_required_recommended_logs_required(self):
-        """Test for logs the missing required """
-        with patch('core.management.utils.xis_internal'
-                   '.logger.error',
-                   return_value=None) as mock_logger_error:
-            required_recommended_logs(123, 'Required', 'test_field')
-            self.assertEqual(
-                mock_logger_error.call_count, 1)
-
-    def test_required_recommended_logs_recommended(self):
-        """Test for logs the missing recommended"""
-        with patch('core.management.utils.xis_internal'
-                   '.logger.warning',
-                   return_value=None) as mock_logger_warning:
-            required_recommended_logs(123, 'Recommended', 'test_field')
-            self.assertEqual(
-                mock_logger_warning.call_count, 1)
 
     def test_dict_flatten(self):
         """Test function to navigate to value in source
