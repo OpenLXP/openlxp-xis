@@ -3,7 +3,6 @@ import logging
 import os
 
 import boto3
-
 from core.management.utils.xis_internal import dict_flatten
 from core.models import XISConfiguration
 
@@ -61,6 +60,27 @@ def get_required_recommended_fields_for_validation():
 
     # Returning required and recommended list for validation
     return required_column_list, recommended_column_list
+
+
+def get_optional_fields_for_validation():
+    """Creating list of fields which are Optional"""
+
+    schema_data_dict = get_target_validation_schema()
+    # Call function to flatten schema used for validation
+    flattened_schema_dict = dict_flatten(schema_data_dict, [])
+
+    # Declare list for optional column names
+    optional_column_list = list()
+
+    #  Adding values to optional list based on schema
+    for column, value in flattened_schema_dict.items():
+        if value == "Optional":
+            if column.endswith(".use"):
+                column = column[:-len(".use")]
+            optional_column_list.append(column)
+
+    # Returning optional list for validation
+    return optional_column_list
 
 
 def get_data_types_for_validation():

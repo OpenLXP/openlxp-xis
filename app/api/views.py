@@ -2,6 +2,12 @@ import logging
 import uuid
 
 from celery.result import AsyncResult
+from core.management.utils.transform_ledgers import \
+    detach_metadata_ledger_from_supplemental_ledger
+from core.management.utils.xis_internal import update_multilevel_dict
+from core.management.utils.xss_client import get_optional_fields_for_validation
+from core.models import CompositeLedger, MetadataLedger
+from core.tasks import xis_workflow
 from django.http import JsonResponse
 # from core.management.commands.load_metadata_into_neo4j import \
 #     Command as load_metadata_into_neo4j
@@ -19,10 +25,6 @@ from api.management.utils.api_helper_functions import (add_metadata_ledger,
 from api.serializers import (CompositeLedgerSerializer,
                              MetadataLedgerSerializer,
                              SupplementalLedgerSerializer)
-from core.management.utils.transform_ledgers import \
-    detach_metadata_ledger_from_supplemental_ledger
-from core.models import CompositeLedger, MetadataLedger
-from core.tasks import xis_workflow
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -129,6 +131,15 @@ class MetaDataView(APIView):
     def post(self, request):
         """This method defines the API's to save data to the
         metadata ledger in the XIS"""
+
+        # Add optional fields to the metadata
+        optional_fields = get_optional_fields_for_validation()
+        metadata = request.data['metadata']
+        for field in optional_fields:
+            if field not in metadata:
+                path = field.split('.')
+                update_multilevel_dict(metadata, path, None)
+        request.data['metadata'] = metadata
 
         # Tracking source of changes to metadata/supplementary data
         request.data['updated_by'] = "System"

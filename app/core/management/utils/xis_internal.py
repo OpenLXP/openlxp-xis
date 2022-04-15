@@ -141,3 +141,22 @@ def update_flattened_object(str_obj, prefix, flatten_dict):
     """function to update flattened object to dict variable"""
 
     flatten_dict.update({prefix: str_obj})
+
+
+def update_multilevel_dict(dictionary, path, value):
+    """recursive function to traverse dict to path and set value"""
+
+    if path == []:
+        return value
+
+    if path[0] not in dictionary:
+        dictionary[path[0]] = {}
+
+    dictionary.update(
+        {
+            path[0]:
+            update_multilevel_dict(dictionary[path[0]], path[1:], value)
+        }
+    )
+
+    return dictionary
