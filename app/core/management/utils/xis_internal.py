@@ -144,7 +144,13 @@ def update_flattened_object(str_obj, prefix, flatten_dict):
 
 
 def update_multilevel_dict(dictionary, path, value):
-    """recursive function to traverse dict to path and set value"""
+    """
+    recursive function to traverse dict to path and set value
+    :param dictionary: the dictionary to insert into
+    :param path: a list of keys to navigate through to the final item
+    :param value: the value to store
+    :return: returns the updated dictionary
+    """
 
     if path == []:
         return value
