@@ -141,3 +141,42 @@ def update_flattened_object(str_obj, prefix, flatten_dict):
     """function to update flattened object to dict variable"""
 
     flatten_dict.update({prefix: str_obj})
+
+
+def update_multilevel_dict(dictionary, path, value):
+    """
+    recursive function to traverse dict to path and set value
+    :param dictionary: the dictionary to insert into
+    :param path: a list of keys to navigate through to the final item
+    :param value: the value to store
+    :return: returns the updated dictionary
+    """
+
+    if path == []:
+        return value
+
+    if path[0] not in dictionary:
+        dictionary[path[0]] = {}
+
+    dictionary.update(
+        {
+            path[0]:
+                update_multilevel_dict(dictionary[path[0]], path[1:], value)
+        }
+    )
+
+    return dictionary
+
+
+def multi_dict_sort(d, sort_type=0):
+    """
+    Sorts a dictionary with multiple sub-dictionaries.
+    :param d: dictionary to sort
+    :param sort_type: for key sort use 0 [default]; for value sort use 1
+    :return: dict
+    """
+    items_list = [key for (key, value) in d.items() if type(value) is dict]
+    for item_key in items_list:
+        d[item_key] = multi_dict_sort(d[item_key], sort_type)
+    return {key: value for (key, value) in sorted(d.items(),
+                                                  key=lambda x: x[sort_type])}
