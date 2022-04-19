@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from api.serializers import MetadataLedgerSerializer
 from core.management.utils.transform_ledgers import \
     append_metadata_ledger_with_supplemental_ledger
+from core.management.utils.xis_internal import multi_dict_sort
 from core.models import MetadataLedger, SupplementalLedger
 
 logger = logging.getLogger('dict_config_logger')
@@ -17,6 +18,9 @@ logger = logging.getLogger('dict_config_logger')
 def add_metadata_ledger(data, experience_id):
     """Calls the metadata serializer with data sent over
      and older instance of the data """
+
+    # sorting the metadata for consistency
+    data['metadata'] = multi_dict_sort(data['metadata'])
 
     # create hash values of metadata and supplemental data
     metadata_hash = hashlib.sha512(str(data['metadata']).encode(
@@ -47,6 +51,9 @@ def add_metadata_ledger(data, experience_id):
 def add_supplemental_ledger(data, experience_id):
     """Calls the supplemental serializer with data sent over
          and older instance of the data """
+
+    # sorting the metadata for consistency
+    data['metadata'] = multi_dict_sort(data['metadata'])
 
     # create hash values of metadata and supplemental data
     supplemental_hash = hashlib.sha512(str(data['metadata'])
