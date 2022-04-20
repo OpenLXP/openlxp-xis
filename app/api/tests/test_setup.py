@@ -1,6 +1,7 @@
 import hashlib
 import json
 import uuid
+from unittest.mock import patch
 from uuid import UUID
 
 from django.urls import reverse
@@ -15,6 +16,7 @@ class TestSetUp(APITestCase):
 
     def setUp(self):
         """Function to set up necessary data for testing"""
+
         self.metadata_url = reverse('api:metadata')
         self.composite_provider_url = reverse('api:metadata')
         self.required_dict = {'Course.CourseProviderName', 'Course.CourseCode',
@@ -103,19 +105,23 @@ class TestSetUp(APITestCase):
                 "AccreditedBy": "AccreditedBy",
                 "CourseSectionDeliveryMode": "AGENT_1"
             },
-            "Course_Instance": {
+            "CourseInstance": {
+                "CourseCode": "course_code_1",
+                "CourseTitle": "Appium Concepts with Mac OS X",
                 "CourseURL": "https://example@data",
                 "Thumbnail": "https://example@data",
                 "EndDate": "end_date",
                 "StartDate": "start_date",
-                "Instructor": "Instructor"
+                "Instructor": "Instructor",
+                'DeliveryMode': 'DeliveryMode',
             },
             "General_Information": {
                 "EndDate": "end_date",
                 "StartDate": "start_date"
             },
             "Technical_Information": {
-                "Location": "Location"
+                "Location": "Location",
+                'Thumbnail': 'Thumbnail'
             },
             "Lifecycle_Information": {
                 "Provider": "Provider",
@@ -525,6 +531,13 @@ class TestSetUp(APITestCase):
             "provider_name": 'AGENT',
             "metadata_hash": "4f2a7da4f872e9807079ac7cb42aefb4"
         }
+
+        self.mocked_target_validation_schema = patch(
+            "core.management.utils.xss_client.get_target_validation_schema"
+        ).start()
+
+        self.mocked_target_validation_schema.return_value = \
+            self.target_data_dict
 
         return super().setUp()
 
