@@ -75,7 +75,7 @@ class TestSerializer(TestSetUp):
         serializer.is_valid()
         serializer.save()
 
-        # finding previous valid instance of record from table
+        # # finding previous valid instance of record from table
         self.record_in_table = MetadataLedger.objects.filter(
             metadata_key_hash=self.metadata_key_hash_valid).first()
 

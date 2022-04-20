@@ -14,7 +14,7 @@ from core.management.utils.xse_client import (get_autocomplete_field,
                                               get_elasticsearch_index,
                                               get_filter_field)
 from core.management.utils.xss_client import (
-    aws_get, get_required_recommended_fields_for_validation,
+    get_required_recommended_fields_for_validation,
     get_target_validation_schema)
 from core.models import MetadataLedger, Neo4jConfiguration, XISConfiguration
 
@@ -302,11 +302,6 @@ class UtilsTests(TestSetUp):
             self.assertEquals(result, "provider_name")
 
     # Test cases for XSS
-
-    def test_aws_get(self):
-        """Test for the function to get aws bucket name from env file"""
-        result_bucket = aws_get()
-        self.assertTrue(result_bucket)
 
     def test_get_target_validation_schema(self):
         """Test to retrieve target_metadata_schema from XIS configuration"""
