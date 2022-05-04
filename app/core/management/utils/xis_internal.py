@@ -100,13 +100,15 @@ def flatten_list_object(list_obj, prefix, flatten_dict, required_column_list):
         # looping through required column names
         for required_prefix in required_column_list:
             # finding matching value along with index
-            try:
-                required_prefix.index(prefix)
-            except ValueError:
-                continue
-            else:
-                if required_prefix.index(prefix) == 0:
-                    required_prefix_list.append(required_prefix)
+            if prefix in required_prefix and\
+                    required_prefix.index(prefix) == 0:
+                # try:
+                #     required_prefix.index(prefix)
+                # except ValueError:
+                #     continue
+                # else:
+                #     if required_prefix.index(prefix) == 0:
+                required_prefix_list.append(required_prefix)
         #  setting up flag for checking validation
         passed = True
 
