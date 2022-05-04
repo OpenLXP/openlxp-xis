@@ -1,15 +1,14 @@
 import logging
 import uuid
 
-from django.utils import timezone
-from rest_framework import serializers
-
 from core.management.utils.xis_internal import (dict_flatten, is_date,
                                                 required_recommended_logs)
 from core.management.utils.xss_client import (
     get_data_types_for_validation,
     get_required_recommended_fields_for_validation)
 from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
+from django.utils import timezone
+from rest_framework import serializers
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -59,13 +58,13 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
             # update validation and record status for invalid data
             # Log out error for missing required values
             # item_name = item[:-len(".use")]
-            if item_name in flattened_source_data:
-                if not flattened_source_data[item_name]:
-                    validation_result = 'N'
-                    record_status_result = 'Inactive'
-                    required_recommended_logs(data.get
-                                              ('unique_record_identifier'),
-                                              "Required", item_name)
+            if item_name in flattened_source_data and\
+                    not flattened_source_data[item_name]:
+                validation_result = 'N'
+                record_status_result = 'Inactive'
+                required_recommended_logs(data.get
+                                          ('unique_record_identifier'),
+                                          "Required", item_name)
             else:
                 validation_result = 'N'
                 record_status_result = 'Inactive'
@@ -77,11 +76,11 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
         for item_name in recommended_column_list:
             # Log out warning for missing recommended values
             # item_name = item[:-len(".use")]
-            if item_name in flattened_source_data:
-                if not flattened_source_data[item_name]:
-                    required_recommended_logs(data.get
-                                              ('unique_record_identifier'),
-                                              "Recommended", item_name)
+            if item_name in flattened_source_data and\
+                    not flattened_source_data[item_name]:
+                required_recommended_logs(data.get
+                                          ('unique_record_identifier'),
+                                          "Recommended", item_name)
             else:
                 required_recommended_logs(data.get
                                           ('unique_record_identifier'),
@@ -91,12 +90,12 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
             # check if datatype has been assigned to field
             if item in expected_data_types:
                 # type checking for datetime datatype fields
-                if expected_data_types[item] == "datetime":
-                    if not is_date(flattened_source_data[item]):
-                        required_recommended_logs(data.get
-                                                  ('unique_record_identifier'),
-                                                  "datatype",
-                                                  item)
+                if expected_data_types[item] == "datetime" and\
+                        not is_date(flattened_source_data[item]):
+                    required_recommended_logs(data.get
+                                              ('unique_record_identifier'),
+                                              "datatype",
+                                              item)
                 # type checking for datatype fields(except datetime)
                 elif (not isinstance(flattened_source_data[item],
                                      expected_data_types[item])):
