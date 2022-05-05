@@ -86,41 +86,43 @@ def flatten_list_object(list_obj, prefix, flatten_dict, required_column_list):
         else:
             flatten_dict = flatten_dict_temp
 
-        if isinstance(list_obj[i], list):
-            flatten_list_object(list_obj[i], prefix, flatten_dict,
-                                required_column_list)
-
-        elif isinstance(list_obj[i], dict):
-            flatten_dict_object(list_obj[i], prefix, flatten_dict,
-                                required_column_list)
-
-        else:
-            update_flattened_object(list_obj[i], prefix, flatten_dict)
-
-        # looping through required column names
-        for required_prefix in required_column_list:
-            # finding matching value along with index
-            if prefix in required_prefix and\
-                    required_prefix.index(prefix) == 0:
-                # try:
-                #     required_prefix.index(prefix)
-                # except ValueError:
-                #     continue
-                # else:
-                #     if required_prefix.index(prefix) == 0:
-                required_prefix_list.append(required_prefix)
-        #  setting up flag for checking validation
-        passed = True
-
-        # looping through items in required columns with matching prefix
-        for item_to_check in required_prefix_list:
-            #  flag if value not found
-            if not flatten_dict[item_to_check]:
-                passed = False
+        passed = flatten_list_object_helper(list_obj, prefix, flatten_dict,
+                                            required_column_list,
+                                            required_prefix_list, i)
 
         # if all required values are skip other object in list
         if passed:
             break
+
+
+def flatten_list_object_helper(list_obj, prefix, flatten_dict,
+                               required_column_list, required_prefix_list, i):
+    if isinstance(list_obj[i], list):
+        flatten_list_object(list_obj[i], prefix, flatten_dict,
+                            required_column_list)
+
+    elif isinstance(list_obj[i], dict):
+        flatten_dict_object(list_obj[i], prefix, flatten_dict,
+                            required_column_list)
+
+    else:
+        update_flattened_object(list_obj[i], prefix, flatten_dict)
+
+        # looping through required column names
+    for required_prefix in required_column_list:
+        # finding matching value along with index
+        if prefix in required_prefix and\
+                required_prefix.index(prefix) == 0:
+            required_prefix_list.append(required_prefix)
+        #  setting up flag for checking validation
+    passed = True
+
+    # looping through items in required columns with matching prefix
+    for item_to_check in required_prefix_list:
+        #  flag if value not found
+        if not flatten_dict[item_to_check]:
+            passed = False
+    return passed
 
 
 def flatten_dict_object(dict_obj, prefix, flatten_dict, required_column_list):

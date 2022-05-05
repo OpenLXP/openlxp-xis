@@ -4,17 +4,16 @@ import logging
 
 import elasticsearch
 import requests
-from django.core.management.base import BaseCommand
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Q
-from django.utils import timezone
-from elasticsearch import Elasticsearch
-
 from core.management.utils.xse_client import (get_autocomplete_field,
                                               get_elasticsearch_endpoint,
                                               get_elasticsearch_index,
                                               get_filter_field)
 from core.models import CompositeLedger
+from django.core.management.base import BaseCommand
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Q
+from django.utils import timezone
+from elasticsearch import Elasticsearch
 
 es = Elasticsearch()
 
@@ -98,11 +97,11 @@ def create_xse_json_document(row):
     composite_ledger_dict = {}
     # Removing empty/Null data fields in supplemental data to be sent to XSE
     supplemental_data = {}
-    if 'Supplemental_Ledger' in row['metadata']:
-        if row['metadata']['Supplemental_Ledger']:
-            supplemental_data = {k: v for k, v in row['metadata'][
-                'Supplemental_Ledger'].items() if v != "NaT"
-                                 and v and v != "null"}
+    if 'Supplemental_Ledger' in row['metadata'] and\
+            row['metadata']['Supplemental_Ledger']:
+        supplemental_data = {k: v for k, v in row['metadata'][
+            'Supplemental_Ledger'].items() if v != "NaT"
+            and v and v != "null"}
     composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
     for item in row['metadata']['Metadata_Ledger']:
         # Removing empty/Null data fields in metadata to be sent to XSE
@@ -125,10 +124,10 @@ def create_xse_json_document(row):
         logging.error(e)
     try:
         filter_path = get_filter_field().split('.')
-        filter = copy.deepcopy(row)
+        filtering_object = copy.deepcopy(row)
         for step in filter_path:
-            filter = filter[step]
-        composite_ledger_dict['filter'] = filter
+            filtering_object = filtering_object[step]
+        composite_ledger_dict['filter'] = filtering_object
     except Exception as e:
         composite_ledger_dict['filter'] = "Not Available"
         logging.error(e)

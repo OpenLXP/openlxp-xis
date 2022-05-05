@@ -125,13 +125,13 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
     def update(self, instance, validated_data):
         """Updates the older record in table based on validation result"""
         # Check if older record is the same to skip updating
-        if validated_data['metadata_hash'] != self.instance.metadata_hash:
-            if validated_data.get('record_status') == 'Active':
-                # Updating old instance of record INACTIVE if present record is
-                # ACTIVE
-                logger.info("Active instance found for update to inactive")
-                instance.record_status = 'Inactive'
-                instance.date_deleted = timezone.now()
+        if validated_data['metadata_hash'] != self.instance.metadata_hash and\
+                validated_data.get('record_status') == 'Active':
+            # Updating old instance of record INACTIVE if present record is
+            # ACTIVE
+            logger.info("Active instance found for update to inactive")
+            instance.record_status = 'Inactive'
+            instance.date_deleted = timezone.now()
         instance.save()
         return instance
 
@@ -183,7 +183,6 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
             self.instance = self.update(self.instance, validated_data)
             # Creating new value in metadata ledger after checking duplication
             if validated_data['metadata_hash'] != self.instance.metadata_hash:
-                # validated_data =self.set_validated_data(self,validated_data)
                 self.instance = self.create(validated_data)
 
         # Update table with new record
@@ -212,13 +211,13 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         """Updates the older record in table based on validation result"""
 
         # Check if older record is the same to skip updating
-        if validated_data['metadata_hash'] != self.instance.metadata_hash:
-            if validated_data.get('record_status') == 'Active':
-                # Updating old instance of record INACTIVE if present record is
-                # ACTIVE
-                logger.info("Active instance found for update to inactive")
-                instance.record_status = 'Inactive'
-                instance.date_deleted = timezone.now()
+        if validated_data['metadata_hash'] != self.instance.metadata_hash and\
+                validated_data.get('record_status') == 'Active':
+            # Updating old instance of record INACTIVE if present record is
+            # ACTIVE
+            logger.info("Active instance found for update to inactive")
+            instance.record_status = 'Inactive'
+            instance.date_deleted = timezone.now()
         instance.save()
         return instance
 
@@ -272,7 +271,6 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
             self.instance = self.update(self.instance, validated_data)
             # Creating new value in metadata ledger after checking duplication
             if validated_data['metadata_hash'] != self.instance.metadata_hash:
-                # validated_data =self.set_validated_data(self,validated_data)
                 self.instance = self.create(validated_data)
 
         # Update table with new record
@@ -318,12 +316,12 @@ class CompositeLedgerSerializer(serializers.ModelSerializer):
                                               ('unique_record_identifier'),
                                               "Required", item)
             # validate for recommended values in data
-            elif item in recommended_column_list:
-                # Log out warning for missing recommended values
-                if not flattened_source_data[item]:
-                    required_recommended_logs(data.
-                                              get('unique_record_identifier'),
-                                              "Recommended", item)
+            # Log out warning for missing recommended values
+            elif item in recommended_column_list and\
+                    not flattened_source_data[item]:
+                required_recommended_logs(data.
+                                          get('unique_record_identifier'),
+                                          "Recommended", item)
 
         data['metadata_validation_status'] = validation_result
         data['record_status'] = record_status_result
