@@ -11,8 +11,6 @@ from core.management.utils.xss_client import \
 from core.models import CompositeLedger, MetadataLedger
 from core.tasks import xis_workflow
 from django.http import JsonResponse
-# from core.management.commands.load_metadata_into_neo4j import \
-#     Command as load_metadata_into_neo4j
 from requests.exceptions import HTTPError
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
@@ -344,13 +342,3 @@ def get_status(request, task_id):
         "task_result": task_result.result
     }
     return JsonResponse(result, status=200)
-
-# @api_view(['GET'])
-# def post_to_neo4j(request):
-#     """ API which post metadata from Composite_Ledger XIS to Neo4j Graph
-#     Database"""
-#     load_metadata_into_neo4j_class = load_metadata_into_neo4j()
-#
-#     function = load_metadata_into_neo4j_class.handle()
-#     function.delay()
-#     return Response('ok', status=200)
