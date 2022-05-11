@@ -1,14 +1,15 @@
 import logging
 import uuid
 
+from django.utils import timezone
+from rest_framework import serializers
+
 from core.management.utils.xis_internal import (dict_flatten, is_date,
                                                 required_recommended_logs)
 from core.management.utils.xss_client import (
     get_data_types_for_validation,
     get_required_recommended_fields_for_validation)
 from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
-from django.utils import timezone
-from rest_framework import serializers
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -142,7 +143,7 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
                 unique_record_identifier=validated_data
                 ['unique_record_identifier']).exists():
             logger.info("Assigning new UUID to updated value")
-            validated_data['unique_record_identifier'] = uuid.uuid4()
+            validated_data['unique_record_identifier'] = str(uuid.uuid4())
 
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()

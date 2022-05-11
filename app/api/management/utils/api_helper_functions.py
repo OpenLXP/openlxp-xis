@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import uuid
 
 from requests import HTTPError
 from rest_framework import status
@@ -18,6 +19,9 @@ logger = logging.getLogger('dict_config_logger')
 def add_metadata_ledger(data, experience_id):
     """Calls the metadata serializer with data sent over
      and older instance of the data """
+
+    if 'unique_record_identifier' not in data:
+        data['unique_record_identifier'] = str(uuid.uuid4())
 
     # sorting the metadata for consistency
     data['metadata'] = multi_dict_sort(data['metadata'])
@@ -44,6 +48,10 @@ def add_metadata_ledger(data, experience_id):
             .first()
         if record_in_table:
             data['metadata_key'] = record_in_table.metadata_key
+
+    if 'metadata_key_hash' not in data:
+        data['metadata_key_hash'] = hashlib.\
+            sha512(str(data['metadata_key']).encode('utf-8')).hexdigest()
 
     return data, record_in_table
 
