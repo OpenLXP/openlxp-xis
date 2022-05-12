@@ -28,6 +28,7 @@ def xis_workflow():
 
     logger.info('COMPLETED DATA LOADING INTO XSE')
 
-    load_metadata_into_neo4j_class = load_metadata_into_neo4j()
-    load_metadata_into_neo4j_class.handle()
-    logger.info('COMPLETED DATA LOADING INTO Neo4J')
+    # Disable neo4j loading
+    # load_metadata_into_neo4j_class = load_metadata_into_neo4j()
+    # load_metadata_into_neo4j_class.handle()
+    # logger.info('COMPLETED DATA LOADING INTO Neo4J')
