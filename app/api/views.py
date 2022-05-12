@@ -1,41 +1,79 @@
+import copy
 import logging
+import uuid
 
 from celery.result import AsyncResult
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from requests.exceptions import HTTPError
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.utils import json
+from rest_framework.views import APIView
 
+from api.management.utils.api_helper_functions import (add_metadata_ledger,
+                                                       add_supplemental_ledger,
+                                                       get_catalog_list,
+                                                       get_managed_data)
 from api.serializers import (CompositeLedgerSerializer,
                              MetadataLedgerSerializer,
                              SupplementalLedgerSerializer)
-from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
+from core.management.utils.transform_ledgers import \
+    detach_metadata_ledger_from_supplemental_ledger
+from core.management.utils.xis_internal import update_multilevel_dict
+from core.management.utils.xss_client import \
+    get_optional_and_recommended_fields_for_validation
+from core.models import CompositeLedger, MetadataLedger
 from core.tasks import xis_workflow
 
 logger = logging.getLogger('dict_config_logger')
 
 
-def get_course_providers(request):
-    """This method defines an API to fetch the names of all course providers"""
-    providers = list(CompositeLedger.objects.order_by()
-                     .values_list('provider_name', flat=True).distinct())
-    result = json.dumps(providers)
+class CatalogDataView(APIView):
+    """Handles HTTP requests for Provider data from XIS"""
 
-    return HttpResponse(result, content_type="application/json")
+    def get(self, request):
+        """This method defines an API to fetch the names of all
+         course providers"""
+
+        catalog_list_response = get_catalog_list(CompositeLedger)
+
+        return catalog_list_response
 
 
-@api_view(['GET', 'POST'])
-def metadata_list(request):
-    """Handles creating metadata record and listing composite ledger records"""
-    if request.method == 'GET':
+class ManagedCatalogListView(APIView):
+    """Handles HTTP requests for Provider data from XIS"""
+
+    def get(self, request):
+        """This method defines an API to fetch the names of all
+         course providers"""
+
+        managed_catalog_list_response = get_catalog_list(MetadataLedger)
+
+        return managed_catalog_list_response
+
+
+class MetaDataView(APIView):
+    """Handles HTTP requests for Metadata for XIS"""
+
+    def get(self, request):
+        """This method defines the API's to retrieve data from
+        composite ledger from XIS"""
+
         errorMsg = {
             "message": "Error fetching records please check the logs."
         }
+
         # initially fetch all active records
-        querySet = CompositeLedger.objects.all().order_by()\
+        querySet = CompositeLedger.objects.all().order_by() \
             .filter(record_status='Active')
+
+        if not querySet:
+            errorMsg = {
+                "message": "Error no records found"
+            }
+
+            return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
 
         # case where provider sent as query parameter
         if request.GET.get('provider'):
@@ -45,7 +83,7 @@ def metadata_list(request):
             if not querySet:
                 errorMsg = {
                     "message": "Error; no provider name found for: " +
-                    request.GET.get('provider')
+                               request.GET.get('provider')
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
@@ -73,7 +111,8 @@ def metadata_list(request):
             if not querySet:
                 errorMsg = {
                     "message": "Error; no record found for any of the "
-                    + "following key hashes: " + metadata_key_hash_param
+                               + "following key hashes: " +
+                               metadata_key_hash_param
                 }
 
                 return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
@@ -89,21 +128,57 @@ def metadata_list(request):
         else:
             return Response(serializer_class.data, status.HTTP_200_OK)
 
-    elif request.method == 'POST':
-        # Obtaining key value for comparison of records in metadata ledger
-        key_hash_value = request.data.get('metadata_key_hash', None)
-        record_in_table = None
-        if key_hash_value is not None:
-            # Comparing metadata_key value in metadata ledger
-            # to find older instances
-            record_in_table = MetadataLedger.objects.filter(
-                metadata_key_hash=key_hash_value, record_status='Active') \
-                .first()
+    def post(self, request):
+        """This method defines the API's to save data to the
+        metadata ledger in the XIS"""
 
-        # Assign data from request to serializer
-        serializer = MetadataLedgerSerializer(record_in_table,
-                                              data=request.data)
-        logger.info("Assigned to serializer")
+        # Add optional/recommended fields to the metadata
+        extra_fields = get_optional_and_recommended_fields_for_validation()
+        metadata = request.data['metadata']
+        for field in extra_fields:
+            meta_path = copy.deepcopy(metadata)
+            path = field.split('.')
+            try:
+                for step in path:
+                    meta_path = meta_path[step]
+            except Exception:
+                update_multilevel_dict(metadata, path, None)
+        request.data['metadata'] = metadata
+
+        # Tracking source of changes to metadata/supplementary data
+        request.data['updated_by'] = "System"
+        data, instance = add_metadata_ledger(request.data, None)
+        serializer = \
+            MetadataLedgerSerializer(instance, data=data)
+
+        if not serializer.is_valid():
+            # If not received send error and bad request status
+            logger.info(json.dumps(request.data))
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+        # If received save record in ledger and send response of UUID &
+        # status created
+        serializer.save()
+
+        return Response(serializer.data['unique_record_identifier'],
+                        status=status.HTTP_201_CREATED)
+
+
+class SupplementalDataView(APIView):
+    """Handles HTTP requests for Supplemental data for XIS"""
+
+    def post(self, request):
+        """This method defines the API's to save data to the
+        metadata ledger in the XIS"""
+
+        # Tracking source of changes to metadata/supplementary data
+        request.data['updated_by'] = 'System'
+
+        data, instance = add_supplemental_ledger(request.data, None)
+
+        serializer = \
+            SupplementalLedgerSerializer(instance,
+                                         data=data)
 
         if not serializer.is_valid():
             # If not received send error and bad request status
@@ -118,49 +193,16 @@ def metadata_list(request):
                         status=status.HTTP_201_CREATED)
 
 
-@api_view(['POST'])
-def create_supplemental_metadata_record(request):
-    """Handles creating metadata record"""
+class UUIDDataView(APIView):
+    """Handles HTTP requests using UUID from composite ledger"""
 
-    # Obtaining key value for comparison of records in metadata ledger
-    key_hash_value = request.data.get('metadata_key_hash', None)
-    record_in_table = None
-    if key_hash_value is not None:
-        # Comparing key value in metadata ledger
-        # to find older instances
-        record_in_table = SupplementalLedger.objects.filter(
-            metadata_key_hash=key_hash_value, record_status='Active') \
-            .first()
-
-    # Assign data from request to serializer
-    serializer = SupplementalLedgerSerializer(record_in_table,
-                                              data=request.data)
-    logger.info("Assigned to serializer")
-
-    if not serializer.is_valid():
-        # If not received send error and bad request status
-        logger.info(json.dumps(request.data))
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
-
-    # If received save record in ledger and send response of UUID &
-    # status created
-    serializer.save()
-    return Response(serializer.data['unique_record_identifier'],
-                    status=status.HTTP_201_CREATED)
-
-
-@api_view(['GET', 'PATCH'])
-def record_for_requested_course_id(request, course_id):
-    """This method defines an API to fetch or modify the record of the
-    corresponding course id"""
-    logger.info('in function')
-    if request.method == 'GET':
+    def get(self, request, course_id):
+        """This method defines an API to fetch or modify the record of the
+        corresponding course id"""
         errorMsg = {
             "message": "error: no record for corresponding course id; " +
                        "please check the logs"
         }
-
         try:
             queryset = CompositeLedger.objects.order_by() \
                 .get(unique_record_identifier=course_id,
@@ -175,40 +217,119 @@ def record_for_requested_course_id(request, course_id):
         else:
             return Response(serializer_class.data, status.HTTP_200_OK)
 
-    elif request.method == 'PATCH':
-        errorMsg = {
-            "message": "error: no record for corresponding course id; " +
-                       "please check the logs"
-        }
 
-        try:
-            queryset = CompositeLedger.objects.\
-                get(unique_record_identifier=course_id, record_status='Active')
-        except HTTPError as http_err:
-            logger.error(http_err)
-            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as err:
-            logger.error(err)
-            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
+class ManagedCatalogDataView(APIView):
+    """Handles HTTP requests for Managing catalog data from XMS"""
+
+    def get(self, request, provider_id):
+        """This method defines the API's to retrieve data to be managed
+         from XMS"""
+
+        querySet = MetadataLedger.objects.filter(
+            provider_name=provider_id,
+            record_status="Active"
+        )
+
+        if not querySet:
+            errorMsg = {"Error; no active records found for the provider "
+                        + provider_id}
+            logger.error(errorMsg)
+            return Response(errorMsg, status.HTTP_404_NOT_FOUND)
+
+        catalog_data_response = get_managed_data(querySet)
+
+        return catalog_data_response
+
+
+class ManageDataView(APIView):
+    """Handles HTTP requests for Managing data from XMS"""
+
+    def get(self, request, provider_id, experience_id):
+        """This method defines the API's to retrieve data to be managed
+         from XMS"""
+
+        querySet = MetadataLedger.objects.filter(
+            metadata_key_hash=experience_id,
+            provider_name=provider_id,
+            record_status="Active"
+        )
+
+        if not querySet:
+            errorMsg = {"Error; no active records found for metadata key " +
+                        experience_id + " in provider " + provider_id}
+            logger.error(errorMsg)
+            return Response(errorMsg, status.HTTP_404_NOT_FOUND)
+
+        manage_data_response = get_managed_data(querySet)
+
+        return manage_data_response
+
+    def post(self, request, provider_id, experience_id):
+        """This method defines the API's to save data
+        after it's been managed in XMS"""
+
+        # Tracking source of changes to metadata/supplementary data
+        request.data['updated_by'] = "Owner"
+        request.data['provider_name'] = provider_id
+        request.data['metadata_key_hash'] = experience_id
+        request.data['unique_record_identifier'] = str(uuid.uuid4())
+
+        # Detach supplemental metadata and metadata from consolidated data
+        metadata_data, supplemental_data = \
+            detach_metadata_ledger_from_supplemental_ledger(request.data)
+
+        metadata, metadata_instance = add_metadata_ledger(metadata_data,
+                                                          experience_id)
+
+        supplementalData, supplemental_instance = \
+            add_supplemental_ledger(supplemental_data, experience_id)
+
+        if metadata_instance:
+
+            metadata['metadata_key'] = metadata_instance.metadata_key
+
+            # Assign data from request to serializer
+            metadata_serializer = MetadataLedgerSerializer(metadata_instance,
+                                                           data=metadata)
+
+            # Assign data from request to serializer
+            supplemental_serializer = \
+                SupplementalLedgerSerializer(supplemental_instance,
+                                             data=supplementalData)
+
+            if not metadata_serializer.is_valid():
+                # If not received send error and bad request status
+                logger.info(json.dumps(metadata_data))
+                logger.error(metadata_serializer.errors)
+                return Response(metadata_serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            if not supplemental_serializer.is_valid():
+                # If not received send error and bad request status
+                logger.info(json.dumps(supplemental_data))
+                logger.error(supplemental_serializer.errors)
+                return Response(supplemental_serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # If received save record in ledger and send response of UUID &
+            # status created
+            metadata_serializer.save()
+            supplemental_serializer.save()
+
+            return Response(metadata_serializer.data['metadata_key_hash'],
+                            status=status.HTTP_201_CREATED)
         else:
-
-            serializer = CompositeLedgerSerializer(queryset,
-                                                   data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                res = {"message": "Data updated successfully"}
-                return Response(res, status.HTTP_200_OK)
-            res = {
-                    "message": "Data is not valid for update",
-                    "errors": serializer.errors
+            errorMsg = {
+                "message": "Course updated does not exist in records. Please "
+                           "check experience value"
             }
-            return Response(res, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
 @permission_classes((permissions.AllowAny,))
 def xis_workflow_api(request):
-    print('XIS workflow api')
+    logger.info('XIS workflow api')
     task = xis_workflow.delay()
     return JsonResponse({"task_id": task.id}, status=202)
 

@@ -2,8 +2,8 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
 from django.utils import timezone
 
-from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
-                         XISConfiguration, XISSyndication)
+from core.models import (CompositeLedger, MetadataLedger, Neo4jConfiguration,
+                         SupplementalLedger, XISConfiguration, XISSyndication)
 
 
 @tag('unit')
@@ -186,3 +186,28 @@ class ModelTests(TestCase):
                          xis_api_endpoint)
         self.assertEqual(xis_syndication.xis_api_endpoint_status,
                          xis_api_endpoint_status)
+
+    def test_create_neo4j_configuration(self):
+        """Test that creating a new Neo4j Configuration entry is successful
+        with defaults """
+        neo4j_uri = 'test_file.json'
+        neo4j_user = 'test:8080'
+        neo4j_pwd = 'test-index'
+
+        neo4jConfig = Neo4jConfiguration(neo4j_uri=neo4j_uri,
+                                         neo4j_user=neo4j_user,
+                                         neo4j_pwd=neo4j_pwd)
+
+        self.assertEqual(neo4jConfig.neo4j_uri,
+                         neo4j_uri)
+        self.assertEqual(neo4jConfig.neo4j_user, neo4j_user)
+        self.assertEqual(neo4jConfig.neo4j_pwd, neo4j_pwd)
+
+    def test_create_two_neo4j_configuration(self):
+        """Test that trying to create more than one Neo4j Configuration throws
+        ValidationError """
+        with self.assertRaises(ValidationError):
+            neo4jConfig = Neo4jConfiguration(neo4j_uri="example1.json")
+            ne04jConfig2 = Neo4jConfiguration(neo4j_uri="example2.json")
+            neo4jConfig.save()
+            ne04jConfig2.save()

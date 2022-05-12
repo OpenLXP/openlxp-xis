@@ -34,7 +34,8 @@ class CommandIntegration(TestSetUp):
             'metadata_key_hash',
             'metadata_hash',
             'metadata',
-            'provider_name')
+            'provider_name',
+            'updated_by')
         put_metadata_ledger_into_composite_ledger(data)
 
         result_query_composite_ledger = CompositeLedger.objects.values(
@@ -46,7 +47,7 @@ class CommandIntegration(TestSetUp):
             'updated_by',
             'record_status',
             'provider_name').filter(
-            unique_record_identifier=self.unique_record_identifier).first()
+            metadata_key=self.metadata_key).first()
 
         result_query_metadata_ledger = MetadataLedger.objects.values(
             'composite_ledger_transmission_status',
@@ -62,7 +63,7 @@ class CommandIntegration(TestSetUp):
         self.assertEquals(data[0].get('metadata_key_hash'),
                           result_query_composite_ledger.get(
                               'metadata_key_hash'))
-        self.assertEquals(data[0].get('metadata_hash'),
+        self.assertEquals(self.composite_ledger_metadata_hash_valid,
                           result_query_composite_ledger.get('metadata_hash'))
         self.assertTrue(result_query_composite_ledger.get('date_inserted'))
         self.assertEquals(self.updated_by,

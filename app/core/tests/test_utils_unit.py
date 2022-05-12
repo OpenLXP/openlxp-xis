@@ -1,20 +1,26 @@
 from unittest.mock import patch
 
-from ddt import data, ddt
+from ddt import data, ddt, unpack
 from django.test import tag
 
+from core.management.utils.neo4j_client import (get_neo4j_auth,
+                                                get_neo4j_endpoint)
 from core.management.utils.xis_internal import (dict_flatten,
                                                 flatten_dict_object,
                                                 flatten_list_object,
-                                                required_recommended_logs,
                                                 update_flattened_object)
-from core.management.utils.xse_client import (get_elasticsearch_endpoint,
-                                              get_elasticsearch_index)
+from core.management.utils.xse_client import (get_autocomplete_field,
+                                              get_elasticsearch_endpoint,
+                                              get_elasticsearch_index,
+                                              get_filter_field)
 from core.management.utils.xss_client import (
-    aws_get, get_required_recommended_fields_for_validation,
+    get_required_recommended_fields_for_validation,
     get_target_validation_schema)
-from core.models import XISConfiguration
+from core.models import MetadataLedger, Neo4jConfiguration, XISConfiguration
 
+from ..management.utils.transform_ledgers import (
+    append_metadata_ledger_with_supplemental_ledger,
+    detach_metadata_ledger_from_supplemental_ledger)
 from .test_setup import TestSetUp
 
 
@@ -22,24 +28,6 @@ from .test_setup import TestSetUp
 @ddt
 class UtilsTests(TestSetUp):
     """This cases for xis_internal.py"""
-
-    def test_required_recommended_logs_required(self):
-        """Test for logs the missing required """
-        with patch('core.management.utils.xis_internal'
-                   '.logger.error',
-                   return_value=None) as mock_logger_error:
-            required_recommended_logs(123, 'Required', 'test_field')
-            self.assertEqual(
-                mock_logger_error.call_count, 1)
-
-    def test_required_recommended_logs_recommended(self):
-        """Test for logs the missing recommended"""
-        with patch('core.management.utils.xis_internal'
-                   '.logger.warning',
-                   return_value=None) as mock_logger_warning:
-            required_recommended_logs(123, 'Recommended', 'test_field')
-            self.assertEqual(
-                mock_logger_warning.call_count, 1)
 
     def test_dict_flatten(self):
         """Test function to navigate to value in source
@@ -288,12 +276,32 @@ class UtilsTests(TestSetUp):
 
             self.assertTrue(result_api_es_index)
 
-    # Test cases for XSS
+    def test_get_autocomplete_field(self):
+        """This test is to check if function returns the autocomplete field"""
+        with patch('core.management.utils.xse_client.XISConfiguration.objects'
+                   ) as xis_config:
+            configObj = XISConfiguration(target_schema="test.json",
+                                         xse_host="host:8080",
+                                         xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result = get_autocomplete_field()
 
-    def test_aws_get(self):
-        """Test for the function to get aws bucket name from env file"""
-        result_bucket = aws_get()
-        self.assertTrue(result_bucket)
+            self.assertEquals(result,
+                              "metadata.Metadata_Ledger.Course.CourseTitle")
+
+    def test_get_filter_field(self):
+        """This test is to check if function returns the filter field"""
+        with patch('core.management.utils.xse_client.XISConfiguration.objects'
+                   ) as xis_config:
+            configObj = XISConfiguration(target_schema="test.json",
+                                         xse_host="host:8080",
+                                         xse_index="test-index")
+            xis_config.first.return_value = configObj
+            result = get_filter_field()
+
+            self.assertEquals(result, "provider_name")
+
+    # Test cases for XSS
 
     def test_get_target_validation_schema(self):
         """Test to retrieve target_metadata_schema from XIS configuration"""
@@ -320,3 +328,80 @@ class UtilsTests(TestSetUp):
 
             self.assertTrue(required_column_name)
             self.assertTrue(recommended_column_name)
+
+    # This cases for neo4j_client.py
+
+    @data(('id', 'pwd'), ('user_id', 'password'))
+    @unpack
+    def test_get_neo4j_auth(self, first_value, second_value):
+        """This test is to Get user id and password to connect to Neo4j"""
+        with patch(
+                'core.management.utils.neo4j_client.Neo4jConfiguration.objects'
+        ) as neo4j_config:
+            neo4j_user = first_value
+            neo4j_pwd = second_value
+            configObj = Neo4jConfiguration(neo4j_uri="endpoint",
+                                           neo4j_user=neo4j_user,
+                                           neo4j_pwd=neo4j_pwd)
+            neo4j_config.first.return_value = configObj
+            user_id, pwd = get_neo4j_auth()
+
+            self.assertEqual(user_id, neo4j_user)
+            self.assertEqual(pwd, neo4j_pwd)
+
+    def test_get_neo4j_endpoint(self):
+        """This test is to check if function returns the Neo4j
+        endpoint """
+        with patch('core.management.utils.neo4j_client.Neo4jConfiguration.'
+                   'objects') as neo4j_config:
+            configObj = Neo4jConfiguration(neo4j_uri="test.json")
+            neo4j_config.first.return_value = configObj
+            result_api_es_endpoint = get_neo4j_endpoint()
+
+            self.assertTrue(result_api_es_endpoint)
+
+    # Cases for transform_ledger.py
+
+    def test_append_metadata_ledger_with_supplemental_ledger(self):
+        """This tests to check method which finds
+        supplemental metadata and consolidate it with metadata ledger data"""
+
+        self.supplemental_ledger.save()
+        self.metadata_ledger.save()
+
+        metadata = MetadataLedger.objects.filter(
+            metadata_validation_status='Y',
+            record_status='Active',
+            composite_ledger_transmission_status='Ready').values(
+            'metadata_key',
+            'metadata_key_hash',
+            'metadata_hash',
+            'metadata',
+            'provider_name',
+            'updated_by')
+        for metadata_instance in metadata:
+            composite_data, supplemental_data = \
+                append_metadata_ledger_with_supplemental_ledger(
+                    metadata_instance)
+
+            self.assertEqual(self.supplement_metadata,
+                             supplemental_data['metadata'])
+            self.assertEqual(self.metadata,
+                             composite_data["Metadata_Ledger"])
+            self.assertEqual(self.supplement_metadata,
+                             composite_data["Supplemental_Ledger"])
+
+    def test_detach_metadata_ledger_from_supplemental_ledger(self):
+        """This test checks method to Detach supplemental metadata
+        and metadata from consolidated data"""
+
+        meta_data, supplemental_data = \
+            detach_metadata_ledger_from_supplemental_ledger(
+                self.composite_data_valid)
+
+        self.assertEqual(meta_data["metadata"], self.metadata)
+        self.assertEqual(meta_data["metadata_key"], self.metadata_key)
+        self.assertEqual(supplemental_data["metadata"],
+                         self.supplement_metadata)
+        self.assertEqual(supplemental_data["metadata_key"],
+                         self.metadata_key)

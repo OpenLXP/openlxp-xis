@@ -6,6 +6,8 @@ from openlxp_notifications.management.commands.conformance_alerts import \
 
 from core.management.commands.consolidate_ledgers import \
     Command as consolidate_ledgers
+from core.management.commands.load_metadata_into_neo4j import \
+    Command as load_metadata_into_neo4j
 from core.management.commands.load_metadata_into_xse import \
     Command as load_metadata
 
@@ -24,4 +26,8 @@ def xis_workflow():
     load_metadata_class.handle()
     conformance_alerts_class.handle()
 
-    logger.info('COMPLETED WORKFLOW')
+    logger.info('COMPLETED DATA LOADING INTO XSE')
+
+    load_metadata_into_neo4j_class = load_metadata_into_neo4j()
+    load_metadata_into_neo4j_class.handle()
+    logger.info('COMPLETED DATA LOADING INTO Neo4J')
