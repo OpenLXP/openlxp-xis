@@ -100,9 +100,10 @@ def create_xse_json_document(row):
     supplemental_data = {}
     if 'Supplemental_Ledger' in row['metadata'] and\
             row['metadata']['Supplemental_Ledger']:
-        supplemental_data = {k: v for k, v in row['metadata'][
-            'Supplemental_Ledger'].items() if v != "NaT"
-            and v and v != "null"}
+        if row['metadata']['Supplemental_Ledger']:
+            supplemental_data = {k: v for k, v in row['metadata'][
+                'Supplemental_Ledger'].items() if v != "NaT"
+                and v and v != "null"}
     composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
     for item in row['metadata']['Metadata_Ledger']:
         # Removing empty/Null data fields in metadata to be sent to XSE
