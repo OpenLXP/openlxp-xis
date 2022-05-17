@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 from django.utils import timezone
 from rest_framework import serializers
@@ -139,11 +138,6 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         """creates new record in table"""
         # assigning a new UUID primary key for data created
-        if MetadataLedger.objects.filter(
-                unique_record_identifier=validated_data
-                ['unique_record_identifier']).exists():
-            logger.info("Assigning new UUID to updated value")
-            validated_data['unique_record_identifier'] = str(uuid.uuid4())
 
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()
@@ -224,13 +218,6 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """creates new record in table"""
-
-        # assigning a new UUID primary key for data created
-        if SupplementalLedger.objects.filter(
-                unique_record_identifier=validated_data
-                ['unique_record_identifier']).exists():
-            validated_data['unique_record_identifier'] = uuid.uuid4()
-
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()
         logger.info(validated_data)
