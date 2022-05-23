@@ -172,15 +172,19 @@ def update_multilevel_dict(dictionary, path, value):
     return dictionary
 
 
-def multi_dict_sort(d, sort_type=0):
+def multi_dict_sort(data, sort_type=0):
     """
     Sorts a dictionary with multiple sub-dictionaries.
-    :param d: dictionary to sort
+    :param data: dictionary to sort
     :param sort_type: for key sort use 0 [default]; for value sort use 1
     :return: dict
     """
-    items_list = [key for (key, value) in d.items() if type(value) is dict]
-    for item_key in items_list:
-        d[item_key] = multi_dict_sort(d[item_key], sort_type)
-    return {key: value for (key, value) in sorted(d.items(),
-                                                  key=lambda x: x[sort_type])}
+    if data:
+        items_list = [key for (key, value) in data.items()
+                      if type(value) is dict]
+        for item_key in items_list:
+            data[item_key] = multi_dict_sort(data[item_key], sort_type)
+        return {key: value for (key, value) in sorted(data.items(),
+                                                      key=lambda x:
+                                                      x[sort_type])}
+    return data
