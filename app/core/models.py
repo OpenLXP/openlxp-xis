@@ -145,7 +145,7 @@ class SupplementalLedger(models.Model):
                          choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
-    metadata = models.JSONField(blank=True)
+    metadata = models.JSONField(null=True, blank=True)
     metadata_hash = models.TextField(max_length=200)
     metadata_key = models.TextField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)

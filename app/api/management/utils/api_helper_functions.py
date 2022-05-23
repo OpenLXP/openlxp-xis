@@ -57,7 +57,7 @@ def add_metadata_ledger(data, experience_id):
             data['metadata_key'] = record_in_table.metadata_key
 
     if 'metadata_key_hash' not in data:
-        data['metadata_key_hash'] = hashlib.\
+        data['metadata_key_hash'] = hashlib. \
             sha512(str(data['metadata_key']).encode('utf-8')).hexdigest()
 
     return data, record_in_table
