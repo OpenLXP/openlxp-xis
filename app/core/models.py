@@ -133,8 +133,10 @@ class SupplementalLedger(models.Model):
     """Model for SupplementalLedger"""
 
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R'),
+    RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'),
+                                          ('Failed', 'F'),
+                                          ('Pending', 'P'),
+                                          ('Ready', 'R'),
                                           ('Cancelled', 'C')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
 
@@ -166,7 +168,8 @@ class CompositeLedger(models.Model):
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R'),
+                                          ('Pending', 'P'),
+                                          ('Ready', 'R'),
                                           ('Cancelled', 'C')]
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
