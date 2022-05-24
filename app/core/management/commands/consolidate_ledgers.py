@@ -28,13 +28,17 @@ def put_metadata_ledger_into_composite_ledger(data):
             metadata_key_hash=row['metadata_key_hash'],
             record_status='Active').exclude(
             metadata_hash=composite_metadata_hash).update(
-            date_deleted=timezone.now(),
-            composite_ledger_transmission_status="Cancelled")
+            date_deleted=timezone.now())
         CompositeLedger.objects.filter(
             metadata_key_hash=row['metadata_key_hash'],
             record_status='Active').exclude(
             metadata_hash=composite_metadata_hash).update(
             record_status='Inactive')
+        CompositeLedger.objects.filter(
+            metadata_key_hash=row['metadata_key_hash'],
+            record_status='Active').exclude(
+            metadata_hash=composite_metadata_hash).update(
+            composite_ledger_transmission_status="Cancelled")
 
         # Retrieving existing records or creating new record to CompositeLedger
         CompositeLedger.objects.get_or_create(
