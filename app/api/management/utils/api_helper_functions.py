@@ -71,7 +71,7 @@ def add_supplemental_ledger(data, experience_id):
     if 'unique_record_identifier' not in data:
         data['unique_record_identifier'] = str(uuid.uuid4())
 
-    if MetadataLedger.objects.filter(
+    if SupplementalLedger.objects.filter(
             unique_record_identifier=data
             ['unique_record_identifier']).exists():
         logger.info("Assigning new UUID to updated value")

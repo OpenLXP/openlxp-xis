@@ -100,7 +100,8 @@ class MetadataLedger(models.Model):
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R')]
+                                          ('Pending', 'P'), ('Ready', 'R'),
+                                          ('Cancelled', 'C')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
@@ -133,7 +134,8 @@ class SupplementalLedger(models.Model):
 
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R')]
+                                          ('Pending', 'P'), ('Ready', 'R'),
+                                          ('Cancelled', 'C')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
 
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
@@ -164,7 +166,8 @@ class CompositeLedger(models.Model):
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R')]
+                                          ('Pending', 'P'), ('Ready', 'R'),
+                                          ('Cancelled', 'C')]
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     date_transmitted = models.DateTimeField(blank=True, null=True)
