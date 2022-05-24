@@ -222,12 +222,11 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """creates new record in table"""
-        if 'metadata' in validated_data:
-            if not validated_data['metadata']:
-                logger.info('Supplementary data is null')
-            else:
-                logger.info('Supplementary data has no metadata')
+        if ('metadata' not in validated_data) or \
+                (not validated_data['metadata']):
+            logger.info('Supplementary data is null')
             return None
+
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()
         logger.info(validated_data)
