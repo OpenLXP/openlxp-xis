@@ -10,10 +10,14 @@ class XISConfiguration(models.Model):
     """Model for XIS Configuration """
 
     target_schema = models.CharField(
-        default='p2881_schema.json', max_length=200,
+        default='p2881', max_length=200,
         help_text='Enter the target '
-                  'schema file to '
-                  'validate from.')
+                  'schema name or IRI '
+                  'to validate with.')
+    xss_host = models.CharField(
+        help_text='Enter the host url for the XSS (Schema Service) to use.',
+        max_length=200
+    )
     xse_host = models.CharField(
         help_text='Enter the host url for the XSE (Search Engine) to use.',
         max_length=200

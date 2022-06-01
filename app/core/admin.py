@@ -6,10 +6,14 @@ from core.models import Neo4jConfiguration, XISConfiguration, XISSyndication
 # Register your models here.
 @admin.register(XISConfiguration)
 class XISConfigurationAdmin(admin.ModelAdmin):
-    list_display = ('target_schema', 'xse_host', 'xse_index',
+    list_display = ('target_schema', 'xss_host', 'xse_host', 'xse_index',
                     'autocomplete_field', 'filter_field',)
-    fields = [('target_schema', 'xse_host', 'xse_index',
-               'autocomplete_field', 'filter_field',)]
+    fieldsets = (
+        ('XSS Settings', {'fields':
+                          ('xss_host', 'target_schema')}),
+        ('XSE Settings', {'fields':
+                          ('xse_host', 'xse_index', 'autocomplete_field',
+                           'filter_field',)}))
 
 
 @admin.register(XISSyndication)
