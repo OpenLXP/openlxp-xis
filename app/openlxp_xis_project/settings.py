@@ -131,6 +131,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# rest_framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
+}
+
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 CELERY_CACHE_BACKEND = 'default'
