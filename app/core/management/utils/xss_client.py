@@ -1,8 +1,6 @@
-import json
 import logging
-import os
 
-import boto3
+import requests
 
 from core.management.utils.xis_internal import dict_flatten
 from core.models import XISConfiguration
@@ -10,20 +8,23 @@ from core.models import XISConfiguration
 logger = logging.getLogger('dict_config_logger')
 
 
-def aws_get():
-    """Function to get aws bucket name from env file"""
-    bucket_name = os.environ.get('BUCKET_NAME')
-    return bucket_name
+def xss_get():
+    """Function to get xss configuration value"""
+    conf = XISConfiguration.objects.first()
+    return conf.xss_host
 
 
-def read_json_data(file_name):
-    """setting file path for json files and ingesting as dictionary values """
-    s3 = boto3.resource('s3')
-    bucket_name = aws_get()
-    json_path = s3.Object(bucket_name, file_name)
-    json_content = json_path.get()['Body'].read().decode('utf-8')
-    data_dict = json.loads(json_content)
-    return data_dict
+def read_json_data(schema_ref):
+    """get schema from xss and ingest as dictionary values"""
+    xss_host = xss_get()
+    request_path = xss_host
+    if(schema_ref.startswith('xss:')):
+        request_path += '?iri=' + schema_ref
+    else:
+        request_path += '?name=' + schema_ref
+    schema = requests.get(request_path)
+    json_content = schema.json()['schema']
+    return json_content
 
 
 def get_target_validation_schema():
