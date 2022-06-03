@@ -5,8 +5,9 @@ import uuid
 from celery.result import AsyncResult
 from django.http import JsonResponse
 from requests.exceptions import HTTPError
-from rest_framework import permissions, status
+from rest_framework import filters, pagination, permissions, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.utils import json
 from rest_framework.views import APIView
@@ -218,27 +219,46 @@ class UUIDDataView(APIView):
             return Response(serializer_class.data, status.HTTP_200_OK)
 
 
-class ManagedCatalogDataView(APIView):
+class CustomPagination(pagination.PageNumberPagination):
+    """custom pagination to add page_size from api. For example:
+
+    http://api.example.org/accounts/?page=4
+    http://api.example.org/accounts/?page=4&page_size=100"""
+
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+
+class ManagedCatalogDataView(ListAPIView):
     """Handles HTTP requests for Managing catalog data from XMS"""
 
-    def get(self, request, provider_id):
-        """This method defines the API's to retrieve data to be managed
-         from XMS"""
+    # add fields to be searched on in the query
+    search_fields = ['metadata', 'metadata_key', 'metadata_key_hash',
+                     'provider_name', 'unique_record_identifier']
+    serializer_class = MetadataLedgerSerializer
+    pagination_class = CustomPagination
 
-        querySet = MetadataLedger.objects.filter(
+    def get_queryset(self):
+        """override queryset to filter using provider_id"""
+
+        provider_id = self.kwargs['provider_id']
+        queryset = MetadataLedger.objects.filter(
             provider_name=provider_id,
             record_status="Active"
         )
 
-        if not querySet:
-            errorMsg = {"Error; no active records found for the provider "
-                        + provider_id}
-            logger.error(errorMsg)
-            return Response(errorMsg, status.HTTP_404_NOT_FOUND)
+        return queryset
 
-        catalog_data_response = get_managed_data(querySet)
+    def filter_queryset(self, queryset):
+        """override search filter to filter using ?search=value1 value2..."""
 
-        return catalog_data_response
+        filter_backends = (filters.SearchFilter,)
+
+        for backend in list(filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset,
+                                                 view=self)
+        return queryset
 
 
 class ManageDataView(APIView):
