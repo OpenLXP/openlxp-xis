@@ -127,7 +127,7 @@ class MetadataLedger(models.Model):
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
-    unique_record_identifier = models.CharField(max_length=50,
+    unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True,
                                   choices=RECORD_UPDATED_BY, default='System')
@@ -160,7 +160,7 @@ class SupplementalLedger(models.Model):
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
-    unique_record_identifier = models.CharField(max_length=50,
+    unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True,
                                   choices=RECORD_UPDATED_BY, default='System')
