@@ -51,15 +51,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Neo4jConfiguration',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('neo4j_uri', models.CharField(help_text='Enter the host uri for the Neo4j (Graph Database) to use.', max_length=200)),
-                ('neo4j_user', models.CharField(help_text='Enter the user ID to connect with Neo4j', max_length=200)),
-                ('neo4j_pwd', models.CharField(help_text='Enter the user ID to connect with Neo4j', max_length=200)),
-            ],
-        ),
-        migrations.CreateModel(
             name='SupplementalLedger',
             fields=[
                 ('composite_ledger_transmission_date', models.DateTimeField(blank=True, null=True)),
