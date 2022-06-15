@@ -7,7 +7,7 @@ XIS Component is the primary funnel for learning experience metadata collected b
 
 Learning experience metadata received from XIAs is stored in the Metadata Loading Area and processed asynchronously to enhance overall system performance and scalability. Processed metadata combined with supplemental metadata provided by an Experience Owner or Experience Manager and the "composite record" stored in the Metadata Repository. Metadata Repository records addition/modification events logged to a job queue, and the metadata is then sent to the Experience Search Engine (XSE) for indexing and high-performance location/retrieval. 
 
-A XIS can syndicate its composite records to another XIS. One or more facets/dimensions can filter the recordset to transmit a subset of the overall composite record repository. In addition, the transmitted fieldset can be configured to contain redacted values for specified fields when information is considered too sensitive for syndication. 
+A XIS can syndicate its composite records to another XIS. One or more facets/dimensions can filter the record-set to transmit a subset of the overall composite record repository. In addition, the transmitted fieldset can be configured to contain redacted values for specified fields when information is considered too sensitive for syndication. 
 
 # Workflows
 ETL pipeline from XIA loads processed metadata ledger and supplemental ledger in a metadata ledger and supplemental ledger of XIS component after a validation. Metadata combined with supplemental metadata provided by an Experience Owner or Experience Manager from XMS also gets stored in XIS. All of them from XIA and XMS finally get merged into XIS's composite ledger after a validation.  
@@ -32,7 +32,7 @@ To run this project, you will need to add the following environment variables to
 
 `DB_ROOT_PASSWORD` - MySql database root password
 
-`DB_HOST` - MySql datebase host
+`DB_HOST` - MySql database host
 
 `DJANGO_SUPERUSER_USERNAME` - Django admin user name
 
@@ -89,15 +89,21 @@ To run this project, you will need to add the following environment variables to
 
 2.  `Add xis configuration` : Configure Experience Index Service(XIS):
 
-    `Target schema:`: Schema file name target validation schema file
-    
-    `Xse host:`: Host for the Experience Search Engine
-    
-    `Xse index:`: Index Name for the Experience Search Engine
-    
-#### Note: Please make sure to upload schema file in the Experience Schema Server (XSS). In this case, upload schema files into the S3 bucket. 
+    `Xss host`: Host and path for the Experience Schema Service and schema api
 
-5. `Add sender email configuration`: Configure the sender email address from which conformance alerts are sent.
+    `Target schema`: Schema name or iri for target validation schema from XSS
+    
+    `Xse host`: Host for the Experience Search Engine
+    
+    `Xse index`: Index Name for the Experience Search Engine
+
+    `Autocomplete field`: Path to the field to use for autocomplete in XSE
+
+    `Filter field`: Path to the field to use for filtering in XSE
+    
+    **Note: Please make sure to upload schema file in the Experience Schema Server (XSS).**
+
+5. `Add sender email configuration` : Configure the sender email address from which conformance alerts are sent.
 
 6. `Add receiver email configuration` : 
 Add an email list to send conformance alerts. When the email gets added, an email verification email will get sent out. In addition, conformance alerts will get sent to only verified email IDs.
@@ -113,7 +119,7 @@ Add an email list to send conformance alerts. When the email gets added, an emai
 
     `Email Us`: Add contact us email address here.
 
-    `FAQ URL` : Add FAQ URL here.
+    `FAQ URL`: Add FAQ URL here.
 
     `Unsubscribe Email ID`: Add email ID to which Unsubscriber will send the emails.
 
@@ -123,7 +129,7 @@ Add an email list to send conformance alerts. When the email gets added, an emai
 
     For Experience Management Service and Experience discovery services, choose Message as a log type. 
 
-    `HTML File` : Upload the HTML file here, this HTML file helps to beutify the email body.
+    `HTML File` : Upload the HTML file here, this HTML file helps to beautify the email body.
 
     Please take the reference HTML file from the below path.
 
@@ -143,29 +149,31 @@ Add an email list to send conformance alerts. When the email gets added, an emai
 
 # Running Of XIS Tasks:
 
-### Running Tasks
+## Running Tasks
 Consolidations and loading of Metadata and Supplemental Metadata into Compositing Ledger and loading it into XSE can be run through two ways:
 
 1. Through API Endpoint:
-To run tasks run below API:
+    To run tasks run below API:
     
-http://localhost:8080/api/xis-workflow
+    http://localhost:8080/api/xis-workflow
         
-#### Note: Change localhost with XIS host
+    **Note: Change localhost with XIS host**
 
 2. Periodically through celery beat: 
- On the admin page add periodic task and it's schedule. On selected time interval celery task will run.
 
-### API's 
- XIS supports API's endpoints which can get called from other components
+    On the admin page add periodic task and it's schedule. On selected time interval celery task will run.
 
-    1. http://localhost:8080/api/catalogs/
+## API's 
+
+XIS supports API's endpoints which can get called from other components
+
+1. `http://localhost:8080/api/catalogs/`
     
-This API fetch the names of all course providers
+    This API fetches the names of all course providers
 
-    2.http://localhost:8080/api/metadata/<str:course_id>/
+2. `http://localhost:8080/api/metadata/<str:course_id>/`
     
-This API fetch or modify the record of the corresponding course id
+    This API fetches or modifies the record of the corresponding course id
 
 # Logs
 To check the running of celery tasks, check the logs of application and celery container.
@@ -175,7 +183,7 @@ To check the running of celery tasks, check the logs of application and celery c
 # Troubleshooting
 
 
-## License
+# License
 
  This project uses the [MIT](http://www.apache.org/licenses/LICENSE-2.0) license.
   

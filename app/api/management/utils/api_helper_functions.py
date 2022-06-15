@@ -20,7 +20,14 @@ def add_metadata_ledger(data, experience_id):
     """Calls the metadata serializer with data sent over
      and older instance of the data """
 
+    # Updating date inserted value for newly saved values
     if 'unique_record_identifier' not in data:
+        data['unique_record_identifier'] = str(uuid.uuid4())
+
+    if MetadataLedger.objects.filter(
+            unique_record_identifier=data
+            ['unique_record_identifier']).exists():
+        logger.info("Assigning new UUID to updated value")
         data['unique_record_identifier'] = str(uuid.uuid4())
 
     # sorting the metadata for consistency
@@ -50,7 +57,7 @@ def add_metadata_ledger(data, experience_id):
             data['metadata_key'] = record_in_table.metadata_key
 
     if 'metadata_key_hash' not in data:
-        data['metadata_key_hash'] = hashlib.\
+        data['metadata_key_hash'] = hashlib. \
             sha512(str(data['metadata_key']).encode('utf-8')).hexdigest()
 
     return data, record_in_table
@@ -59,6 +66,16 @@ def add_metadata_ledger(data, experience_id):
 def add_supplemental_ledger(data, experience_id):
     """Calls the supplemental serializer with data sent over
          and older instance of the data """
+
+    # Updating date inserted value for newly saved values
+    if 'unique_record_identifier' not in data:
+        data['unique_record_identifier'] = str(uuid.uuid4())
+
+    if SupplementalLedger.objects.filter(
+            unique_record_identifier=data
+            ['unique_record_identifier']).exists():
+        logger.info("Assigning new UUID to updated value")
+        data['unique_record_identifier'] = str(uuid.uuid4())
 
     # sorting the metadata for consistency
     data['metadata'] = multi_dict_sort(data['metadata'])
@@ -104,10 +121,11 @@ def get_managed_data(querySet):
         serializer_data = MetadataLedgerSerializer(querySet,
                                                    many=True,
                                                    fields=fields).data
-        transformed_metadata = \
-            append_metadata_ledger_with_supplemental_ledger(
-                serializer_data[0])[0]
-        serializer_data[0]['metadata'] = transformed_metadata
+        for index in range(len(serializer_data)):
+            transformed_metadata = \
+                append_metadata_ledger_with_supplemental_ledger(
+                    serializer_data[index])[0]
+            serializer_data[index]['metadata'] = transformed_metadata
 
     except HTTPError as http_err:
         logger.error(http_err)

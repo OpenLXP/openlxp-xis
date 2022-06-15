@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 from django.utils import timezone
 from rest_framework import serializers
@@ -126,30 +125,28 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
     def update(self, instance, validated_data):
         """Updates the older record in table based on validation result"""
         # Check if older record is the same to skip updating
-        if validated_data['metadata_hash'] != self.instance.metadata_hash and\
+        if validated_data['metadata_hash'] != self.instance.metadata_hash and \
                 validated_data.get('record_status') == 'Active':
             # Updating old instance of record INACTIVE if present record is
             # ACTIVE
             logger.info("Active instance found for update to inactive")
             instance.record_status = 'Inactive'
             instance.date_deleted = timezone.now()
+            instance.composite_ledger_transmission_status = "Cancelled"
         instance.save()
         return instance
 
     def create(self, validated_data):
         """creates new record in table"""
         # assigning a new UUID primary key for data created
-        if MetadataLedger.objects.filter(
-                unique_record_identifier=validated_data
-                ['unique_record_identifier']).exists():
-            logger.info("Assigning new UUID to updated value")
-            validated_data['unique_record_identifier'] = str(uuid.uuid4())
 
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()
         # Updating deleted_date for newly saved inactive values
         if validated_data.get('record_status') == "Inactive":
             validated_data['date_deleted'] = timezone.now()
+            validated_data['composite_ledger_transmission_status'] = \
+                "Cancelled"
         # Creating new value in metadata ledger
         try:
             # Here is the important part! Creating new object!
@@ -212,24 +209,23 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         """Updates the older record in table based on validation result"""
 
         # Check if older record is the same to skip updating
-        if validated_data['metadata_hash'] != self.instance.metadata_hash and\
+        if validated_data['metadata_hash'] != self.instance.metadata_hash and \
                 validated_data.get('record_status') == 'Active':
             # Updating old instance of record INACTIVE if present record is
             # ACTIVE
             logger.info("Active instance found for update to inactive")
             instance.record_status = 'Inactive'
             instance.date_deleted = timezone.now()
+            instance.composite_ledger_transmission_status = "Cancelled"
         instance.save()
         return instance
 
     def create(self, validated_data):
         """creates new record in table"""
-
-        # assigning a new UUID primary key for data created
-        if SupplementalLedger.objects.filter(
-                unique_record_identifier=validated_data
-                ['unique_record_identifier']).exists():
-            validated_data['unique_record_identifier'] = uuid.uuid4()
+        if ('metadata' not in validated_data) or \
+                (not validated_data['metadata']):
+            logger.info('Supplementary data is null')
+            return None
 
         # Updating date inserted value for newly saved values
         validated_data['date_inserted'] = timezone.now()
@@ -237,6 +233,8 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         # Updating deleted_date for newly saved inactive values
         if validated_data.get('record_status') == "Inactive":
             validated_data['date_deleted'] = timezone.now()
+            validated_data['composite_ledger_transmission_status'] = \
+                "Cancelled"
         # Creating new value in metadata ledger
         try:
             # Here is the important part! Creating new object!
@@ -318,7 +316,7 @@ class CompositeLedgerSerializer(serializers.ModelSerializer):
                                               "Required", item)
             # validate for recommended values in data
             # Log out warning for missing recommended values
-            elif item in recommended_column_list and\
+            elif item in recommended_column_list and \
                     not flattened_source_data[item]:
                 required_recommended_logs(data.
                                           get('unique_record_identifier'),

@@ -34,6 +34,11 @@ def put_metadata_ledger_into_composite_ledger(data):
             record_status='Active').exclude(
             metadata_hash=composite_metadata_hash).update(
             record_status='Inactive')
+        CompositeLedger.objects.filter(
+            metadata_key_hash=row['metadata_key_hash'],
+            record_status='Active').exclude(
+            metadata_hash=composite_metadata_hash).update(
+            metadata_transmission_status="Cancelled")
 
         # Retrieving existing records or creating new record to CompositeLedger
         CompositeLedger.objects.get_or_create(

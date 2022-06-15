@@ -10,10 +10,14 @@ class XISConfiguration(models.Model):
     """Model for XIS Configuration """
 
     target_schema = models.CharField(
-        default='p2881_schema.json', max_length=200,
+        default='p2881', max_length=200,
         help_text='Enter the target '
-                  'schema file to '
-                  'validate from.')
+                  'schema name or IRI '
+                  'to validate with.')
+    xss_host = models.CharField(
+        help_text='Enter the host url for the XSS (Schema Service) to use.',
+        max_length=200
+    )
     xse_host = models.CharField(
         help_text='Enter the host url for the XSE (Search Engine) to use.',
         max_length=200
@@ -100,7 +104,8 @@ class MetadataLedger(models.Model):
     METADATA_VALIDATION_CHOICES = [('Y', 'Yes'), ('N', 'No')]
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R')]
+                                          ('Pending', 'P'), ('Ready', 'R'),
+                                          ('Cancelled', 'C')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
@@ -122,7 +127,7 @@ class MetadataLedger(models.Model):
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
-    unique_record_identifier = models.CharField(max_length=50,
+    unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True,
                                   choices=RECORD_UPDATED_BY, default='System')
@@ -132,8 +137,11 @@ class SupplementalLedger(models.Model):
     """Model for SupplementalLedger"""
 
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R')]
+    RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'),
+                                          ('Failed', 'F'),
+                                          ('Pending', 'P'),
+                                          ('Ready', 'R'),
+                                          ('Cancelled', 'C')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
 
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
@@ -145,14 +153,14 @@ class SupplementalLedger(models.Model):
                          choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
-    metadata = models.JSONField(blank=True)
+    metadata = models.JSONField(null=True, blank=True)
     metadata_hash = models.TextField(max_length=200)
     metadata_key = models.TextField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
     provider_name = models.CharField(max_length=255, blank=True)
     record_status = models.CharField(max_length=10, blank=True,
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
-    unique_record_identifier = models.CharField(max_length=50,
+    unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True,
                                   choices=RECORD_UPDATED_BY, default='System')
@@ -164,7 +172,9 @@ class CompositeLedger(models.Model):
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
     RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
-                                          ('Pending', 'P'), ('Ready', 'R')]
+                                          ('Pending', 'P'),
+                                          ('Ready', 'R'),
+                                          ('Cancelled', 'C')]
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     date_transmitted = models.DateTimeField(blank=True, null=True)
