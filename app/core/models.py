@@ -3,7 +3,6 @@ import uuid
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
-from model_utils.models import TimeStampedModel
 
 
 class XISConfiguration(models.Model):
@@ -74,28 +73,6 @@ class Neo4jConfiguration(models.Model):
         if not self.pk and Neo4jConfiguration.objects.exists():
             raise ValidationError('Neo4jConfiguration model already exists')
         return super(Neo4jConfiguration, self).save(*args, **kwargs)
-
-
-class XISSyndication(TimeStampedModel):
-    """Model for XIS Syndication """
-
-    STATUS = [
-        ('ACTIVE', 'Active'),
-        ('INACTIVE', 'Inactive')]
-
-    xis_api_endpoint = models.CharField(
-        help_text='Enter the XIS Instance API endpoint',
-        max_length=200
-    )
-
-    xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
-
-    def __str__(self):
-        """String for representing the Model object."""
-        return f'{self.id}'
-
-    def save(self, *args, **kwargs):
-        return super(XISSyndication, self).save(*args, **kwargs)
 
 
 class MetadataLedger(models.Model):
@@ -200,3 +177,91 @@ class CompositeLedger(models.Model):
         models.CharField(max_length=10, blank=True,
                          default='Ready',
                          choices=RECORD_TRANSMISSION_STATUS_CHOICES)
+
+
+class FilterRecord(models.Model):
+    """Model for Filtering Composite Ledger Experiences for XIS Syndication """
+
+    COMPARATORS = [
+        ('EQUAL', 'Equal'),
+        ('UNEQUAL', 'Not Equal'),
+        ('CONTAINS', 'Contains')]
+
+    field_name = models.CharField(
+        help_text='Enter the field path', max_length=255)
+
+    comparator = models.CharField(max_length=200, choices=COMPARATORS)
+
+    field_value = models.CharField(
+        help_text='Enter the field value', max_length=255)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.id}'
+
+
+class FilterMetadata(models.Model):
+    """Model for Filtering Metadata within Composite Ledger Experiences for
+    XIS Syndication """
+
+    OPERATIONS = [
+        ('INCLUDE', 'Include'),
+        ('EXCLUDE', 'Exclude')]
+
+    field_name = models.CharField(
+        help_text='Enter the field path', max_length=255)
+
+    operation = models.CharField(max_length=200, choices=OPERATIONS)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.id}'
+
+
+class XISUpstream(models.Model):
+    """Model for Upstream XIS Syndication """
+
+    STATUS = [
+        ('ACTIVE', 'Active'),
+        ('INACTIVE', 'Inactive')]
+
+    xis_api_endpoint = models.URLField(
+        help_text='Enter the XIS Instance API endpoint'
+    )
+
+    xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
+
+    metadata_experiences = models.ManyToManyField(
+        MetadataLedger, 'xis_source', blank=True)
+    supplemental_experiences = models.ManyToManyField(
+        SupplementalLedger, 'xis_source', blank=True)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.xis_api_endpoint}'
+
+
+class XISDownstream(models.Model):
+    """Model for Downstream XIS Syndication """
+
+    STATUS = [
+        ('ACTIVE', 'Active'),
+        ('INACTIVE', 'Inactive')]
+
+    xis_api_endpoint = models.URLField(
+        help_text='Enter the XIS Instance API endpoint'
+    )
+
+    xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
+
+    composite_experiences = models.ManyToManyField(
+        CompositeLedger, 'xis_destination', blank=True)
+
+    filter_records = models.ManyToManyField(
+        FilterRecord, 'xis_downstream', blank=True)
+    filter_metadata = models.ManyToManyField(
+        FilterMetadata, 'xis_downstream', blank=True)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.xis_api_endpoint}'
