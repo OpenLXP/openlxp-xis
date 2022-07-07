@@ -22,7 +22,7 @@ def read_json_data(schema_ref):
         request_path += '?iri=' + schema_ref
     else:
         request_path += '?name=' + schema_ref
-    schema = requests.get(request_path)
+    schema = requests.get(request_path, verify=True)
     json_content = schema.json()['schema']
     return json_content
 
