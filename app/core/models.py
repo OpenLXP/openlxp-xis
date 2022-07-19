@@ -83,7 +83,6 @@ class MetadataLedger(models.Model):
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
                                           ('Pending', 'P'), ('Ready', 'R'),
                                           ('Cancelled', 'C')]
-    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
     composite_ledger_transmission_status = \
@@ -106,8 +105,7 @@ class MetadataLedger(models.Model):
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
-    updated_by = models.CharField(max_length=10, blank=True,
-                                  choices=RECORD_UPDATED_BY, default='System')
+    updated_by = models.CharField(max_length=10, blank=True, default='System')
 
 
 class SupplementalLedger(models.Model):
@@ -119,7 +117,6 @@ class SupplementalLedger(models.Model):
                                           ('Pending', 'P'),
                                           ('Ready', 'R'),
                                           ('Cancelled', 'C')]
-    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
 
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
@@ -139,15 +136,13 @@ class SupplementalLedger(models.Model):
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
-    updated_by = models.CharField(max_length=10, blank=True,
-                                  choices=RECORD_UPDATED_BY, default='System')
+    updated_by = models.CharField(max_length=10, blank=True, default='System')
 
 
 class CompositeLedger(models.Model):
     """Model for CompositeLedger"""
 
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
                                           ('Pending', 'P'),
                                           ('Ready', 'R'),
@@ -171,8 +166,7 @@ class CompositeLedger(models.Model):
     unique_record_identifier = models.UUIDField(primary_key=True,
                                                 default=uuid.uuid4,
                                                 editable=False)
-    updated_by = models.CharField(max_length=10, blank=True,
-                                  choices=RECORD_UPDATED_BY)
+    updated_by = models.CharField(max_length=10, blank=True)
     metadata_transmission_status_neo4j = \
         models.CharField(max_length=10, blank=True,
                          default='Ready',

@@ -289,7 +289,8 @@ class ManageDataView(APIView):
         after it's been managed in XMS"""
 
         # Tracking source of changes to metadata/supplementary data
-        request.data['updated_by'] = "Owner"
+        if(not request.data['updated_by']):
+            request.data['updated_by'] = "Owner"
         request.data['provider_name'] = provider_id
         request.data['metadata_key_hash'] = experience_id
         request.data['unique_record_identifier'] = str(uuid.uuid4())
@@ -305,45 +306,42 @@ class ManageDataView(APIView):
             add_supplemental_ledger(supplemental_data, experience_id)
 
         if metadata_instance:
-
             metadata['metadata_key'] = metadata_instance.metadata_key
 
-            # Assign data from request to serializer
-            metadata_serializer = MetadataLedgerSerializer(metadata_instance,
-                                                           data=metadata)
+        # Assign data from request to serializer
+        metadata_serializer = MetadataLedgerSerializer(metadata_instance,
+                                                       data=metadata)
 
-            # Assign data from request to serializer
-            supplemental_serializer = \
-                SupplementalLedgerSerializer(supplemental_instance,
-                                             data=supplementalData)
+        # Assign data from request to serializer
+        supplemental_serializer = \
+            SupplementalLedgerSerializer(supplemental_instance,
+                                         data=supplementalData)
 
-            if not metadata_serializer.is_valid():
-                # If not received send error and bad request status
-                logger.info(json.dumps(metadata_data))
-                logger.error(metadata_serializer.errors)
-                return Response(metadata_serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
+        if not metadata_serializer.is_valid():
+            # If not received send error and bad request status
+            logger.info(json.dumps(metadata_data))
+            logger.error(metadata_serializer.errors)
+            return Response(metadata_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            if not supplemental_serializer.is_valid():
-                # If not received send error and bad request status
-                logger.info(json.dumps(supplemental_data))
-                logger.error(supplemental_serializer.errors)
-                return Response(supplemental_serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
+        if not supplemental_serializer.is_valid():
+            # If not received send error and bad request status
+            logger.info(json.dumps(supplemental_data))
+            logger.error(supplemental_serializer.errors)
+            return Response(supplemental_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            # If received save record in ledger and send response of UUID &
-            # status created
-            metadata_serializer.save()
-            supplemental_serializer.save()
+        # If received save record in ledger and send response of UUID &
+        # status created
+        metadata_serializer.save()
+        supplemental_serializer.save()
 
+        if(metadata_instance):
+            return Response(metadata_serializer.data['metadata_key_hash'],
+                            status=status.HTTP_200_OK)
+        else:
             return Response(metadata_serializer.data['metadata_key_hash'],
                             status=status.HTTP_201_CREATED)
-        else:
-            errorMsg = {
-                "message": "Course updated does not exist in records. Please "
-                           "check experience value"
-            }
-            return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -351,7 +349,7 @@ class ManageDataView(APIView):
 def xis_workflow_api(request):
     logger.info('XIS workflow api')
     task = xis_workflow.delay()
-    return JsonResponse({"task_id": task.id}, status=202)
+    return JsonResponse({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
 
 
 def get_status(request, task_id):
