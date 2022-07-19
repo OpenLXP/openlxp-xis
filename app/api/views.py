@@ -352,6 +352,14 @@ def xis_workflow_api(request):
     return JsonResponse({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
 
 
+@api_view(['GET'])
+@permission_classes((permissions.AllowAny,))
+def xis_downstream_workflow_api(request):
+    logger.info('Downstream workflow api')
+    task = xis_downstream_workflow_api.delay()
+    return JsonResponse({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
+
+
 def get_status(request, task_id):
     task_result = AsyncResult(task_id)
     result = {
