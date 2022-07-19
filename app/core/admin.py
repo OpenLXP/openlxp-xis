@@ -30,7 +30,7 @@ class XISDownstreamAdmin(admin.ModelAdmin):
     list_display = ('xis_api_endpoint', 'xis_api_endpoint_status')
     fields = [('xis_api_endpoint', 'xis_api_endpoint_status'),
               ('filter_records', 'filter_metadata'),
-              ('composite_experiences',)]
+              ('source_name',)]
     filter_horizontal = ['composite_experiences',
                          'filter_records', 'filter_metadata']
 
