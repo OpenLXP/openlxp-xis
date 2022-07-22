@@ -30,6 +30,17 @@ from core.tasks import xis_workflow
 logger = logging.getLogger('dict_config_logger')
 
 
+class CustomPagination(pagination.PageNumberPagination):
+    """custom pagination to add page_size from api. For example:
+
+    http://api.example.org/accounts/?page=4
+    http://api.example.org/accounts/?page=4&page_size=100"""
+
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+
 class CatalogDataView(APIView):
     """Handles HTTP requests for Provider data from XIS"""
 
@@ -54,80 +65,46 @@ class ManagedCatalogListView(APIView):
         return managed_catalog_list_response
 
 
-class MetaDataView(APIView):
+class MetaDataView(ListAPIView):
     """Handles HTTP requests for Metadata for XIS"""
 
-    def get(self, request):
-        """This method defines the API's to retrieve data from
-        composite ledger from XIS"""
+    # add fields to be searched on in the query
+    search_fields = ['metadata_key_hash',
+                     'provider_name', 'unique_record_identifier']
+    serializer_class = CompositeLedgerSerializer
+    pagination_class = CustomPagination
 
-        errorMsg = {
-            "message": "Error fetching records please check the logs."
-        }
+    def get_queryset(self):
+        """override queryset to filter using provider_id"""
 
-        # initially fetch all active records
-        querySet = CompositeLedger.objects.all().order_by() \
-            .filter(record_status='Active')
+        queryset = CompositeLedger.objects.all().order_by().filter(
+            record_status="Active"
+        )
 
-        if not querySet:
-            errorMsg = {
-                "message": "Error no records found"
-            }
+        args = self.request.query_params
 
-            return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
+        if 'provider' in args and args['provider']:
+            queryset = queryset.filter(provider_name=args['provider'])
+        if 'id' in args and args['id']:
+            queryset = queryset.filter(
+                unique_record_identifier__in=args['id'].split(","))
+        if 'metadata_key_hash_list' in args\
+                and args['metadata_key_hash_list']:
+            queryset = queryset.filter(
+                metadata_key_hash__in=args['metadata_key_hash_list']
+                .split(","))
 
-        # case where provider sent as query parameter
-        if request.GET.get('provider'):
-            querySet = querySet.filter(provider_name=request.GET.
-                                       get('provider'))
+        return queryset
 
-            if not querySet:
-                errorMsg = {
-                    "message": "Error; no provider name found for: " +
-                               request.GET.get('provider')
-                }
+    def filter_queryset(self, queryset):
+        """override search filter to filter using ?search=value1 value2..."""
 
-                return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
-        # case a list of ids sent as query parameter e.g a,b,c,d
-        elif request.GET.get('id'):
-            id_param = request.GET.get('id')
-            ids = id_param.split(",")
-            querySet = querySet.filter(unique_record_identifier__in=ids)
+        filter_backends = (filters.SearchFilter,)
 
-            if not querySet:
-                errorMsg = {
-                    "message": "Error; no unique record identifier found for: "
-                               + id_param
-                }
-
-                return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
-
-        # case where a list of metadata key hashes is sent as query parameter
-        # e.g a,b,c
-        if request.GET.get('metadata_key_hash_list'):
-            metadata_key_hash_param = request.GET.get('metadata_key_hash_list')
-            hashes = metadata_key_hash_param.split(',')
-            querySet = querySet.filter(metadata_key_hash__in=hashes)
-
-            if not querySet:
-                errorMsg = {
-                    "message": "Error; no record found for any of the "
-                               + "following key hashes: " +
-                               metadata_key_hash_param
-                }
-
-                return Response(errorMsg, status.HTTP_400_BAD_REQUEST)
-
-        try:
-            serializer_class = CompositeLedgerSerializer(querySet, many=True)
-        except HTTPError as http_err:
-            logger.error(http_err)
-            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as err:
-            logger.error(err)
-            return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response(serializer_class.data, status.HTTP_200_OK)
+        for backend in list(filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset,
+                                                 view=self)
+        return queryset
 
     def post(self, request):
         """This method defines the API's to save data to the
@@ -217,17 +194,6 @@ class UUIDDataView(APIView):
             return Response(errorMsg, status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(serializer_class.data, status.HTTP_200_OK)
-
-
-class CustomPagination(pagination.PageNumberPagination):
-    """custom pagination to add page_size from api. For example:
-
-    http://api.example.org/accounts/?page=4
-    http://api.example.org/accounts/?page=4&page_size=100"""
-
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 50
 
 
 class ManagedCatalogDataView(ListAPIView):
