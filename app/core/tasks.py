@@ -4,6 +4,8 @@ from celery import shared_task
 
 from core.management.commands.consolidate_ledgers import \
     Command as consolidate_ledgers
+from core.management.commands.load_metadata_from_xis import \
+    Command as upstream_xis
 from core.management.commands.load_metadata_into_xis import \
     Command as downstream_xis
 # from core.management.commands.load_metadata_into_neo4j import \
@@ -45,3 +47,14 @@ def xis_downstream_workflow():
     downstream_xis_class.handle()
 
     logger.info('COMPLETED DATA LOADING INTO EXTERNAL XIS')
+
+
+@shared_task(name="workflow_for_upstream")
+def xis_upstream_workflow():
+    """XIS Downstream automated workflow"""
+
+    upstream_xis_class = upstream_xis()
+
+    upstream_xis_class.handle()
+
+    logger.info('COMPLETED DATA LOADING FROM EXTERNAL XIS')

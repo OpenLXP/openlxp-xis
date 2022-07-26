@@ -25,7 +25,8 @@ from core.management.utils.xis_internal import update_multilevel_dict
 from core.management.utils.xss_client import \
     get_optional_and_recommended_fields_for_validation
 from core.models import CompositeLedger, MetadataLedger
-from core.tasks import xis_workflow
+from core.tasks import (xis_downstream_workflow, xis_upstream_workflow,
+                        xis_workflow)
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -322,7 +323,15 @@ def xis_workflow_api(request):
 @permission_classes((permissions.AllowAny,))
 def xis_downstream_workflow_api(request):
     logger.info('Downstream workflow api')
-    task = xis_downstream_workflow_api.delay()
+    task = xis_downstream_workflow.delay()
+    return JsonResponse({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(['GET'])
+@permission_classes((permissions.AllowAny,))
+def xis_upstream_workflow_api(request):
+    logger.info('Upstream workflow api')
+    task = xis_upstream_workflow.delay()
     return JsonResponse({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
 
 
