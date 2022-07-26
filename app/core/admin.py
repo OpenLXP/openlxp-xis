@@ -20,8 +20,7 @@ class XISConfigurationAdmin(admin.ModelAdmin):
 @admin.register(XISUpstream)
 class XISUpstreamAdmin(admin.ModelAdmin):
     list_display = ('xis_api_endpoint', 'xis_api_endpoint_status')
-    fields = [('xis_api_endpoint', 'xis_api_endpoint_status'),
-              ('metadata_experiences', 'supplemental_experiences')]
+    fields = [('xis_api_endpoint', 'xis_api_endpoint_status'), ]
     filter_horizontal = ['metadata_experiences', 'supplemental_experiences']
 
 

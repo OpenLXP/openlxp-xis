@@ -282,12 +282,15 @@ class FilterMetadata(models.Model):
 
 class XISUpstream(models.Model):
     """Model for Upstream XIS Syndication """
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
 
     STATUS = [
-        ('ACTIVE', 'Active'),
-        ('INACTIVE', 'Inactive')]
+        (ACTIVE, 'Active'),
+        (INACTIVE, 'Inactive')]
 
-    xis_api_endpoint = models.URLField(
+    xis_api_endpoint = models.CharField(
+        max_length=200,
         help_text='Enter the XIS Instance API endpoint'
     )
 
