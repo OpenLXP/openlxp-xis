@@ -234,8 +234,13 @@ class ManagedCatalogDataView(ListAPIView):
     """Handles HTTP requests for Managing catalog data from XMS"""
 
     # add fields to be searched on in the query
-    search_fields = ['metadata', 'metadata_key', 'metadata_key_hash',
-                     'provider_name', 'unique_record_identifier']
+    search_fields = ['metadata__Course__CourseTitle',
+                     'metadata__Course__CourseShortDescription',
+                     'metadata__Course__CourseFullDescription',
+                     'metadata__Course__CourseCode', 'metadata_key',
+                     'metadata_key_hash', 'provider_name',
+                     'unique_record_identifier']
+
     serializer_class = MetadataLedgerSerializer
     pagination_class = CustomPagination
 
