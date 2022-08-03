@@ -99,11 +99,11 @@ def create_xse_json_document(row):
     # Removing empty/Null data fields in supplemental data to be sent to XSE
     supplemental_data = {}
     if 'Supplemental_Ledger' in row['metadata'] and\
+            row['metadata']['Supplemental_Ledger'] and\
             row['metadata']['Supplemental_Ledger']:
-        if row['metadata']['Supplemental_Ledger']:
-            supplemental_data = {k: v for k, v in row['metadata'][
-                'Supplemental_Ledger'].items() if v != "NaT"
-                and v and v != "null"}
+        supplemental_data = {k: v for k, v in row['metadata'][
+            'Supplemental_Ledger'].items() if v != "NaT"
+            and v and v != "null"}
     composite_ledger_dict = {"Supplemental_Ledger": supplemental_data}
     for item in row['metadata']['Metadata_Ledger']:
         # Removing empty/Null data fields in metadata to be sent to XSE
@@ -115,6 +115,12 @@ def create_xse_json_document(row):
                     "null":
                 row['metadata']['Metadata_Ledger'][item][item_nested] = None
     composite_ledger_dict.update(row['metadata']['Metadata_Ledger'])
+    composite_ledger_dict = set_autocomplete_data(row, composite_ledger_dict)
+    return composite_ledger_dict
+
+
+def set_autocomplete_data(row, composite_ledger_dict):
+    """helper function to add autocomplete and filter to json doc"""
     try:
         autocomplete_path = get_autocomplete_field().split('.')
         autocomplete = copy.deepcopy(row)
