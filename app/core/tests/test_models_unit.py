@@ -1,9 +1,13 @@
+from unittest.mock import Mock
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
 from django.utils import timezone
 
-from core.models import (CompositeLedger, MetadataLedger, Neo4jConfiguration,
-                         SupplementalLedger, XISConfiguration, XISSyndication)
+from core.models import (CompositeLedger, FilterMetadata, FilterRecord,
+                         MetadataLedger, Neo4jConfiguration,
+                         SupplementalLedger, XISConfiguration, XISDownstream,
+                         XISUpstream)
 
 
 @tag('unit')
@@ -172,13 +176,13 @@ class ModelTests(TestCase):
             xisConfig.save()
             xisConfig2.save()
 
-    def test_xis_syndication(self):
-        """Test for a new XISSyndication entry is successful with defaults"""
+    def test_xis_up_syndication(self):
+        """Test for a new XISUpstream entry is successful with defaults"""
 
         xis_api_endpoint = 'https://newapi123'
-        xis_api_endpoint_status = 'Active'
+        xis_api_endpoint_status = 'ACTIVE'
 
-        xis_syndication = XISSyndication(
+        xis_syndication = XISUpstream(
             xis_api_endpoint=xis_api_endpoint,
             xis_api_endpoint_status=xis_api_endpoint_status)
 
@@ -186,6 +190,233 @@ class ModelTests(TestCase):
                          xis_api_endpoint)
         self.assertEqual(xis_syndication.xis_api_endpoint_status,
                          xis_api_endpoint_status)
+        self.assertEqual(str(xis_syndication),
+                         xis_api_endpoint)
+
+    def test_xis_down_syndication(self):
+        """Test for a new XISDownstream entry is successful with defaults"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'ACTIVE'
+
+        xis_syndication = XISDownstream(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status)
+
+        xis_syndication.save()
+
+        self.assertEqual(xis_syndication.xis_api_endpoint,
+                         xis_api_endpoint)
+        self.assertEqual(xis_syndication.xis_api_endpoint_status,
+                         xis_api_endpoint_status)
+        self.assertEqual(str(xis_syndication),
+                         xis_api_endpoint)
+
+    def test_xis_down_syndication_no_metadata(self):
+        """Test for a new XISDownstream entry is successful with no metadata"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'ACTIVE'
+
+        xis_syndication = XISDownstream(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status)
+
+        xis_syndication.save()
+        self.assertEqual(xis_syndication.determine_fields(), ([], []))
+
+    def test_xis_down_syndication_with_metadata(self):
+        """Test for a new XISDownstream entry is successful with no metadata"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'ACTIVE'
+
+        xis_syndication = XISDownstream(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status)
+
+        inc_field_name = 'inc_test_field_1'
+        inc_operation = 'INCLUDE'
+
+        inc_filter_metadata = FilterMetadata(
+            field_name=inc_field_name,
+            operation=inc_operation)
+
+        ex_field_name = 'ex_test_field_1'
+        ex_operation = 'EXCLUDE'
+
+        ex_filter_metadata = FilterMetadata(
+            field_name=ex_field_name,
+            operation=ex_operation)
+
+        xis_syndication.save()
+        inc_filter_metadata.save()
+        ex_filter_metadata.save()
+
+        xis_syndication.filter_metadata.add(inc_filter_metadata)
+        xis_syndication.filter_metadata.add(ex_filter_metadata)
+
+        inc, ex = xis_syndication.determine_fields()
+
+        self.assertEqual(len(inc), 1)
+        self.assertEqual(len(ex), 1)
+
+    def test_filter_metadata(self):
+        """Test for a new FilterMetadata entry is successful with defaults"""
+
+        field_name = 'test_field_1'
+        operation = 'INCLUDE'
+
+        filter_metadata = FilterMetadata(
+            field_name=field_name,
+            operation=operation)
+
+        self.assertEqual(filter_metadata.field_name,
+                         field_name)
+        self.assertEqual(filter_metadata.operation,
+                         operation)
+        self.assertEqual(str(filter_metadata),
+                         f"{operation} {field_name}")
+
+    def test_filter_record(self):
+        """Test for a new FilterRecord entry is successful with defaults"""
+
+        field_name = 'test_field_1'
+        field_value = 'value_test_1'
+        comparator = 'EQUAL'
+
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        self.assertEqual(filter_record.field_name,
+                         field_name)
+        self.assertEqual(filter_record.field_value,
+                         field_value)
+        self.assertEqual(filter_record.comparator,
+                         comparator)
+        self.assertEqual(str(filter_record),
+                         f"{field_name} {comparator} {field_value}")
+
+    def test_filter_record_root_equal(self):
+        """Test for an equal root filter on a FilterRecord is successful"""
+
+        field_name = 'test_field_1'
+        field_value = 'value_test_1'
+        comparator = FilterRecord.EQUAL
+
+        mock = Mock()
+
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        filter_record.apply_filter(mock)
+
+        self.assertEqual(mock.filter.call_args[1],
+                         {f"{field_name}__iexact": field_value})
+        mock.filter.assert_called_once()
+
+    def test_filter_record_root_unequal(self):
+        """Test for an unequal root filter on a FilterRecord is successful"""
+
+        field_name = 'test_field_1'
+        field_value = 'value_test_1'
+        comparator = FilterRecord.UNEQUAL
+
+        mock = Mock()
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        filter_record.apply_filter(mock)
+
+        self.assertEqual(mock.exclude.call_args[1],
+                         {f"{field_name}__iexact": field_value})
+        mock.exclude.assert_called_once()
+
+    def test_filter_record_root_contains(self):
+        """Test for an contains root filter on a FilterRecord is successful"""
+
+        field_name = 'test_field_1'
+        field_value = 'value_test_1'
+        comparator = FilterRecord.CONTAINS
+
+        mock = Mock()
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        filter_record.apply_filter(mock)
+
+        self.assertEqual(mock.filter.call_args[1],
+                         {f"{field_name}__icontains": field_value})
+        mock.filter.assert_called_once()
+
+    def test_filter_record_metadata_equal(self):
+        """Test for an equal metadata filter on a FilterRecord is successful"""
+
+        field_name = 'metadata.test_field_1.sub_field'
+        field_value = 'value_test_1'
+        comparator = FilterRecord.EQUAL
+        data = {field_name.split(
+            '.')[1]: {field_name.split('.')[2]: field_value}}
+
+        mock = Mock()
+        mock.filter.return_value = [mock, ]
+        mock.metadata = data
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        filter_record.apply_filter(mock)
+
+        self.assertEqual(mock.filter.call_count, 1)
+        self.assertEqual(mock.filter.call_args[1],
+                         {"metadata__icontains": field_value})
+
+    def test_filter_record_metadata_unequal(self):
+        """Test for an unequal metadata filter on a FilterRecord is
+        successful"""
+
+        field_name = 'metadata.test_field_1.sub_field'
+        field_value = 'value_test_1'
+        comparator = FilterRecord.UNEQUAL
+        data = {field_name.split(
+            '.')[1]: {field_name.split('.')[2]: 'wrong_val'}}
+
+        mock = Mock()
+        mock.metadata = data
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        filter_record.apply_filter([mock, ])
+
+        self.assertEqual(mock.filter.call_count, 0)
+
+    def test_filter_record_metadata_contains(self):
+        """Test for an contains metadata filter on a FilterRecord is
+        successful"""
+
+        field_name = 'metadata.test_field_1.sub_field'
+        field_value = 'value_test_1'
+        comparator = FilterRecord.CONTAINS
+        data = {field_name.split(
+            '.')[1]: {field_name.split('.')[2]: field_value}}
+
+        mock = Mock()
+        mock.filter.return_value = [mock, ]
+        mock.metadata = data
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        filter_record.apply_filter(mock)
+
+        self.assertEqual(mock.filter.call_count, 1)
+        self.assertEqual(mock.filter.call_args[1],
+                         {"metadata__icontains": field_value})
 
     def test_create_neo4j_configuration(self):
         """Test that creating a new Neo4j Configuration entry is successful
