@@ -27,7 +27,7 @@ class Command(BaseCommand):
                             help='list of APIs for XISUpstream objects to '
                             'run')
 
-    def __retrieve_records(self, upstream):
+    def retrieve_records(self, upstream):
         """get records from XISUpstream"""
 
         headers = {'Content-Type': 'application/json'}
@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
         while(xis_response.status_code//10 == 20):
             for record in xis_response.json()['results']:
-                self.__save_record(upstream, record)
+                self.save_record(upstream, record)
 
             if(xis_response.json()['next'] is not None):
                 xis_response = requests.get(
@@ -49,7 +49,7 @@ class Command(BaseCommand):
         logger.error(
             f"HTTP Error {xis_response.status_code} from {upstream}")
 
-    def __save_record(self, upstream, record):
+    def save_record(self, upstream, record):
         """saves record to metadata and supplemental ledgers as needed"""
         # Tracking source of changes to metadata/supplementary data
         record['updated_by'] = "System"
@@ -103,4 +103,4 @@ class Command(BaseCommand):
 
         # iterate over upstream objects
         for us in upstream_apis:
-            self.__retrieve_records(us)
+            self.retrieve_records(us)

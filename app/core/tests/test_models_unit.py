@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
@@ -226,7 +226,7 @@ class ModelTests(TestCase):
         self.assertEqual(xis_syndication.determine_fields(), ([], []))
 
     def test_xis_down_syndication_with_metadata(self):
-        """Test for a new XISDownstream entry is successful with no metadata"""
+        """Test for a new XISDownstream entry is successful with metadata"""
 
         xis_api_endpoint = 'https://newapi123'
         xis_api_endpoint_status = 'ACTIVE'
@@ -260,6 +260,43 @@ class ModelTests(TestCase):
 
         self.assertEqual(len(inc), 1)
         self.assertEqual(len(ex), 1)
+
+    def test_xis_down_syndication_with_records(self):
+        """Test for a new XISDownstream entry is successful with records"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'ACTIVE'
+
+        xis_syndication = XISDownstream(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status)
+
+        field_name = 'test_field_1'
+        field_value = 'value_test_1'
+        comparator = 'EQUAL'
+
+        filter_record = FilterRecord(
+            field_name=field_name,
+            comparator=comparator, field_value=field_value)
+
+        xis_syndication.save()
+        filter_record.save()
+
+        xis_syndication.filter_records.add(filter_record)
+
+        with patch('core.models.FilterRecord.apply_filter'):
+            mock = Mock()
+            mock.filter.return_value = mock
+            mock.exclude.return_value = []
+
+            xis_syndication.apply_filter(mock)
+
+            self.assertEqual(mock.filter.call_count, 1)
+            self.assertEqual(mock.filter.call_args[1],
+                             {"record_status": 'Active'})
+            self.assertEqual(mock.exclude.call_count, 1)
+            self.assertEqual(mock.exclude.call_args[1],
+                             {"xis_destination__pk": xis_syndication.pk})
 
     def test_filter_metadata(self):
         """Test for a new FilterMetadata entry is successful with defaults"""
