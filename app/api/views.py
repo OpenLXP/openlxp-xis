@@ -201,10 +201,7 @@ class ManagedCatalogDataView(ListAPIView):
     """Handles HTTP requests for Managing catalog data from XMS"""
 
     # add fields to be searched on in the query
-    search_fields = ['metadata__Course__CourseTitle',
-                     'metadata__Course__CourseShortDescription',
-                     'metadata__Course__CourseFullDescription',
-                     'metadata__Course__CourseCode', 'metadata_key',
+    search_fields = ['metadata_key',
                      'metadata_key_hash', 'provider_name',
                      'unique_record_identifier']
 
@@ -215,6 +212,10 @@ class ManagedCatalogDataView(ListAPIView):
         """override queryset to filter using provider_id"""
 
         provider_id = self.kwargs['provider_id']
+        if 'fields' in self.request.GET and\
+                self.request.GET.get('fields') is not None:
+            self.search_fields += self.request.GET.get('fields').\
+                replace('.', '__').split(',')
         queryset = MetadataLedger.objects.filter(
             provider_name=provider_id,
             record_status="Active"
