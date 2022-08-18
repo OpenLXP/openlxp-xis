@@ -3,7 +3,6 @@ import uuid
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
-from model_utils.models import TimeStampedModel
 
 
 class XISConfiguration(models.Model):
@@ -76,28 +75,6 @@ class Neo4jConfiguration(models.Model):
         return super(Neo4jConfiguration, self).save(*args, **kwargs)
 
 
-class XISSyndication(TimeStampedModel):
-    """Model for XIS Syndication """
-
-    STATUS = [
-        ('ACTIVE', 'Active'),
-        ('INACTIVE', 'Inactive')]
-
-    xis_api_endpoint = models.CharField(
-        help_text='Enter the XIS Instance API endpoint',
-        max_length=200
-    )
-
-    xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
-
-    def __str__(self):
-        """String for representing the Model object."""
-        return f'{self.id}'
-
-    def save(self, *args, **kwargs):
-        return super(XISSyndication, self).save(*args, **kwargs)
-
-
 class MetadataLedger(models.Model):
     """Model for MetadataLedger"""
 
@@ -106,7 +83,6 @@ class MetadataLedger(models.Model):
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
                                           ('Pending', 'P'), ('Ready', 'R'),
                                           ('Cancelled', 'C')]
-    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
     composite_ledger_transmission_status = \
@@ -129,8 +105,7 @@ class MetadataLedger(models.Model):
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
-    updated_by = models.CharField(max_length=10, blank=True,
-                                  choices=RECORD_UPDATED_BY, default='System')
+    updated_by = models.CharField(max_length=10, blank=True, default='System')
 
 
 class SupplementalLedger(models.Model):
@@ -142,7 +117,6 @@ class SupplementalLedger(models.Model):
                                           ('Pending', 'P'),
                                           ('Ready', 'R'),
                                           ('Cancelled', 'C')]
-    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
 
     composite_ledger_transmission_date = models.DateTimeField(blank=True,
                                                               null=True)
@@ -162,15 +136,13 @@ class SupplementalLedger(models.Model):
                                      choices=RECORD_ACTIVATION_STATUS_CHOICES)
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
-    updated_by = models.CharField(max_length=10, blank=True,
-                                  choices=RECORD_UPDATED_BY, default='System')
+    updated_by = models.CharField(max_length=10, blank=True, default='System')
 
 
 class CompositeLedger(models.Model):
     """Model for CompositeLedger"""
 
     RECORD_ACTIVATION_STATUS_CHOICES = [('Active', 'A'), ('Inactive', 'I')]
-    RECORD_UPDATED_BY = [('Owner', '0'), ('System', 'S')]
     RECORD_TRANSMISSION_STATUS_CHOICES = [('Successful', 'S'), ('Failed', 'F'),
                                           ('Pending', 'P'),
                                           ('Ready', 'R'),
@@ -194,9 +166,192 @@ class CompositeLedger(models.Model):
     unique_record_identifier = models.UUIDField(primary_key=True,
                                                 default=uuid.uuid4,
                                                 editable=False)
-    updated_by = models.CharField(max_length=10, blank=True,
-                                  choices=RECORD_UPDATED_BY)
+    updated_by = models.CharField(max_length=10, blank=True)
     metadata_transmission_status_neo4j = \
         models.CharField(max_length=10, blank=True,
                          default='Ready',
                          choices=RECORD_TRANSMISSION_STATUS_CHOICES)
+
+
+class FilterRecord(models.Model):
+    """Model for Filtering Composite Ledger Experiences for XIS Syndication """
+    EQUAL = 'EQUAL'
+    UNEQUAL = 'UNEQUAL'
+    CONTAINS = 'CONTAINS'
+
+    COMPARATORS = [
+        (EQUAL, 'Equal'),
+        (UNEQUAL, 'Not Equal'),
+        (CONTAINS, 'Contains')]
+
+    field_name = models.CharField(
+        help_text='Enter the field path', max_length=255)
+
+    comparator = models.CharField(max_length=200, choices=COMPARATORS)
+
+    field_value = models.CharField(
+        help_text='Enter the field value', max_length=255, blank=True)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return ' '.join([self.field_name, self.comparator, self.field_value])
+
+    def __root_filter(self, queryset):
+        """run a query for filtering based on root data"""
+        # if using EQUAL, perform a case insensitive exact filter on queryset
+        if(self.comparator == self.EQUAL):
+            return queryset.filter(
+                **{f"{self.field_name}__iexact": self.field_value})
+        # if using UNEQUAL, perform a case insensitive exact exclusion
+        # on queryset
+        elif(self.comparator == self.UNEQUAL):
+            return queryset.exclude(
+                **{f"{self.field_name}__iexact": self.field_value})
+        # if using CONTAINS, perform a case insensitive contains filter
+        # on queryset
+        elif(self.comparator == self.CONTAINS):
+            return queryset.filter(
+                **{f"{self.field_name}__icontains": self.field_value})
+
+    def __simple_metadata_filter(self, queryset):
+        """run a simple query to filter based on metadata"""
+        # if using EQUAL or CONTAINS make a quick query to remove elements
+        # that are missing the filter value in metadata
+        if(self.comparator == self.EQUAL):
+            return queryset.filter(metadata__icontains=self.field_value)
+        elif(self.comparator == self.CONTAINS):
+            return queryset.filter(metadata__icontains=self.field_value)
+        return queryset
+
+    def __metadata_filter(self, queryset):
+        """run the more strict query to filter metadata"""
+        return_qs = queryset
+        # iterate over each item in the queryset
+        for exp in queryset:
+            # iterate over the fields within metadata to the field
+            try:
+                path = self.field_name.split('.')[1:]
+                metadata = exp.metadata
+                for step in path:
+                    metadata = metadata[step]
+            # if the field does not exist, use an empty string
+            except Exception:
+                metadata = ''
+            # cast metadata field retrieved to a string and exclude items that
+            # do not match
+            if(self.comparator == self.EQUAL):
+                if self.field_value != str(metadata):
+                    return_qs = return_qs.exclude(pk=exp.pk)
+            elif(self.comparator == self.UNEQUAL):
+                if self.field_value == str(metadata):
+                    return_qs = return_qs.exclude(pk=exp.pk)
+            elif(self.comparator == self.CONTAINS):
+                if self.field_value not in str(metadata):
+                    return_qs = return_qs.exclude(pk=exp.pk)
+
+        return return_qs
+
+    def apply_filter(self, queryset):
+        """Filter the queryset using this filter"""
+        if('.' in self.field_name):
+            return self.__metadata_filter(
+                self.__simple_metadata_filter(queryset))
+        else:
+            return self.__root_filter(queryset)
+
+
+class FilterMetadata(models.Model):
+    """Model for Filtering Metadata within Composite Ledger Experiences for
+    XIS Syndication """
+    INCLUDE = 'INCLUDE'
+    EXCLUDE = 'EXCLUDE'
+
+    OPERATIONS = [
+        (INCLUDE, 'Include'),
+        (EXCLUDE, 'Exclude')]
+
+    field_name = models.CharField(
+        help_text='Enter the field path', max_length=255)
+
+    operation = models.CharField(max_length=200, choices=OPERATIONS)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return ' '.join([self.operation, self.field_name])
+
+
+class XISUpstream(models.Model):
+    """Model for Upstream XIS Syndication """
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
+
+    STATUS = [
+        (ACTIVE, 'Active'),
+        (INACTIVE, 'Inactive')]
+
+    xis_api_endpoint = models.CharField(
+        max_length=200,
+        help_text='Enter the XIS Instance API endpoint'
+    )
+
+    xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
+
+    metadata_experiences = models.ManyToManyField(
+        MetadataLedger, related_name='xis_source', blank=True)
+    supplemental_experiences = models.ManyToManyField(
+        SupplementalLedger, related_name='xis_source', blank=True)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.xis_api_endpoint}'
+
+
+class XISDownstream(models.Model):
+    """Model for Downstream XIS Syndication """
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
+
+    STATUS = [
+        (ACTIVE, 'Active'),
+        (INACTIVE, 'Inactive')]
+
+    xis_api_endpoint = models.CharField(
+        max_length=200,
+        help_text='Enter the XIS Instance API endpoint'
+    )
+
+    xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
+
+    source_name = models.CharField(
+        max_length=200, help_text='Enter the name to send data as')
+
+    composite_experiences = models.ManyToManyField(
+        CompositeLedger, related_name='xis_destination', blank=True)
+
+    filter_records = models.ManyToManyField(
+        FilterRecord, related_name='xis_downstream', blank=True)
+    filter_metadata = models.ManyToManyField(
+        FilterMetadata, related_name='xis_downstream', blank=True)
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.xis_api_endpoint}'
+
+    def determine_fields(self):
+        """Determines the fields to use from the filter_metadata objects, and
+        returns the fields as a tuple of lists include, exclude"""
+        exclude = [field.field_name for field in self.filter_metadata.all().
+                   filter(operation=FilterMetadata.EXCLUDE)]
+        include = [field.field_name for field in self.filter_metadata.all().
+                   filter(operation=FilterMetadata.INCLUDE)]
+        return include, exclude
+
+    def apply_filter(self, queryset=CompositeLedger.objects.all()):
+        """Filter the queryset using this filter"""
+        queryset = queryset.filter(
+            record_status='Active').exclude(xis_destination__pk=self.pk)
+        # iterate FilterRecords to apply filters to queryset
+        for record_filter in self.filter_records.all():
+            queryset = record_filter.apply_filter(queryset)
+
+        return queryset
