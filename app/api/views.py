@@ -266,7 +266,7 @@ class ManageDataView(APIView):
         after it's been managed in XMS"""
 
         # Tracking source of changes to metadata/supplementary data
-        if(not request.data['updated_by']):
+        if not request.data['updated_by']:
             request.data['updated_by'] = "Owner"
         request.data['provider_name'] = provider_id
         request.data['metadata_key_hash'] = experience_id
