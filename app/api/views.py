@@ -208,7 +208,6 @@ class ManagedCatalogDataView(ListAPIView):
                      'metadata__Course__title',
                      'metadata__Course__description',
                      'metadata__Course__subject',
-                     'metadata__Course__CourseCode',
                      'metadata_key',
                      'metadata_key_hash', 'provider_name',
                      'unique_record_identifier']
