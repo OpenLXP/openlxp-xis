@@ -3,12 +3,14 @@ from unittest.mock import patch
 
 from ddt import ddt
 from django.test import tag
+from elasticsearch import Elasticsearch
 
 from core.management.commands.consolidate_ledgers import (
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
 from core.management.commands.load_metadata_into_xse import (
     check_records_to_load_into_xse, post_data_to_xse)
+from core.management.utils.xse_client import get_elasticsearch_endpoint
 from core.models import CompositeLedger, MetadataLedger
 
 from .test_setup import TestSetUp
@@ -100,6 +102,11 @@ class CommandIntegration(TestSetUp):
     def test_post_data_to_xse_created(self):
         """Test for POSTing XIS composite_ledger to XSE in JSON format when
             record gets created in XSE"""
+
+        es = Elasticsearch(get_elasticsearch_endpoint())
+
+        if(es.indices.exists('testing_index')):
+            es.indices.delete('testing_index')
 
         self.composite_ledger.save()
 

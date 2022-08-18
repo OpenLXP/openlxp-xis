@@ -21,6 +21,8 @@ urlpatterns = [
     path('managed-data/catalogs/<str:provider_id>/<str:experience_id>',
          views.ManageDataView.as_view(), name='managed-data'),
     path('xis-workflow/', views.xis_workflow_api),
+    path('downstream-workflow/', views.xis_downstream_workflow_api),
+    path('upstream-workflow/', views.xis_upstream_workflow_api),
     # path('post_to_neo4j/', views.post_to_neo4j,
     #      name='post_to_neo4j'),
 ]
