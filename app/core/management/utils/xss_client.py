@@ -18,10 +18,10 @@ def read_json_data(schema_ref):
     """get schema from xss and ingest as dictionary values"""
     xss_host = xss_get()
     request_path = xss_host
-    if(schema_ref.startswith('xss:')):
-        request_path += '?iri=' + schema_ref
+    if schema_ref.startswith('xss:'):
+        request_path += 'schemas/?iri=' + schema_ref
     else:
-        request_path += '?name=' + schema_ref
+        request_path += 'schemas/?name=' + schema_ref
     schema = requests.get(request_path, verify=True)
     json_content = schema.json()['schema']
     return json_content

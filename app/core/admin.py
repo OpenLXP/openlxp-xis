@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from core.models import Neo4jConfiguration, XISConfiguration, XISSyndication
+from core.models import (FilterMetadata, FilterRecord, Neo4jConfiguration,
+                         XISConfiguration, XISDownstream, XISUpstream)
 
 
 # Register your models here.
@@ -16,10 +17,33 @@ class XISConfigurationAdmin(admin.ModelAdmin):
                            'filter_field',)}))
 
 
-@admin.register(XISSyndication)
-class XISSyndicationAdmin(admin.ModelAdmin):
+@admin.register(XISUpstream)
+class XISUpstreamAdmin(admin.ModelAdmin):
     list_display = ('xis_api_endpoint', 'xis_api_endpoint_status')
-    fields = [('xis_api_endpoint', 'xis_api_endpoint_status')]
+    fields = [('xis_api_endpoint', 'xis_api_endpoint_status'), ]
+    filter_horizontal = ['metadata_experiences', 'supplemental_experiences']
+
+
+@admin.register(XISDownstream)
+class XISDownstreamAdmin(admin.ModelAdmin):
+    list_display = ('xis_api_endpoint', 'xis_api_endpoint_status')
+    fields = [('xis_api_endpoint', 'xis_api_endpoint_status'),
+              ('filter_records', 'filter_metadata'),
+              ('source_name',)]
+    filter_horizontal = ['composite_experiences',
+                         'filter_records', 'filter_metadata']
+
+
+@admin.register(FilterRecord)
+class FilterRecordAdmin(admin.ModelAdmin):
+    list_display = ('field_name', 'comparator', 'field_value',)
+    fields = ('field_name', 'comparator', 'field_value',)
+
+
+@admin.register(FilterMetadata)
+class FilterMetadataAdmin(admin.ModelAdmin):
+    list_display = ('field_name', 'operation',)
+    fields = ('field_name', 'operation',)
 
 
 @admin.register(Neo4jConfiguration)

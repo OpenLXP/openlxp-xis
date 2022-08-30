@@ -10,9 +10,17 @@ Learning experience metadata received from XIAs is stored in the Metadata Loadin
 A XIS can syndicate its composite records to another XIS. One or more facets/dimensions can filter the record-set to transmit a subset of the overall composite record repository. In addition, the transmitted fieldset can be configured to contain redacted values for specified fields when information is considered too sensitive for syndication. 
 
 # Workflows
+## ETL
 ETL pipeline from XIA loads processed metadata ledger and supplemental ledger in a metadata ledger and supplemental ledger of XIS component after a validation. Metadata combined with supplemental metadata provided by an Experience Owner or Experience Manager from XMS also gets stored in XIS. All of them from XIA and XMS finally get merged into XIS's composite ledger after a validation.  
 
 Composite metadata is then sent to an XSE for further discovery.
+
+## Upstream Syndication
+Upstream Syndication allows for connecting the current XIS to another XIS in order to retrieve experiences.  Running the Upstream Syndication workflow, triggers a task to iterate over all XIS Upstream configurations that have an active status.  The task retrieves all Composite Ledger experiences from the remote XIS and attempts to load them into the local Metadata and Supplemental Ledgers.  If the incoming data doesn't match the locally set schema, or would otherwise fail being uploaded, it isn't saved.
+
+## Downstream Syndication
+Downstream Syndication allows for connecting the current XIS to another XIS in order to send experiences.  Running the Downstream Syndication workflow, triggers a task to iterate over all XIS Downstream configurations that have an active status.  The task retrieves all Composite Ledger experiences from the local XIS and performs any filters on the records and metadata.  It then attempts to load them into the remote's Metadata and Supplemental Ledgers using the managed-data API.  If the outgoing data doesn't match the remote schema, or would otherwise fail being uploaded, it will not be saved.
+
 
 # Prerequisites
 `Python >=3.7` : Download and install python from here [Python](https://www.python.org/downloads/).
@@ -103,12 +111,45 @@ To run this project, you will need to add the following environment variables to
     
     **Note: Please make sure to upload schema file in the Experience Schema Server (XSS).**
 
-5. `Add sender email configuration` : Configure the sender email address from which conformance alerts are sent.
+3.  `Add xis upstream`: Configure Upstream XIS Syndication:
 
-6. `Add receiver email configuration` : 
+    `Xis api endpoint`: The api of the XIS Instance to retrieve data from
+
+    `Xis api endpoint status`: Whether to connect to this XIS Instance for syndication
+
+
+4.  `Add filter record`: Configure Record Filter for XIS Downstream Syndication:
+
+    `Field name`: The path to the field to check
+
+    `Comparator`: The type of comparison to make (equal, not equal, contains)
+
+    `Field value`: The value to check the field for
+
+
+5.  `Add filter metadata`: Configure Metadata Filter for XIS Downstream Syndication:
+
+    `Field name`: The path to the field
+
+    `Operation`: Whether to include or exclude the selected field
+
+
+6.  `Add xis downstream`: Configure XIS Downstream Syndication:
+
+    `Xis api endpoint`: The api of the XIS Instance to retrieve data from
+
+    `Xis api endpoint status`: Whether to connect to this XIS Instance for syndication
+
+    `Filter records`: The filter record objects to use when filtering records to send to this XIS
+
+    `Filter metadata`: The filter metadata objects to use when filtering metadata to send to this XIS
+
+7. `Add sender email configuration` : Configure the sender email address from which conformance alerts are sent.
+
+8. `Add receiver email configuration` : 
 Add an email list to send conformance alerts. When the email gets added, an email verification email will get sent out. In addition, conformance alerts will get sent to only verified email IDs.
 
-7. `Add email configuration` : To create customized email notifications content.
+9. `Add email configuration` : To create customized email notifications content.
     
     `Subject`:  Add the subject line for the email. The default subject line is "OpenLXP Conformance Alerts."
 
@@ -150,18 +191,26 @@ Add an email list to send conformance alerts. When the email gets added, an emai
 # Running Of XIS Tasks:
 
 ## Running Tasks
-Consolidations and loading of Metadata and Supplemental Metadata into Compositing Ledger and loading it into XSE can be run through two ways:
+XIS has 3 workflows that can be run.  Consolidation and loading of Metadata and Supplemental Metadata into Compositing Ledger then loading it into XSE.  XIS Upstream Syndication.  And XIS Downstream Syndication.  They can each be triggered 2 ways:
 
-1. Through API Endpoint:
-    To run tasks run below API:
+1. Through API Endpoints:
+    For consolidating records to the Composite Ledger and loading it into XSE:
     
     http://localhost:8080/api/xis-workflow
+
+    For Upstream Syndication:
+
+    http://localhost:8080/api/upstream-workflow
+
+    For Downstream Syndication:
+
+    http://localhost:8080/api/downstream-workflow
         
     **Note: Change localhost with XIS host**
 
 2. Periodically through celery beat: 
 
-    On the admin page add periodic task and it's schedule. On selected time interval celery task will run.
+    On the admin page add periodic task and a schedule. Select the workflow to run from the Task (registered) dropdown list.  On the selected time interval celery task will run the task.
 
 ## API's 
 

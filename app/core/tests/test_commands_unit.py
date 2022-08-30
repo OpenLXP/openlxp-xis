@@ -1,5 +1,5 @@
 import logging
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from ddt import ddt
 from django.core.management import call_command
@@ -11,6 +11,7 @@ from core.management.commands.consolidate_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
     check_metadata_ledger_transmission_ready_record,
     put_metadata_ledger_into_composite_ledger)
+from core.management.commands.load_metadata_from_xis import Command
 from core.management.commands.load_metadata_into_neo4j import (
     check_records_to_load_into_neo4j, connect_to_neo4j_driver,
     post_data_to_neo4j, post_metadata_ledger_to_neo4j,
@@ -19,7 +20,7 @@ from core.management.commands.load_metadata_into_xse import (
     check_records_to_load_into_xse, create_xse_json_document, post_data_to_xse,
     renaming_xis_for_posting_to_xse, setup_index)
 from core.management.utils.xse_client import get_elasticsearch_index
-from core.models import CompositeLedger, MetadataLedger
+from core.models import CompositeLedger, MetadataLedger, XISUpstream
 
 from .test_setup import TestSetUp
 
@@ -493,3 +494,53 @@ class CommandTests(TestSetUp):
             row = self.composite_data_valid
             post_supplemental_ledger_to_neo4j(row, driver_connection)
             self.assertTrue(driver_connection.session.run())
+
+    def test_load_metadata_from_xis_with_options(self):
+        """Test of arguments being passed into Upstream Syndication"""
+        with patch('core.management.commands.load_metadata_from_xis.'
+                   'XISUpstream.objects') as up:
+            up.all.return_value = up
+            up.filter.return_value = up
+            com = Command()
+            id_var = ['abc', ]
+            api_var = ['123', ]
+            com.handle(id=id_var, api=api_var)
+            self.assertEqual(up.filter.call_count, 3)
+            self.assertEqual(up.filter.call_args_list[0][1],
+                             {"xis_api_endpoint_status": 'ACTIVE'})
+            self.assertEqual(up.filter.call_args_list[1][1],
+                             {"pk__in": id_var})
+            self.assertEqual(up.filter.call_args[1],
+                             {"xis_api_endpoint__in": api_var})
+
+    def test_load_metadata_from_xis_retrieve_records(self):
+        """Test of retrieving records from an Upstream Syndication"""
+        with patch('core.management.commands.load_metadata_from_xis.'
+                   'requests') as req,\
+            patch('core.management.commands.load_metadata_from_xis'
+                  '.Command.save_record'):
+            mock = Mock()
+            req.get.return_value = req
+            # req.get.side_effect = [req, mock]
+            req.json.side_effect = [
+                {'results': ['test res']},
+                {'next': 'test_url'},
+                {'next': 'test_url'},
+                {'results': []},
+                {'next': None}]
+            req.status_code = 200
+            mock.status_code = 300
+            com = Command()
+
+            xis_api_endpoint = 'https://newapi123'
+            xis_api_endpoint_status = 'ACTIVE'
+
+            xis_syndication = XISUpstream(
+                xis_api_endpoint=xis_api_endpoint,
+                xis_api_endpoint_status=xis_api_endpoint_status)
+
+            xis_syndication.save()
+            com.handle(id=[xis_syndication.pk])
+            self.assertEqual(req.get.call_count, 2)
+            self.assertDictContainsSubset({"url": "test_url"},
+                                          req.get.call_args[1])
