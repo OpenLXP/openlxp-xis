@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
@@ -106,6 +107,16 @@ class MetadataLedger(models.Model):
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True, default='System')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   on_delete=models.PROTECT,
+                                   related_name="created_metadata",
+                                   blank=True, null=True)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            # Only set added_by during the first save.
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 class SupplementalLedger(models.Model):
@@ -137,6 +148,16 @@ class SupplementalLedger(models.Model):
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True, default='System')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   on_delete=models.PROTECT,
+                                   related_name="created_supplemental_data",
+                                   blank=True, null=True)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            # Only set added_by during the first save.
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 class CompositeLedger(models.Model):
@@ -199,17 +220,17 @@ class FilterRecord(models.Model):
     def __root_filter(self, queryset):
         """run a query for filtering based on root data"""
         # if using EQUAL, perform a case insensitive exact filter on queryset
-        if(self.comparator == self.EQUAL):
+        if (self.comparator == self.EQUAL):
             return queryset.filter(
                 **{f"{self.field_name}__iexact": self.field_value})
         # if using UNEQUAL, perform a case insensitive exact exclusion
         # on queryset
-        elif(self.comparator == self.UNEQUAL):
+        elif (self.comparator == self.UNEQUAL):
             return queryset.exclude(
                 **{f"{self.field_name}__iexact": self.field_value})
         # if using CONTAINS, perform a case insensitive contains filter
         # on queryset
-        elif(self.comparator == self.CONTAINS):
+        elif (self.comparator == self.CONTAINS):
             return queryset.filter(
                 **{f"{self.field_name}__icontains": self.field_value})
 
@@ -217,9 +238,9 @@ class FilterRecord(models.Model):
         """run a simple query to filter based on metadata"""
         # if using EQUAL or CONTAINS make a quick query to remove elements
         # that are missing the filter value in metadata
-        if(self.comparator == self.EQUAL):
+        if (self.comparator == self.EQUAL):
             return queryset.filter(metadata__icontains=self.field_value)
-        elif(self.comparator == self.CONTAINS):
+        elif (self.comparator == self.CONTAINS):
             return queryset.filter(metadata__icontains=self.field_value)
         return queryset
 
@@ -239,13 +260,13 @@ class FilterRecord(models.Model):
                 metadata = ''
             # cast metadata field retrieved to a string and exclude items that
             # do not match
-            if(self.comparator == self.EQUAL):
+            if (self.comparator == self.EQUAL):
                 if self.field_value != str(metadata):
                     return_qs = return_qs.exclude(pk=exp.pk)
-            elif(self.comparator == self.UNEQUAL):
+            elif (self.comparator == self.UNEQUAL):
                 if self.field_value == str(metadata):
                     return_qs = return_qs.exclude(pk=exp.pk)
-            elif(self.comparator == self.CONTAINS):
+            elif (self.comparator == self.CONTAINS):
                 if self.field_value not in str(metadata):
                     return_qs = return_qs.exclude(pk=exp.pk)
 
@@ -253,7 +274,7 @@ class FilterRecord(models.Model):
 
     def apply_filter(self, queryset):
         """Filter the queryset using this filter"""
-        if('.' in self.field_name):
+        if ('.' in self.field_name):
             return self.__metadata_filter(
                 self.__simple_metadata_filter(queryset))
         else:
