@@ -8,6 +8,7 @@ from requests.exceptions import HTTPError
 from rest_framework import filters, pagination, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.utils import json
 from rest_framework.views import APIView
@@ -66,6 +67,7 @@ class ManagedCatalogListView(APIView):
         return managed_catalog_list_response
 
 
+@permission_classes([IsAuthenticatedOrReadOnly])
 class MetaDataView(ListAPIView):
     """Handles HTTP requests for Metadata for XIS"""
 
@@ -143,6 +145,7 @@ class MetaDataView(ListAPIView):
                         status=status.HTTP_201_CREATED)
 
 
+@permission_classes([IsAuthenticatedOrReadOnly])
 class SupplementalDataView(APIView):
     """Handles HTTP requests for Supplemental data for XIS"""
 
@@ -234,6 +237,7 @@ class ManagedCatalogDataView(ListAPIView):
         return queryset
 
 
+@permission_classes([IsAuthenticatedOrReadOnly])
 class ManageDataView(APIView):
     """Handles HTTP requests for Managing data from XMS"""
 
@@ -312,7 +316,7 @@ class ManageDataView(APIView):
         metadata_serializer.save()
         supplemental_serializer.save()
 
-        if(metadata_instance):
+        if (metadata_instance):
             return Response(metadata_serializer.data['metadata_key_hash'],
                             status=status.HTTP_200_OK)
         else:
