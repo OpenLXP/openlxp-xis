@@ -69,7 +69,8 @@ class Command(BaseCommand):
 
         self.__update_record(downstream, record)
 
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json',
+                   'Authorization': f'token {downstream.xis_api_key}'}
 
         xis_response = requests.post(
             url=f'{downstream.xis_api_endpoint}managed-data/catalogs/'

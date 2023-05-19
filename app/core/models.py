@@ -343,6 +343,11 @@ class XISDownstream(models.Model):
 
     xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
 
+    xis_api_key = models.CharField(
+        help_text="Enter the XIS API Key",
+        max_length=40
+    )
+
     source_name = models.CharField(
         max_length=200, help_text='Enter the name to send data as')
 
