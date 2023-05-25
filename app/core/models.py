@@ -112,12 +112,6 @@ class MetadataLedger(models.Model):
                                    related_name="created_metadata",
                                    blank=True, null=True)
 
-    def save_model(self, request, obj, form, change):
-        if not obj.pk:
-            # Only set added_by during the first save.
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
-
 
 class SupplementalLedger(models.Model):
     """Model for SupplementalLedger"""
@@ -152,12 +146,6 @@ class SupplementalLedger(models.Model):
                                    on_delete=models.PROTECT,
                                    related_name="created_supplemental_data",
                                    blank=True, null=True)
-
-    def save_model(self, request, obj, form, change):
-        if not obj.pk:
-            # Only set added_by during the first save.
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
 
 
 class CompositeLedger(models.Model):

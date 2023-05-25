@@ -78,7 +78,9 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = MetadataLedger
-        fields = '__all__'
+        fields = ['metadata', 'metadata_hash', 'metadata_key',
+                  'metadata_key_hash', 'provider_name',
+                  'unique_record_identifier', 'updated_by', 'record_status']
 
     def validate(self, data):
         """function to validate metadata field"""
@@ -197,7 +199,9 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
     class Meta:
         model = SupplementalLedger
 
-        fields = '__all__'
+        fields = ['metadata', 'metadata_hash', 'metadata_key',
+                  'metadata_key_hash', 'provider_name',
+                  'unique_record_identifier', 'updated_by', 'record_status']
 
     def validate(self, data):
         """Assign active status to supplemental data """

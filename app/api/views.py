@@ -141,6 +141,10 @@ class MetaDataView(ListAPIView):
         # status created
         serializer.save()
 
+        # add created_by\
+        serializer.instance.created_by = request.user
+        serializer.instance.save()
+
         return Response(serializer.data['unique_record_identifier'],
                         status=status.HTTP_201_CREATED)
 
@@ -171,6 +175,11 @@ class SupplementalDataView(APIView):
         # If received save record in ledger and send response of UUID &
         # status created
         serializer.save()
+
+        # add created_by
+        serializer.instance.created_by = request.user
+        serializer.instance.save()
+
         return Response(serializer.data['unique_record_identifier'],
                         status=status.HTTP_201_CREATED)
 
@@ -266,11 +275,7 @@ class ManageDataView(APIView):
         after it's been managed in XMS"""
 
         # Tracking source of changes to metadata/supplementary data
-        if 'updated_by' in request.data:
-            if not request.data['updated_by']:
-                request.data['updated_by'] = "Owner"
-        else:
-            request.data['updated_by'] = "Owner"
+        request.data['updated_by'] = "Owner"
         request.data['provider_name'] = provider_id
         request.data['metadata_key_hash'] = experience_id
         request.data['unique_record_identifier'] = str(uuid.uuid4())
@@ -315,6 +320,12 @@ class ManageDataView(APIView):
         # status created
         metadata_serializer.save()
         supplemental_serializer.save()
+
+        # add created_by
+        metadata_serializer.instance.created_by = request.user
+        metadata_serializer.instance.save()
+        supplemental_serializer.instance.created_by = request.user
+        supplemental_serializer.instance.save()
 
         if (metadata_instance):
             return Response(metadata_serializer.data['metadata_key_hash'],
