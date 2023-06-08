@@ -4,11 +4,10 @@ import uuid
 from unittest.mock import patch
 from uuid import UUID
 
-from django.urls import reverse
-from rest_framework.test import APITestCase
-
 from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
                          XISConfiguration)
+from django.urls import reverse
+from rest_framework.test import APITestCase
 
 
 class TestSetUp(APITestCase):

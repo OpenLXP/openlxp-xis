@@ -1,11 +1,10 @@
 import hashlib
 from uuid import UUID
 
-from django.test import TestCase
-from django.urls import reverse
-
 from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
                          XISConfiguration)
+from django.test import TestCase
+from django.urls import reverse
 
 
 class TestSetUp(TestCase):

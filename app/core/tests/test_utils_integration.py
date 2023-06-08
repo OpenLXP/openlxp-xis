@@ -1,8 +1,7 @@
-from django.test import TestCase, tag
-
 from core.management.utils.xss_client import \
     get_required_recommended_fields_for_validation
 from core.models import XISConfiguration
+from django.test import TestCase, tag
 
 
 @tag('integration')

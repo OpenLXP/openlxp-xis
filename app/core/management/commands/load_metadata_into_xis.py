@@ -3,11 +3,10 @@ import json
 import logging
 
 import requests
-from django.core.management.base import BaseCommand
-
 from api.serializers import CompositeLedgerSerializer
 from core.management.utils.xis_internal import update_multilevel_dict
 from core.models import XISDownstream
+from django.core.management.base import BaseCommand
 
 logger = logging.getLogger('dict_config_logger')
 
