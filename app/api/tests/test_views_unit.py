@@ -349,7 +349,10 @@ class ViewTests(TestSetUp):
                 get_lists.return_value = rec_fields, req_fields
                 dataSTR = json.dumps(self.metadataLedger_data_valid)
                 dataJSON = json.loads(dataSTR)
-                response = self.client.post(url, dataJSON, format="json")
+                response = self.client.post(
+                    url, dataJSON, format="json",
+                    HTTP_AUTHORIZATION="token " +
+                    self.super_user.auth_token.key)
                 responseDict = json.loads(response.content)
                 uid = \
                     self.metadataLedger_data_valid['unique_record_identifier']
@@ -370,7 +373,9 @@ class ViewTests(TestSetUp):
             serializer.data = self.metadataLedger_data_invalid
             dataSTR = json.dumps(self.metadataLedger_data_invalid)
             dataJSON = json.loads(dataSTR)
-            response = self.client.post(url, dataJSON, format="json")
+            response = self.client.post(
+                url, dataJSON, format="json",
+                HTTP_AUTHORIZATION="token " + self.super_user.auth_token.key)
             responseDict = json.loads(response.content)
 
             self.assertEqual(response.status_code,
@@ -399,7 +404,10 @@ class ViewTests(TestSetUp):
                 get_lists.return_value = rec_fields, req_fields
                 dataSTR = json.dumps(self.composite_data_valid)
                 dataJSON = json.loads(dataSTR)
-                response = self.client.post(url, dataJSON, format="json")
+                response = self.client.post(
+                    url, dataJSON, format="json",
+                    HTTP_AUTHORIZATION="token " +
+                    self.super_user.auth_token.key)
                 responseDict = json.loads(response.content)
 
                 key = self.composite_data_valid['metadata_key_hash']
@@ -421,7 +429,9 @@ class ViewTests(TestSetUp):
             serializer.errors = self.composite_data_invalid
             dataSTR = json.dumps(self.composite_data_invalid)
             dataJSON = json.loads(dataSTR)
-            response = self.client.post(url, dataJSON, format="json")
+            response = self.client.post(
+                url, dataJSON, format="json",
+                HTTP_AUTHORIZATION="token " + self.super_user.auth_token.key)
 
             self.assertEqual(response.status_code,
                              status.HTTP_400_BAD_REQUEST)
@@ -444,7 +454,10 @@ class ViewTests(TestSetUp):
             get_lists.return_value = rec_fields, req_fields
             dataSTR = json.dumps(self.supplemental_data_valid)
             dataJSON = json.loads(dataSTR)
-            response = self.client.post(url, dataJSON, format="json")
+            response = self.client.post(
+                url, dataJSON, format="json",
+                HTTP_AUTHORIZATION="token " + self.super_user.auth_token.key)
+            print(response.request)
             responseDict = json.loads(response.content)
             uid = self.supplemental_data_valid['unique_record_identifier']
             print("RESPONSE DICT")

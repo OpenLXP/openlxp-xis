@@ -21,7 +21,7 @@ def read_json_data(schema_ref):
         request_path += 'schemas/?iri=' + schema_ref
     else:
         request_path += 'schemas/?name=' + schema_ref
-    schema = requests.get(request_path, verify=True)
+    schema = requests.get(request_path, verify=True, timeout=3.0)
     json_content = schema.json()['schema']
     return json_content
 
