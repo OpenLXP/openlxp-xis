@@ -1,5 +1,7 @@
+import json
 import logging
 
+import bleach
 from dateutil.parser import parse
 
 logger = logging.getLogger('dict_config_logger')
@@ -188,3 +190,19 @@ def multi_dict_sort(data, sort_type=0):
                                                       key=lambda x:
                                                       x[sort_type])}
     return data
+
+
+def bleach_data_to_json(rdata):
+    """Function to bleach/clean HTML tags from data and
+    return dictionary data"""
+
+    # bleaching/cleaning HTML tag data
+    bdata = (bleach.clean(str(rdata), strip=True))
+
+    # Converting data to json acceptable format
+    json_acceptable_string = bdata.replace("'", "\"")
+
+    # Loading json dtring to dict format
+    metadata = json.loads(json_acceptable_string)
+
+    return metadata

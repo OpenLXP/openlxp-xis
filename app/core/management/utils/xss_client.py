@@ -1,7 +1,6 @@
 import logging
 
 import requests
-
 from core.management.utils.xis_internal import dict_flatten
 from core.models import XISConfiguration
 

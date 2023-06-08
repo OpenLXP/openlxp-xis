@@ -1,7 +1,6 @@
-from django.contrib import admin
-
 from core.models import (FilterMetadata, FilterRecord, Neo4jConfiguration,
                          XISConfiguration, XISDownstream, XISUpstream)
+from django.contrib import admin
 
 
 # Register your models here.

@@ -2,7 +2,23 @@ import copy
 import logging
 import uuid
 
+from api.management.utils.api_helper_functions import (add_metadata_ledger,
+                                                       add_supplemental_ledger,
+                                                       get_catalog_list,
+                                                       get_managed_data)
+from api.serializers import (CompositeLedgerSerializer,
+                             MetadataLedgerSerializer,
+                             SupplementalLedgerSerializer)
 from celery.result import AsyncResult
+from core.management.utils.transform_ledgers import \
+    detach_metadata_ledger_from_supplemental_ledger
+from core.management.utils.xis_internal import (bleach_data_to_json,
+                                                update_multilevel_dict)
+from core.management.utils.xss_client import \
+    get_optional_and_recommended_fields_for_validation
+from core.models import CompositeLedger, MetadataLedger
+from core.tasks import (xis_downstream_workflow, xis_upstream_workflow,
+                        xis_workflow)
 from django.http import JsonResponse
 from requests.exceptions import HTTPError
 from rest_framework import filters, pagination, permissions, status
@@ -12,22 +28,6 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.utils import json
 from rest_framework.views import APIView
-
-from api.management.utils.api_helper_functions import (add_metadata_ledger,
-                                                       add_supplemental_ledger,
-                                                       get_catalog_list,
-                                                       get_managed_data)
-from api.serializers import (CompositeLedgerSerializer,
-                             MetadataLedgerSerializer,
-                             SupplementalLedgerSerializer)
-from core.management.utils.transform_ledgers import \
-    detach_metadata_ledger_from_supplemental_ledger
-from core.management.utils.xis_internal import update_multilevel_dict
-from core.management.utils.xss_client import \
-    get_optional_and_recommended_fields_for_validation
-from core.models import CompositeLedger, MetadataLedger
-from core.tasks import (xis_downstream_workflow, xis_upstream_workflow,
-                        xis_workflow)
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -115,7 +115,10 @@ class MetaDataView(ListAPIView):
 
         # Add optional/recommended fields to the metadata
         extra_fields = get_optional_and_recommended_fields_for_validation()
-        metadata = request.data['metadata']
+
+        # bleaching/cleaning HTML tags from request data
+        metadata = bleach_data_to_json(request.data['metadata'])
+
         for field in extra_fields:
             meta_path = copy.deepcopy(metadata)
             path = field.split('.')
@@ -160,7 +163,10 @@ class SupplementalDataView(APIView):
         # Tracking source of changes to metadata/supplementary data
         request.data['updated_by'] = 'System'
 
-        data, instance = add_supplemental_ledger(request.data, None)
+        # bleaching/cleaning HTML tags from request data
+        data = bleach_data_to_json(request.data)
+
+        data, instance = add_supplemental_ledger(data, None)
 
         serializer = \
             SupplementalLedgerSerializer(instance,
@@ -280,9 +286,12 @@ class ManageDataView(APIView):
         request.data['metadata_key_hash'] = experience_id
         request.data['unique_record_identifier'] = str(uuid.uuid4())
 
+        # bleaching/cleaning HTML tags from request data
+        data = bleach_data_to_json(request.data)
+
         # Detach supplemental metadata and metadata from consolidated data
         metadata_data, supplemental_data = \
-            detach_metadata_ledger_from_supplemental_ledger(request.data)
+            detach_metadata_ledger_from_supplemental_ledger(data)
 
         metadata, metadata_instance = add_metadata_ledger(metadata_data,
                                                           experience_id)

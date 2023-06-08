@@ -1,8 +1,5 @@
 from unittest.mock import patch
 
-from ddt import data, ddt, unpack
-from django.test import tag
-
 from core.management.utils.neo4j_client import (get_neo4j_auth,
                                                 get_neo4j_endpoint)
 from core.management.utils.xis_internal import (dict_flatten,
@@ -17,6 +14,8 @@ from core.management.utils.xss_client import (
     get_required_recommended_fields_for_validation,
     get_target_validation_schema)
 from core.models import MetadataLedger, Neo4jConfiguration, XISConfiguration
+from ddt import data, ddt, unpack
+from django.test import tag
 
 from ..management.utils.transform_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,

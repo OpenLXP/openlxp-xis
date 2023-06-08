@@ -1,12 +1,6 @@
 import logging
 from unittest.mock import Mock, patch
 
-from ddt import ddt
-from django.core.management import call_command
-from django.db.utils import OperationalError
-from django.test import tag
-from neo4j import GraphDatabase
-
 from core.management.commands.consolidate_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
     check_metadata_ledger_transmission_ready_record,
@@ -21,6 +15,11 @@ from core.management.commands.load_metadata_into_xse import (
     renaming_xis_for_posting_to_xse, setup_index)
 from core.management.utils.xse_client import get_elasticsearch_index
 from core.models import CompositeLedger, MetadataLedger, XISUpstream
+from ddt import ddt
+from django.core.management import call_command
+from django.db.utils import OperationalError
+from django.test import tag
+from neo4j import GraphDatabase
 
 from .test_setup import TestSetUp
 
