@@ -193,7 +193,7 @@ def multi_dict_sort(data, sort_type=0):
 
 
 def bleach_data_to_json(rdata):
-    """Function to bleach/clean HTML tags from data and 
+    """Function to bleach/clean HTML tags from data and
     return dictionary data"""
 
     # bleaching/cleaning HTML tag data
