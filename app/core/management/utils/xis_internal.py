@@ -193,15 +193,16 @@ def multi_dict_sort(data, sort_type=0):
 
 
 def bleach_data_to_json(rdata):
-    """Function to bleach/clean HTML tags from data and return dictionary data"""
+    """Function to bleach/clean HTML tags from data and 
+    return dictionary data"""
 
-     #bleaching/cleaning HTML tag data
-    bdata =(bleach.clean(str(rdata), strip=True))
+    # bleaching/cleaning HTML tag data
+    bdata = (bleach.clean(str(rdata), strip=True))
 
     # Converting data to json acceptable format
     json_acceptable_string = bdata.replace("'", "\"")
 
-    # Loading json dtring to dict format  
-    metadata =json.loads(json_acceptable_string)
+    # Loading json dtring to dict format
+    metadata = json.loads(json_acceptable_string)
 
     return metadata

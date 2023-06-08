@@ -1,7 +1,7 @@
 import copy
 import logging
 import uuid
-import bleach
+
 from api.management.utils.api_helper_functions import (add_metadata_ledger,
                                                        add_supplemental_ledger,
                                                        get_catalog_list,
