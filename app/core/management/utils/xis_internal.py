@@ -1,4 +1,3 @@
-import json
 import logging
 
 import bleach
@@ -201,31 +200,34 @@ def multi_dict_sort(data, sort_type=0):
 
 
 def bleach_data_to_json(rdata):
-    """Function to bleach/clean HTML tags from data and
-    return dictionary data"""
+    """Recursive function to bleach/clean HTML tags from string
+    data and return dictionary data.
 
-    # bleaching/cleaning HTML tag data
-    bdata = (bleach.clean(str(rdata), strip=True))
+    :param rdata: dictionary to clean.
+    WARNING rdata will be edited
+    :return: dict"""
 
-    # Converting data to json acceptable format
-    json_acceptable_string = bdata.replace("'", "\"")
-
-    # Loading json dtring to dict format
-    metadata = json.loads(json_acceptable_string)
-
-    return metadata
-
-
-def confusable_homoglyphs_check(id_num, data, data_is_safe=True):
-    """Checks for dangerous homoglyphs."""
-
-    for key in data:
+    # iterate over dict
+    for key in rdata:
         # if string, clean
-        if isinstance(data[key], str):
-            if confusables.is_dangerous(data[key]):
-                data_is_safe = False
-                required_recommended_logs(id_num,
-                                          "homoglyphs", key)
-                logger.error(categories.unique_aliases(data[key]))
+        if isinstance(rdata[key], str):
+            rdata[key] = bleach.clean(rdata[key], tags={}, strip=True)
+        # if dict, enter dict
+        if isinstance(rdata[key], dict):
+            rdata[key] = bleach_data_to_json(rdata[key])
 
-    return data_is_safe
+    return rdata
+  
+  
+def confusable_homoglyphs_check(id_num, data, data_is_safe=True):
+  """Checks for dangerous homoglyphs."""
+
+  for key in data:
+      # if string, clean
+      if isinstance(data[key], str):
+          if confusables.is_dangerous(data[key]):
+              data_is_safe = False
+              required_recommended_logs(id_num,
+                                        "homoglyphs", key)
+              logger.error(categories.unique_aliases(data[key]))
+  return data_is_safe
