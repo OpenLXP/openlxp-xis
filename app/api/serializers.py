@@ -1,6 +1,7 @@
 import logging
 
-from core.management.utils.xis_internal import (dict_flatten, is_date,
+from core.management.utils.xis_internal import (confusable_homoglyphs_check,
+                                                dict_flatten, is_date,
                                                 required_recommended_logs)
 from core.management.utils.xss_client import (
     get_data_types_for_validation,
@@ -91,6 +92,15 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
         json_metadata = data.get('metadata')
         flattened_source_data = dict_flatten(json_metadata,
                                              required_column_list)
+
+        id_num = data.get('unique_record_identifier')
+        # confusable homoglyphs check
+        safe_data = confusable_homoglyphs_check(id_num, flattened_source_data)
+
+        if not safe_data:
+            raise serializers.ValidationError("Data contains homoglyphs and"
+                                              " can be dangerous. Check logs"
+                                              " for more details")
         # validate for required values in data
         validation_result, record_status_result = validate_required(
             data, required_column_list, flattened_source_data)
@@ -98,6 +108,7 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
         # validate for recommended values in data
         validate_recommended(
             data, recommended_column_list, flattened_source_data)
+
         # Type checking for values in metadata
         for item in flattened_source_data:
             # check if datatype has been assigned to field
@@ -121,6 +132,10 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
         data['record_status'] = record_status_result
         data['date_validated'] = timezone.now()
 
+        if record_status_result == "Inactive":
+            raise serializers.ValidationError("Metadata has missing fields. "
+                                              "Data did not pass validation."
+                                              "Check logs for more details")
         return data
 
     def update(self, instance, validated_data):
