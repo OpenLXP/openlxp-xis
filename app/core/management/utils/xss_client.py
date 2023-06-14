@@ -1,10 +1,9 @@
 import logging
 
 import requests
-from django.core.cache import cache
-
 from core.management.utils.xis_internal import dict_flatten
 from core.models import XISConfiguration
+from django.core.cache import cache
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -29,7 +28,7 @@ def read_json_data(schema_ref):
         request_path += 'schemas/?iri=' + schema_ref
     else:
         request_path += 'schemas/?name=' + schema_ref
-    schema = requests.get(request_path, verify=True, timeout=3.0)
+    schema = requests.get(request_path, verify=False, timeout=3.0)
     json_content = schema.json()['schema']
 
     # save schema to cache
