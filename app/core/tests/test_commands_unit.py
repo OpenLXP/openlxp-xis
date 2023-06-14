@@ -522,7 +522,7 @@ class CommandTests(TestSetUp):
             req.get.return_value = req
             # req.get.side_effect = [req, mock]
             req.json.side_effect = [
-                {'results': ['test res']},
+                {'results': [{'test': 'res'}]},
                 {'next': 'test_url'},
                 {'next': 'test_url'},
                 {'results': []},

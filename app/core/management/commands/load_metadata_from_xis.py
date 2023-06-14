@@ -8,6 +8,7 @@ from api.serializers import (MetadataLedgerSerializer,
                              SupplementalLedgerSerializer)
 from core.management.utils.transform_ledgers import \
     detach_metadata_ledger_from_supplemental_ledger
+from core.management.utils.xis_internal import bleach_data_to_json
 from core.models import XISUpstream
 from django.core.management.base import BaseCommand
 
@@ -37,7 +38,7 @@ class Command(BaseCommand):
 
         while(xis_response.status_code//10 == 20):
             for record in xis_response.json()['results']:
-                self.save_record(upstream, record)
+                self.save_record(upstream, bleach_data_to_json(record))
 
             if(xis_response.json()['next'] is not None):
                 xis_response = requests.get(
