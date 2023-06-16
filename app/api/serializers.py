@@ -90,17 +90,10 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
             get_required_recommended_fields_for_validation()
         expected_data_types = get_data_types_for_validation()
         json_metadata = data.get('metadata')
+        id_num = data.get('unique_record_identifier')
+
         flattened_source_data = dict_flatten(json_metadata,
                                              required_column_list)
-
-        id_num = data.get('unique_record_identifier')
-        # confusable homoglyphs check
-        safe_data = confusable_homoglyphs_check(id_num, flattened_source_data)
-
-        if not safe_data:
-            raise serializers.ValidationError("Data contains homoglyphs and"
-                                              " can be dangerous. Check logs"
-                                              " for more details")
         # validate for required values in data
         validation_result, record_status_result = validate_required(
             data, required_column_list, flattened_source_data)
@@ -131,6 +124,15 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
         data['metadata_validation_status'] = validation_result
         data['record_status'] = record_status_result
         data['date_validated'] = timezone.now()
+
+        # confusable homoglyphs check
+
+        safe_data = confusable_homoglyphs_check(id_num, json_metadata, True)
+
+        if not safe_data:
+            raise serializers.ValidationError("Data contains homoglyphs and"
+                                              " can be dangerous. Check logs"
+                                              " for more details")
 
         if record_status_result == "Inactive":
             raise serializers.ValidationError("Metadata has missing fields. "
@@ -219,6 +221,17 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Assign active status to supplemental data """
+
+        json_metadata = data.get('metadata')
+        id_num = data.get('unique_record_identifier')
+
+        # confusable homoglyphs check
+        safe_data = confusable_homoglyphs_check(id_num, json_metadata, True)
+
+        if not safe_data:
+            raise serializers.ValidationError("Data contains homoglyphs and"
+                                              " can be dangerous. Check logs"
+                                              " for more details")
 
         data['record_status'] = 'Active'
         return data
