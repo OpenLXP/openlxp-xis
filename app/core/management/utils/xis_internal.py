@@ -219,20 +219,21 @@ def bleach_data_to_json(rdata):
     return rdata
 
 
-def confusable_homoglyphs_check(id_num, data, data_is_safe):
+def confusable_homoglyphs_check(id_num, data):
     """Checks for dangerous homoglyphs."""
 
+    data_is_safe = True
     for key in data:
 
         # if string, Check homoglyph
-        if isinstance(data[key], str):
-            if bool(confusables.is_dangerous(data[key])):
-                data_is_safe = False
-                required_recommended_logs(id_num, "homoglyphs", key)
-                logger.error(categories.unique_aliases(data[key]))
+        if isinstance(data[key], str) and bool(confusables.
+                                               is_dangerous(data[key])):
+            data_is_safe = False
+            required_recommended_logs(id_num, "homoglyphs", key)
+            logger.error(categories.unique_aliases(data[key]))
         # if dict, enter dict
         if isinstance(data[key], dict):
-            data_is_safe = confusable_homoglyphs_check(id_num, data[key],
-                                                       data_is_safe)
-
+            ret_val = confusable_homoglyphs_check(id_num, data[key])
+            if not ret_val:
+                data_is_safe = False
     return data_is_safe

@@ -127,7 +127,7 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
 
         # confusable homoglyphs check
 
-        safe_data = confusable_homoglyphs_check(id_num, json_metadata, True)
+        safe_data = confusable_homoglyphs_check(id_num, json_metadata)
 
         if not safe_data:
             raise serializers.ValidationError("Data contains homoglyphs and"
@@ -226,7 +226,7 @@ class SupplementalLedgerSerializer(serializers.ModelSerializer):
         id_num = data.get('unique_record_identifier')
 
         # confusable homoglyphs check
-        safe_data = confusable_homoglyphs_check(id_num, json_metadata, True)
+        safe_data = confusable_homoglyphs_check(id_num, json_metadata)
 
         if not safe_data:
             raise serializers.ValidationError("Data contains homoglyphs and"
