@@ -153,6 +153,7 @@ def get_catalog_list(ledger):
             errorMsg = {
                 "message": "No catalogs present in records"
             }
+            logger.error(errorMsg)
             return Response(errorMsg, status.HTTP_404_NOT_FOUND)
 
         result = json.dumps(providers)

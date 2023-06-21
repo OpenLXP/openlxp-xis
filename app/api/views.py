@@ -137,7 +137,7 @@ class MetaDataView(ListAPIView):
 
         if not serializer.is_valid():
             # If not received send error and bad request status
-            logger.info(json.dumps(request.data))
+            logger.error(serializer.errors)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
         # If received save record in ledger and send response of UUID &
@@ -174,7 +174,7 @@ class SupplementalDataView(APIView):
 
         if not serializer.is_valid():
             # If not received send error and bad request status
-            logger.info(json.dumps(request.data))
+            logger.error(serializer.errors)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 

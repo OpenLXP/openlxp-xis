@@ -41,13 +41,9 @@ class SerializerTests(TestSetUp):
                       return_value=[]):
             mock_validate_list.return_value = self.required_dict, \
                                               self.recommended_dict
-            # mock_metadata.return_value = self.metadata_valid
-            return_obj = MetadataLedgerSerializer. \
-                validate(self, {"metadata": self.metadata_invalid})
-
-            self.assertEqual(return_obj.get('metadata_validation_status'), 'N')
-            self.assertEqual(return_obj.get('record_status'), "Inactive")
-            self.assertTrue(return_obj.get('date_validated'))
+            with self.assertRaises(ValidationError):
+                MetadataLedgerSerializer. \
+                    validate(self, {"metadata": self.metadata_invalid})
 
     def test_SupplementalLedgerSerializer_validate(self):
         """Test to check validation in supplemental serializer"""

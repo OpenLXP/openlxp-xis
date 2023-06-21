@@ -1,6 +1,7 @@
 import logging
 
 import bleach
+from confusable_homoglyphs import categories, confusables
 from dateutil.parser import parse
 
 logger = logging.getLogger('dict_config_logger')
@@ -31,6 +32,13 @@ def required_recommended_logs(id_num, category, field):
             "Record " + str(
                 id_num) + " does not have the expected " + category +
             " for the field " + field)
+
+    if category == 'homoglyphs':
+        logger.error(
+            "Record " + str(
+                id_num) + " does not have the expected " + "preferred aliases "
+                                                           "for the field " +
+                                                           field)
 
 
 def dict_flatten(data_dict, required_column_list):
@@ -209,3 +217,23 @@ def bleach_data_to_json(rdata):
             rdata[key] = bleach_data_to_json(rdata[key])
 
     return rdata
+
+
+def confusable_homoglyphs_check(id_num, data):
+    """Checks for dangerous homoglyphs."""
+
+    data_is_safe = True
+    for key in data:
+
+        # if string, Check homoglyph
+        if isinstance(data[key], str) and bool(confusables.
+                                               is_dangerous(data[key])):
+            data_is_safe = False
+            required_recommended_logs(id_num, "homoglyphs", key)
+            logger.error(categories.unique_aliases(data[key]))
+        # if dict, enter dict
+        if isinstance(data[key], dict):
+            ret_val = confusable_homoglyphs_check(id_num, data[key])
+            if not ret_val:
+                data_is_safe = False
+    return data_is_safe
