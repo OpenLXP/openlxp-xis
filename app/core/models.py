@@ -1,9 +1,19 @@
 import uuid
 
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
+
+regex_check = (r'(?!(\A( \x09\x0A\x0D\x20-\x7E # ASCII '
+               r'| \xC2-\xDF # non-overlong 2-byte '
+               r'| \xE0\xA0-\xBF # excluding overlongs '
+               r'| \xE1-\xEC\xEE\xEF{2} # straight 3-byte '
+               r'| \xED\x80-\x9F # excluding surrogates '
+               r'| \xF0\x90-\xBF{2} # planes 1-3 '
+               r'| \xF1-\xF3{3} # planes 4-15 '
+               r'| \xF4\x80-\x8F{2} # plane 16 )*\Z))')
 
 
 class XISConfiguration(models.Model):
@@ -94,7 +104,10 @@ class MetadataLedger(models.Model):
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     date_validated = models.DateTimeField(blank=True, null=True)
-    metadata = models.JSONField(blank=True)
+    metadata = models.JSONField(blank=True,
+                                validators=[RegexValidator
+                                            (regex=regex_check,
+                                             message="Wrong Format Entered")])
     metadata_hash = models.CharField(max_length=200)
     metadata_key = models.CharField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
@@ -132,7 +145,10 @@ class SupplementalLedger(models.Model):
                          choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
-    metadata = models.JSONField(null=True, blank=True)
+    metadata = models.JSONField(null=True, blank=True,
+                                validators=[RegexValidator
+                                            (regex=regex_check,
+                                             message="Wrong Format Entered")])
     metadata_hash = models.TextField(max_length=200)
     metadata_key = models.TextField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)

@@ -35,11 +35,11 @@ class Command(BaseCommand):
             url=upstream.xis_api_endpoint + 'metadata/',
             headers=headers)
 
-        while(xis_response.status_code//10 == 20):
+        while (xis_response.status_code//10 == 20):
             for record in xis_response.json()['results']:
                 self.save_record(upstream, record)
 
-            if(xis_response.json()['next'] is not None):
+            if (xis_response.json()['next'] is not None):
                 xis_response = requests.get(
                     url=xis_response.json()['next'], headers=headers)
             else:
@@ -93,10 +93,10 @@ class Command(BaseCommand):
         upstream_apis = XISUpstream.objects.all().filter(
             xis_api_endpoint_status=XISUpstream.ACTIVE)
         # if there are ids as an arg, filter to only those ids
-        if('id' in options and options['id']):
+        if ('id' in options and options['id']):
             upstream_apis = upstream_apis.filter(pk__in=options['id'])
         # if there are apis as an arg, filter to only those apis
-        if('api' in options and options['api']):
+        if ('api' in options and options['api']):
             upstream_apis = upstream_apis.filter(
                 xis_api_endpoint__in=options['api'])
 
