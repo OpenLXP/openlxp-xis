@@ -1,5 +1,12 @@
+import json
 import logging
 from unittest.mock import Mock, patch
+
+from ddt import ddt
+from django.core.management import call_command
+from django.db.utils import OperationalError
+from django.test import tag
+from neo4j import GraphDatabase
 
 from core.management.commands.consolidate_ledgers import (
     append_metadata_ledger_with_supplemental_ledger,
@@ -15,11 +22,6 @@ from core.management.commands.load_metadata_into_xse import (
     renaming_xis_for_posting_to_xse, setup_index)
 from core.management.utils.xse_client import get_elasticsearch_index
 from core.models import CompositeLedger, MetadataLedger, XISUpstream
-from ddt import ddt
-from django.core.management import call_command
-from django.db.utils import OperationalError
-from django.test import tag
-from neo4j import GraphDatabase
 
 from .test_setup import TestSetUp
 
@@ -543,3 +545,39 @@ class CommandTests(TestSetUp):
             self.assertEqual(req.get.call_count, 2)
             self.assertDictContainsSubset({"url": "test_url"},
                                           req.get.call_args[1])
+
+    def test_save_metadata_from_xis_retrieve_records(self):
+        """Test of saving records from an Upstream Syndication"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'ACTIVE'
+
+        xis_syndication = XISUpstream(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status)
+        xis_syndication.save()
+        self.supplemental_ledger.save()
+        self.metadata_ledger.save()
+
+        with patch('core.management.commands.load_metadata_from_xis.'
+                   'SupplementalLedgerSerializer') as sup,\
+            patch('core.management.commands.load_metadata_from_xis.'
+                  'MetadataLedgerSerializer') as meta:
+
+            com = Command()
+
+            sup.return_value = sup
+            sup.is_valid.return_value = True
+            sup.instance = self.supplemental_ledger
+            meta.return_value = meta
+            meta.is_valid.return_value = True
+            meta.instance = self.metadata_ledger
+
+            dataSTR = json.dumps(self.composite_data_valid)
+            dataJSON = json.loads(dataSTR)
+            com.save_record(xis_syndication, dataJSON)
+
+            self.assertEqual(xis_syndication.metadata_experiences.count(),
+                             1)
+            self.assertEqual(xis_syndication.supplemental_experiences.count(),
+                             1)

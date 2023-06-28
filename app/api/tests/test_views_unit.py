@@ -1,12 +1,13 @@
 import json
 from unittest.mock import patch
 
-from core.models import CompositeLedger
 from ddt import data, ddt
 from django.test import tag
 from django.urls import reverse
 from requests.exceptions import HTTPError
 from rest_framework import status
+
+from core.models import CompositeLedger
 
 from .test_setup import TestSetUp
 
