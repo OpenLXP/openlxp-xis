@@ -2,6 +2,8 @@ import logging
 import uuid
 
 import requests
+from django.core.management.base import BaseCommand
+
 from api.management.utils.api_helper_functions import (add_metadata_ledger,
                                                        add_supplemental_ledger)
 from api.serializers import (MetadataLedgerSerializer,
@@ -10,7 +12,6 @@ from core.management.utils.transform_ledgers import \
     detach_metadata_ledger_from_supplemental_ledger
 from core.management.utils.xis_internal import bleach_data_to_json
 from core.models import XISUpstream
-from django.core.management.base import BaseCommand
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -83,7 +84,7 @@ class Command(BaseCommand):
             metadata_serializer.save()
             upstream.metadata_experiences.add(metadata_serializer.instance)
 
-        if not supplemental_serializer.is_valid():
+        if supplemental_serializer.is_valid():
             supplemental_serializer.save()
             upstream.supplemental_experiences.add(
                 supplemental_serializer.instance)
