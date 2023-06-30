@@ -242,9 +242,7 @@ class FilterRecord(models.Model):
         """run a simple query to filter based on metadata"""
         # if using EQUAL or CONTAINS make a quick query to remove elements
         # that are missing the filter value in metadata
-        if (self.comparator == self.EQUAL):
-            return queryset.filter(metadata__icontains=self.field_value)
-        elif (self.comparator == self.CONTAINS):
+        if (self.comparator == self.EQUAL or self.comparator == self.CONTAINS):
             return queryset.filter(metadata__icontains=self.field_value)
         return queryset
 
@@ -264,16 +262,21 @@ class FilterRecord(models.Model):
                 metadata = ''
             # cast metadata field retrieved to a string and exclude items that
             # do not match
-            if (self.comparator == self.EQUAL):
-                if self.field_value != str(metadata):
-                    return_qs = return_qs.exclude(pk=exp.pk)
-            elif (self.comparator == self.UNEQUAL):
-                if self.field_value == str(metadata):
-                    return_qs = return_qs.exclude(pk=exp.pk)
-            elif (self.comparator == self.CONTAINS):
-                if self.field_value not in str(metadata):
-                    return_qs = return_qs.exclude(pk=exp.pk)
+            return_qs = self.__check_match(return_qs, exp, metadata)
 
+        return return_qs
+
+    def __check_match(self, return_qs, exp, metadata):
+        """remove non-matching items"""
+        if (self.comparator == self.EQUAL):
+            if self.field_value != str(metadata):
+                return_qs = return_qs.exclude(pk=exp.pk)
+        elif (self.comparator == self.UNEQUAL):
+            if self.field_value == str(metadata):
+                return_qs = return_qs.exclude(pk=exp.pk)
+        elif (self.comparator == self.CONTAINS):
+            if self.field_value not in str(metadata):
+                return_qs = return_qs.exclude(pk=exp.pk)
         return return_qs
 
     def apply_filter(self, queryset):
