@@ -4,12 +4,13 @@ import uuid
 from unittest.mock import patch
 from uuid import UUID
 
-from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
-                         XISConfiguration)
 from django.contrib.auth.models import User
 from django.urls import reverse
-from rest_framework.authtoken.models import Token
+from knox.models import AuthToken
 from rest_framework.test import APITestCase
+
+from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
+                         XISConfiguration)
 
 
 class TestSetUp(APITestCase):
@@ -28,7 +29,7 @@ class TestSetUp(APITestCase):
             last_name="user",
         )
 
-        self.token = Token(user=self.super_user).save()
+        self.token, self.key = AuthToken.objects.create(user=self.super_user)
 
         self.metadata_url = reverse('api:metadata')
         self.composite_provider_url = reverse('api:metadata')
