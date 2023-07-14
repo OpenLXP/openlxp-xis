@@ -1,5 +1,5 @@
 from knox.auth import TokenAuthentication
-from knox.views import LoginView, LogoutAllView, LogoutView
+from knox.views import LoginView
 
 
 class GenerateAPIKeyFromOtherAuthMethod(LoginView):
