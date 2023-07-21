@@ -3,10 +3,11 @@ import json
 import logging
 
 import requests
+from django.core.management.base import BaseCommand
+
 from api.serializers import CompositeLedgerSerializer
 from core.management.utils.xis_internal import update_multilevel_dict
 from core.models import XISDownstream
-from django.core.management.base import BaseCommand
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -63,7 +64,7 @@ class Command(BaseCommand):
 
         return return_record
 
-    def __send_record(self, downstream, record):
+    def send_record(self, downstream, record):
         """send record to XISDownstream"""
 
         self.__update_record(downstream, record)
@@ -112,9 +113,9 @@ class Command(BaseCommand):
                 for record in queryset:
                     metadata = self.__add_fields(include, record)
                     metadata = self.__remove_fields(exclude, metadata)
-                    self.__send_record(ds, metadata)
+                    self.send_record(ds, metadata)
             # if nothing explicitly included, include all
             else:
                 for record in queryset:
                     metadata = self.__remove_fields(exclude, record)
-                    self.__send_record(ds, metadata)
+                    self.send_record(ds, metadata)
