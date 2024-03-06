@@ -1,7 +1,7 @@
 
 # OPENLXP-XIS
 
-### Experience Index Service
+### Experience Index Service 
 
 XIS Component is the primary funnel for learning experience metadata collected by the XIA components. In addition, the XIS can receive supplemental learning experience metadata – field name/value overrides and augmentations – from the XMS.  
 
