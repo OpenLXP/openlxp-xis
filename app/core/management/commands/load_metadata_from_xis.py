@@ -10,6 +10,7 @@ from api.serializers import (MetadataLedgerSerializer,
                              SupplementalLedgerSerializer)
 from core.management.utils.transform_ledgers import \
     detach_metadata_ledger_from_supplemental_ledger
+from core.management.utils.xis_internal import bleach_data_to_json
 from core.models import XISUpstream
 
 logger = logging.getLogger('dict_config_logger')
@@ -36,11 +37,11 @@ class Command(BaseCommand):
             url=upstream.xis_api_endpoint + 'metadata/',
             headers=headers)
 
-        while(xis_response.status_code//10 == 20):
+        while (xis_response.status_code//10 == 20):
             for record in xis_response.json()['results']:
-                self.save_record(upstream, record)
+                self.save_record(upstream, bleach_data_to_json(record))
 
-            if(xis_response.json()['next'] is not None):
+            if (xis_response.json()['next'] is not None):
                 xis_response = requests.get(
                     url=xis_response.json()['next'], headers=headers)
             else:
@@ -83,7 +84,7 @@ class Command(BaseCommand):
             metadata_serializer.save()
             upstream.metadata_experiences.add(metadata_serializer.instance)
 
-        if not supplemental_serializer.is_valid():
+        if supplemental_serializer.is_valid():
             supplemental_serializer.save()
             upstream.supplemental_experiences.add(
                 supplemental_serializer.instance)
@@ -94,10 +95,10 @@ class Command(BaseCommand):
         upstream_apis = XISUpstream.objects.all().filter(
             xis_api_endpoint_status=XISUpstream.ACTIVE)
         # if there are ids as an arg, filter to only those ids
-        if('id' in options and options['id']):
+        if ('id' in options and options['id']):
             upstream_apis = upstream_apis.filter(pk__in=options['id'])
         # if there are apis as an arg, filter to only those apis
-        if('api' in options and options['api']):
+        if ('api' in options and options['api']):
             upstream_apis = upstream_apis.filter(
                 xis_api_endpoint__in=options['api'])
 

@@ -33,6 +33,11 @@ services:
       LOG_PATH: "${LOG_PATH}"
       CELERY_BROKER_URL: "${CELERY_BROKER_URL}"
       CELERY_RESULT_BACKEND: "${CELERY_RESULT_BACKEND}"
+      ENTITY_ID: "${ENTITY_ID}"
+      SP_PUBLIC_CERT: "${SP_PUBLIC_CERT}"
+      SP_PRIVATE_KEY: "${SP_PRIVATE_KEY}"
+      BAD_HOST: "${BAD_HOST}"
+      OVERIDE_HOST: "${OVERIDE_HOST}"
     volumes:
       - ./app:/opt/app/openlxp-xis
     depends_on:

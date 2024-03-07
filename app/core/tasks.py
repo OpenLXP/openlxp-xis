@@ -1,7 +1,6 @@
 import logging
 
 from celery import shared_task
-
 from core.management.commands.consolidate_ledgers import \
     Command as consolidate_ledgers
 from core.management.commands.load_metadata_from_xis import \

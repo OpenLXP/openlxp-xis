@@ -1,3 +1,4 @@
+import json
 import logging
 from unittest.mock import Mock, patch
 
@@ -16,11 +17,13 @@ from core.management.commands.load_metadata_into_neo4j import (
     check_records_to_load_into_neo4j, connect_to_neo4j_driver,
     post_data_to_neo4j, post_metadata_ledger_to_neo4j,
     post_supplemental_ledger_to_neo4j)
+from core.management.commands.load_metadata_into_xis import Command as iCommand
 from core.management.commands.load_metadata_into_xse import (
     check_records_to_load_into_xse, create_xse_json_document, post_data_to_xse,
     renaming_xis_for_posting_to_xse, setup_index)
 from core.management.utils.xse_client import get_elasticsearch_index
-from core.models import CompositeLedger, MetadataLedger, XISUpstream
+from core.models import (CompositeLedger, MetadataLedger, XISDownstream,
+                         XISUpstream)
 
 from .test_setup import TestSetUp
 
@@ -523,7 +526,7 @@ class CommandTests(TestSetUp):
             req.get.return_value = req
             # req.get.side_effect = [req, mock]
             req.json.side_effect = [
-                {'results': ['test res']},
+                {'results': [{'test': 'res'}]},
                 {'next': 'test_url'},
                 {'next': 'test_url'},
                 {'results': []},
@@ -544,3 +547,95 @@ class CommandTests(TestSetUp):
             self.assertEqual(req.get.call_count, 2)
             self.assertDictContainsSubset({"url": "test_url"},
                                           req.get.call_args[1])
+
+    def test_save_metadata_from_xis_retrieve_records(self):
+        """Test of saving records from an Upstream Syndication"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'ACTIVE'
+
+        xis_syndication = XISUpstream(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status)
+        xis_syndication.save()
+        self.supplemental_ledger.save()
+        self.metadata_ledger.save()
+
+        with patch('core.management.commands.load_metadata_from_xis.'
+                   'SupplementalLedgerSerializer') as sup,\
+            patch('core.management.commands.load_metadata_from_xis.'
+                  'MetadataLedgerSerializer') as meta:
+
+            com = Command()
+
+            sup.return_value = sup
+            sup.is_valid.return_value = True
+            sup.instance = self.supplemental_ledger
+            meta.return_value = meta
+            meta.is_valid.return_value = True
+            meta.instance = self.metadata_ledger
+
+            dataSTR = json.dumps(self.composite_data_valid)
+            dataJSON = json.loads(dataSTR)
+            com.save_record(xis_syndication, dataJSON)
+
+            self.assertEqual(xis_syndication.metadata_experiences.count(),
+                             1)
+            self.assertEqual(xis_syndication.supplemental_experiences.count(),
+                             1)
+
+    def test_load_metadata_into_xis_with_options(self):
+        """Test of arguments being passed into Downstream Syndication"""
+        with patch('core.management.commands.load_metadata_into_xis.'
+                   'XISDownstream.objects') as down:
+            down.all.return_value = down
+            down.filter.return_value = down
+            com = iCommand()
+            id_var = [123, ]
+            api_var = ['abc', ]
+            com.handle(id=id_var, api=api_var)
+            self.assertEqual(down.filter.call_count, 3)
+            self.assertEqual(down.filter.call_args_list[0][1],
+                             {"xis_api_endpoint_status": 'ACTIVE'})
+            self.assertEqual(down.filter.call_args_list[1][1],
+                             {"pk__in": id_var})
+            self.assertEqual(down.filter.call_args[1],
+                             {"xis_api_endpoint__in": api_var})
+
+    def test_save_metadata_into_xis_retrieve_records(self):
+        """Test of saving records from a Downstream Syndication"""
+
+        xis_api_endpoint = 'https://newapi123'
+        xis_api_endpoint_status = 'ACTIVE'
+
+        xis_syndication = XISDownstream(
+            xis_api_endpoint=xis_api_endpoint,
+            xis_api_endpoint_status=xis_api_endpoint_status,
+            source_name=xis_api_endpoint)
+        xis_syndication.save()
+        self.composite_ledger.save()
+
+        with patch('core.management.commands.load_metadata_into_xis.'
+                   'CompositeLedgerSerializer') as comp,\
+            patch('core.management.commands.load_metadata_into_xis.'
+                  'requests') as req:
+
+            com = iCommand()
+
+            comp.return_value = comp
+            comp.is_valid.return_value = True
+            comp.instance = self.composite_ledger
+            comp['unique_record_identifier'] = self.composite_ledger.\
+                unique_record_identifier
+
+            dataSTR = json.dumps(self.composite_data_valid)
+            dataJSON = json.loads(dataSTR)
+            comp.data = dataJSON
+
+            req.post.return_value = req
+            req.status_code = 200
+
+            com.send_record(xis_syndication, self.composite_ledger.__dict__)
+
+            self.assertEqual(xis_syndication.composite_experiences.count(),
+                             1)

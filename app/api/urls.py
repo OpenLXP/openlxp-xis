@@ -1,7 +1,6 @@
+from api import views
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-
-from api import views
 
 router = DefaultRouter()
 
@@ -21,6 +20,7 @@ urlpatterns = [
     path('managed-data/catalogs/<str:provider_id>/<str:experience_id>',
          views.ManageDataView.as_view(), name='managed-data'),
     path('xis-workflow/', views.xis_workflow_api),
+    path('xis-workflow/<int:task_id>', views.get_status),
     path('downstream-workflow/', views.xis_downstream_workflow_api),
     path('upstream-workflow/', views.xis_upstream_workflow_api),
     # path('post_to_neo4j/', views.post_to_neo4j,

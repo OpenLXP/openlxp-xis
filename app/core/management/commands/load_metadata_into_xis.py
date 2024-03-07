@@ -64,12 +64,13 @@ class Command(BaseCommand):
 
         return return_record
 
-    def __send_record(self, downstream, record):
+    def send_record(self, downstream, record):
         """send record to XISDownstream"""
 
         self.__update_record(downstream, record)
 
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json',
+                   'Authorization': f'token {downstream.xis_api_key}'}
 
         xis_response = requests.post(
             url=f'{downstream.xis_api_endpoint}managed-data/catalogs/'
@@ -77,7 +78,7 @@ class Command(BaseCommand):
             data=json.dumps(CompositeLedgerSerializer(record).data),
             headers=headers)
 
-        if(xis_response.status_code//10 == 20):
+        if (xis_response.status_code//10 == 20):
             downstream.composite_experiences.add(
                 record['unique_record_identifier'])
         else:
@@ -95,10 +96,10 @@ class Command(BaseCommand):
         downstream_apis = XISDownstream.objects.all().filter(
             xis_api_endpoint_status=XISDownstream.ACTIVE)
         # if there are ids as an arg, filter to only those ids
-        if('id' in options and options['id']):
+        if ('id' in options and options['id']):
             downstream_apis = downstream_apis.filter(pk__in=options['id'])
         # if there are apis as an arg, filter to only those apis
-        if('api' in options and options['api']):
+        if ('api' in options and options['api']):
             downstream_apis = downstream_apis.filter(
                 xis_api_endpoint__in=options['api'])
 
@@ -108,13 +109,13 @@ class Command(BaseCommand):
             queryset = ds.apply_filter().values()
             # get the fields that should be included/excluded in records
             include, exclude = ds.determine_fields()
-            if(include):
+            if (include):
                 for record in queryset:
                     metadata = self.__add_fields(include, record)
                     metadata = self.__remove_fields(exclude, metadata)
-                    self.__send_record(ds, metadata)
+                    self.send_record(ds, metadata)
             # if nothing explicitly included, include all
             else:
                 for record in queryset:
                     metadata = self.__remove_fields(exclude, record)
-                    self.__send_record(ds, metadata)
+                    self.send_record(ds, metadata)

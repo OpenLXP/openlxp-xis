@@ -1,7 +1,6 @@
-from django.contrib import admin
-
 from core.models import (FilterMetadata, FilterRecord, Neo4jConfiguration,
                          XISConfiguration, XISDownstream, XISUpstream)
+from django.contrib import admin
 
 
 # Register your models here.
@@ -27,7 +26,7 @@ class XISUpstreamAdmin(admin.ModelAdmin):
 @admin.register(XISDownstream)
 class XISDownstreamAdmin(admin.ModelAdmin):
     list_display = ('xis_api_endpoint', 'xis_api_endpoint_status')
-    fields = [('xis_api_endpoint', 'xis_api_endpoint_status'),
+    fields = [('xis_api_endpoint', 'xis_api_key', 'xis_api_endpoint_status'),
               ('filter_records', 'filter_metadata'),
               ('source_name',)]
     filter_horizontal = ['composite_experiences',

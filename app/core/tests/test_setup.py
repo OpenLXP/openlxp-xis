@@ -1,5 +1,5 @@
 import hashlib
-from uuid import UUID
+import uuid
 
 from django.test import TestCase
 from django.urls import reverse
@@ -44,10 +44,14 @@ class TestSetUp(TestCase):
             }
         }
 
+        def unique_record_identifier_generator():
+            unique_record_identifier = uuid.uuid4()
+            return unique_record_identifier
+
         self.provider_name = 'AGENT'
         self.updated_by = 'System'
-        self.unique_record_identifier = UUID(
-            '09edea0e-6c83-40a6-951e-2acee3e99502')
+        self.unique_record_identifier = str(
+            unique_record_identifier_generator())
         self.metadata_hash = str(hashlib.sha512(str(self.metadata).
                                                 encode('utf-8')).
                                  hexdigest()),
@@ -88,7 +92,8 @@ class TestSetUp(TestCase):
         }
 
         self.metadata_ledger = MetadataLedger(
-            unique_record_identifier=self.unique_record_identifier,
+            unique_record_identifier=str(
+                unique_record_identifier_generator()),
             metadata=self.metadata,
             metadata_hash=self.metadata_hash,
             metadata_key_hash=self.metadata_key_hash,
@@ -101,7 +106,8 @@ class TestSetUp(TestCase):
         )
 
         self.supplemental_ledger = SupplementalLedger(
-            unique_record_identifier=self.unique_record_identifier,
+            unique_record_identifier=str(
+                unique_record_identifier_generator()),
             metadata=self.supplement_metadata,
             metadata_hash=self.metadata_hash,
             metadata_key_hash=self.metadata_key_hash,
@@ -127,7 +133,8 @@ class TestSetUp(TestCase):
 
         self.composite_data_valid = {
             "provider_name": self.provider_name,
-            "unique_record_identifier": self.unique_record_identifier,
+            "unique_record_identifier": str(
+                unique_record_identifier_generator()),
             "metadata": self.composite_ledger_dict,
             "metadata_hash": self.composite_ledger_metadata_hash_valid,
             "metadata_key": self.metadata_key,
@@ -137,7 +144,8 @@ class TestSetUp(TestCase):
         }
 
         self.composite_ledger = CompositeLedger(
-            unique_record_identifier=self.unique_record_identifier,
+            unique_record_identifier=str(
+                unique_record_identifier_generator()),
             metadata=self.composite_ledger_dict,
             metadata_key=self.metadata_key,
             metadata_key_hash=self.metadata_key_hash,

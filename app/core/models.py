@@ -1,8 +1,19 @@
 import uuid
 
+from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
+
+regex_check = (r'(?!(\A( \x09\x0A\x0D\x20-\x7E # ASCII '
+               r'| \xC2-\xDF # non-overlong 2-byte '
+               r'| \xE0\xA0-\xBF # excluding overlongs '
+               r'| \xE1-\xEC\xEE\xEF{2} # straight 3-byte '
+               r'| \xED\x80-\x9F # excluding surrogates '
+               r'| \xF0\x90-\xBF{2} # planes 1-3 '
+               r'| \xF1-\xF3{3} # planes 4-15 '
+               r'| \xF4\x80-\x8F{2} # plane 16 )*\Z))')
 
 
 class XISConfiguration(models.Model):
@@ -93,7 +104,10 @@ class MetadataLedger(models.Model):
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
     date_validated = models.DateTimeField(blank=True, null=True)
-    metadata = models.JSONField(blank=True)
+    metadata = models.JSONField(blank=True,
+                                validators=[RegexValidator
+                                            (regex=regex_check,
+                                             message="Wrong Format Entered")])
     metadata_hash = models.CharField(max_length=200)
     metadata_key = models.CharField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
@@ -106,6 +120,10 @@ class MetadataLedger(models.Model):
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True, default='System')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   on_delete=models.PROTECT,
+                                   related_name="created_metadata",
+                                   blank=True, null=True)
 
 
 class SupplementalLedger(models.Model):
@@ -127,7 +145,10 @@ class SupplementalLedger(models.Model):
                          choices=RECORD_TRANSMISSION_STATUS_CHOICES)
     date_deleted = models.DateTimeField(blank=True, null=True)
     date_inserted = models.DateTimeField(blank=True, null=True)
-    metadata = models.JSONField(null=True, blank=True)
+    metadata = models.JSONField(null=True, blank=True,
+                                validators=[RegexValidator
+                                            (regex=regex_check,
+                                             message="Wrong Format Entered")])
     metadata_hash = models.TextField(max_length=200)
     metadata_key = models.TextField(max_length=200)
     metadata_key_hash = models.CharField(max_length=200)
@@ -137,6 +158,10 @@ class SupplementalLedger(models.Model):
     unique_record_identifier = models.CharField(max_length=250,
                                                 primary_key=True)
     updated_by = models.CharField(max_length=10, blank=True, default='System')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   on_delete=models.PROTECT,
+                                   related_name="created_supplemental_data",
+                                   blank=True, null=True)
 
 
 class CompositeLedger(models.Model):
@@ -199,17 +224,17 @@ class FilterRecord(models.Model):
     def __root_filter(self, queryset):
         """run a query for filtering based on root data"""
         # if using EQUAL, perform a case insensitive exact filter on queryset
-        if(self.comparator == self.EQUAL):
+        if (self.comparator == self.EQUAL):
             return queryset.filter(
                 **{f"{self.field_name}__iexact": self.field_value})
         # if using UNEQUAL, perform a case insensitive exact exclusion
         # on queryset
-        elif(self.comparator == self.UNEQUAL):
+        elif (self.comparator == self.UNEQUAL):
             return queryset.exclude(
                 **{f"{self.field_name}__iexact": self.field_value})
         # if using CONTAINS, perform a case insensitive contains filter
         # on queryset
-        elif(self.comparator == self.CONTAINS):
+        elif (self.comparator == self.CONTAINS):
             return queryset.filter(
                 **{f"{self.field_name}__icontains": self.field_value})
 
@@ -217,9 +242,7 @@ class FilterRecord(models.Model):
         """run a simple query to filter based on metadata"""
         # if using EQUAL or CONTAINS make a quick query to remove elements
         # that are missing the filter value in metadata
-        if(self.comparator == self.EQUAL):
-            return queryset.filter(metadata__icontains=self.field_value)
-        elif(self.comparator == self.CONTAINS):
+        if (self.comparator == self.EQUAL or self.comparator == self.CONTAINS):
             return queryset.filter(metadata__icontains=self.field_value)
         return queryset
 
@@ -239,21 +262,26 @@ class FilterRecord(models.Model):
                 metadata = ''
             # cast metadata field retrieved to a string and exclude items that
             # do not match
-            if(self.comparator == self.EQUAL):
-                if self.field_value != str(metadata):
-                    return_qs = return_qs.exclude(pk=exp.pk)
-            elif(self.comparator == self.UNEQUAL):
-                if self.field_value == str(metadata):
-                    return_qs = return_qs.exclude(pk=exp.pk)
-            elif(self.comparator == self.CONTAINS):
-                if self.field_value not in str(metadata):
-                    return_qs = return_qs.exclude(pk=exp.pk)
+            return_qs = self.__check_match(return_qs, exp, metadata)
 
+        return return_qs
+
+    def __check_match(self, return_qs, exp, metadata):
+        """remove non-matching items"""
+        if (self.comparator == self.EQUAL):
+            if self.field_value != str(metadata):
+                return_qs = return_qs.exclude(pk=exp.pk)
+        elif (self.comparator == self.UNEQUAL):
+            if self.field_value == str(metadata):
+                return_qs = return_qs.exclude(pk=exp.pk)
+        elif (self.comparator == self.CONTAINS):
+            if self.field_value not in str(metadata):
+                return_qs = return_qs.exclude(pk=exp.pk)
         return return_qs
 
     def apply_filter(self, queryset):
         """Filter the queryset using this filter"""
-        if('.' in self.field_name):
+        if ('.' in self.field_name):
             return self.__metadata_filter(
                 self.__simple_metadata_filter(queryset))
         else:
@@ -321,6 +349,11 @@ class XISDownstream(models.Model):
     )
 
     xis_api_endpoint_status = models.CharField(max_length=200, choices=STATUS)
+
+    xis_api_key = models.CharField(
+        help_text="Enter the XIS API Key",
+        max_length=128
+    )
 
     source_name = models.CharField(
         max_length=200, help_text='Enter the name to send data as')

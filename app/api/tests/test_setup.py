@@ -4,7 +4,9 @@ import uuid
 from unittest.mock import patch
 from uuid import UUID
 
+from django.contrib.auth.models import User
 from django.urls import reverse
+from knox.models import AuthToken
 from rest_framework.test import APITestCase
 
 from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
@@ -16,6 +18,18 @@ class TestSetUp(APITestCase):
 
     def setUp(self):
         """Function to set up necessary data for testing"""
+
+        self.su_username = "super@test.com"
+        self.su_password = "1234"
+
+        self.super_user = User.objects.create_superuser(
+            self.su_username,
+            self.su_password,
+            first_name="super",
+            last_name="user",
+        )
+
+        self.token, self.key = AuthToken.objects.create(user=self.super_user)
 
         self.metadata_url = reverse('api:metadata')
         self.composite_provider_url = reverse('api:metadata')
