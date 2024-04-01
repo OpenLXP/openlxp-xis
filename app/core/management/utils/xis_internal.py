@@ -213,10 +213,10 @@ def bleach_data_to_json(rdata):
         # if string, clean
         if isinstance(rdata[key], str):
             rdata[key] = bleach.clean(rdata[key], tags={}, strip=True)
+            rdata[key] = html.unescape(rdata[key])
         # if dict, enter dict
         if isinstance(rdata[key], dict):
             rdata[key] = bleach_data_to_json(rdata[key])
-    rdata = html.unescape(rdata)
     return rdata
 
 
