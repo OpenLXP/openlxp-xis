@@ -217,8 +217,7 @@ def bleach_data_to_json(rdata):
         if isinstance(rdata[key], dict):
             rdata[key] = bleach_data_to_json(rdata[key])
         rdata[key] = html.unescape(rdata[key])
-
-    return rdata
+        return rdata
 
 
 def confusable_homoglyphs_check(id_num, data):
