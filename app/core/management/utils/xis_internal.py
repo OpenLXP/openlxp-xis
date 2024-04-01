@@ -1,3 +1,4 @@
+import html
 import logging
 
 import bleach
@@ -215,6 +216,7 @@ def bleach_data_to_json(rdata):
         # if dict, enter dict
         if isinstance(rdata[key], dict):
             rdata[key] = bleach_data_to_json(rdata[key])
+        html.unescape(rdata[key])
 
     return rdata
 
