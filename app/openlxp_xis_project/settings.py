@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'knox',
     'openlxp_notifications',
+    'openlxp_P1_notification',
     'core',
     'api',
     'django_celery_beat',
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'openlxp_P1_notification.middleware.TemplateMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -91,8 +93,12 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST'),
         'PORT': 3306,
-    }
+        'OPTIONS': {
+                    'charset': 'utf8mb4',
+                }
+            },
 }
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
