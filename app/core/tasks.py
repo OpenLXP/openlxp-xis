@@ -11,7 +11,7 @@ from core.management.commands.load_metadata_into_xis import \
 #     Command as load_metadata_into_neo4j
 from core.management.commands.load_metadata_into_xse import \
     Command as load_metadata
-from openlxp_notifications.management.commands.conformance_alerts import \
+from openlxp_notifications.management.commands.trigger_status_update import \
     Command as conformance_alerts
 
 logger = logging.getLogger('dict_config_logger')
@@ -21,13 +21,13 @@ logger = logging.getLogger('dict_config_logger')
 def xis_workflow():
     """XIS automated workflow"""
 
+    conformance_alerts_class = conformance_alerts()
     consolidate_ledgers_class = consolidate_ledgers()
     load_metadata_class = load_metadata()
-    conformance_alerts_class = conformance_alerts()
 
+    conformance_alerts_class.handle(email_references="Status_update")
     consolidate_ledgers_class.handle()
     load_metadata_class.handle()
-    conformance_alerts_class.handle()
 
     logger.info('COMPLETED DATA LOADING INTO XSE')
 
