@@ -2,7 +2,7 @@ version: "3"
 
 services:
   db_xis:
-    image: mysql:8.4
+    image: mysql:8.0.36
     ports:
       - '3310:3306'
     environment:
@@ -39,6 +39,11 @@ services:
       SP_PRIVATE_KEY: "${SP_PRIVATE_KEY}"
       BAD_HOST: "${BAD_HOST}"
       OVERIDE_HOST: "${OVERIDE_HOST}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+      REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
+      AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
       P1PS_DOMAIN: "${P1PS_DOMAIN}"
       TEAM_TOKEN: "${TEAM_TOKEN}"
       TEAM_ID: "${TEAM_ID}"
@@ -51,22 +56,22 @@ services:
     networks:
       - openlxp
 
-  es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
-    container_name: es01
-    environment:
-      - discovery.type=single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data01:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-      - 9300:9300
-    networks:
-      - openlxp
+  # es01:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+  #   container_name: es01
+  #   environment:
+  #     - discovery.type=single-node
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data01:/usr/share/elasticsearch/data
+  #   ports:
+  #     - 9200:9200
+  #     - 9300:9300
+  #   networks:
+  #     - openlxp
 
   redis:
     image: redis:alpine
@@ -79,6 +84,9 @@ services:
     command: celery -A openlxp_xis_project worker -l info --pool=solo
     volumes:
       - ./app:/opt/app/openlxp-xis
+    environment:
+      REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
+      AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
     env_file:
       - ./.env
     depends_on:
@@ -95,6 +103,9 @@ services:
     command: celery -A openlxp_xis_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info --pidfile=/tmp/celerybeat.pid
     volumes:
       - ./app:/opt/app/openlxp-xis
+    environment:
+      REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
+      AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
     env_file:
       - ./.env
     depends_on:
@@ -113,15 +124,15 @@ services:
     networks:
       - openlxp
 
-  neo4j:
-    image: neo4j
-    ports:
-      - 7474:7474
-      - 7687:7687
-    environment:
-      NEO4J_AUTH: 'neo4j/password'
-    networks:
-      - openlxp
+  # neo4j:
+  #   image: neo4j
+  #   ports:
+  #     - 7474:7474
+  #     - 7687:7687
+  #   environment:
+  #     NEO4J_AUTH: 'neo4j/password'
+  #   networks:
+  #     - openlxp
 
 volumes:
   data01:
