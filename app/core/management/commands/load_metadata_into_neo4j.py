@@ -1,10 +1,11 @@
 import logging
 
+from django.core.management.base import BaseCommand
+from neo4j import GraphDatabase
+
 from core.management.utils.neo4j_client import (get_neo4j_auth,
                                                 get_neo4j_endpoint)
 from core.models import CompositeLedger
-from django.core.management.base import BaseCommand
-from neo4j import GraphDatabase
 
 logger = logging.getLogger('dict_config_logger')
 
