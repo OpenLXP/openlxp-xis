@@ -1,11 +1,12 @@
 import hashlib
 import logging
 
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+
 from core.management.utils.transform_ledgers import \
     append_metadata_ledger_with_supplemental_ledger
 from core.models import CompositeLedger, MetadataLedger, SupplementalLedger
-from django.core.management.base import BaseCommand
-from django.utils import timezone
 
 logger = logging.getLogger('dict_config_logger')
 

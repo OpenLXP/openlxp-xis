@@ -1,12 +1,13 @@
 from unittest.mock import Mock, patch
 
+from django.core.exceptions import ValidationError
+from django.test import TestCase, tag
+from django.utils import timezone
+
 from core.models import (CompositeLedger, FilterMetadata, FilterRecord,
                          MetadataLedger, Neo4jConfiguration,
                          SupplementalLedger, XISConfiguration, XISDownstream,
                          XISUpstream)
-from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
-from django.utils import timezone
 
 
 @tag('unit')

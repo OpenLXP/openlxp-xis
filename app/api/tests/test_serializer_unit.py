@@ -1,11 +1,12 @@
 from unittest.mock import patch
 
-from api.serializers import (CompositeLedgerSerializer,
-                             MetadataLedgerSerializer,
-                             SupplementalLedgerSerializer)
 from ddt import ddt
 from django.test import tag
 from rest_framework.exceptions import ValidationError
+
+from api.serializers import (CompositeLedgerSerializer,
+                             MetadataLedgerSerializer,
+                             SupplementalLedgerSerializer)
 
 from .test_setup import TestSetUp
 

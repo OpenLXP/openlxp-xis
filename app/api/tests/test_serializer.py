@@ -1,9 +1,10 @@
 import logging
 from unittest.mock import patch
 
+from django.test import tag
+
 from api.serializers import MetadataLedgerSerializer
 from core.models import MetadataLedger
-from django.test import tag
 
 from .test_setup import TestSetUp
 
