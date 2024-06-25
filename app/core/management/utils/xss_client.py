@@ -1,9 +1,10 @@
 import logging
 
 import requests
+from django.core.cache import cache
+
 from core.management.utils.xis_internal import dict_flatten
 from core.models import XISConfiguration
-from django.core.cache import cache
 
 logger = logging.getLogger('dict_config_logger')
 

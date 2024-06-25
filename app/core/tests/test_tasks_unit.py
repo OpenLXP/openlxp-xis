@@ -1,8 +1,9 @@
 import logging
 from unittest.mock import patch
 
-from core.tasks import xis_workflow
 from django.test import tag
+
+from core.tasks import xis_workflow
 
 from .test_setup import TestSetUp
 

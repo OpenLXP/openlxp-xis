@@ -1,6 +1,9 @@
 import logging
 
 from celery import shared_task
+from openlxp_notifications.management.commands.trigger_status_update import \
+    Command as conformance_alerts
+
 from core.management.commands.consolidate_ledgers import \
     Command as consolidate_ledgers
 from core.management.commands.load_metadata_from_xis import \
@@ -11,8 +14,6 @@ from core.management.commands.load_metadata_into_xis import \
 #     Command as load_metadata_into_neo4j
 from core.management.commands.load_metadata_into_xse import \
     Command as load_metadata
-from openlxp_notifications.management.commands.trigger_status_update import \
-    Command as conformance_alerts
 
 logger = logging.getLogger('dict_config_logger')
 
