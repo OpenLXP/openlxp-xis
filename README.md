@@ -189,7 +189,7 @@ XIS has 3 workflows that can be run.  Consolidation and loading of Metadata and 
         - `Name` - Short description for this task
         - `Task (registered)`: The workflow to run from the Task (registered) dropdown list.  On the selected time interval celery task will run the task.
 
-## 6. Removing Deployment
+## 7. Removing Deployment
 To destroy the created resources, simply run the command below in your terminal:
     
     
