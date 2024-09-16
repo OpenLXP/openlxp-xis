@@ -42,7 +42,7 @@ gunicorn>=22.0.0, <22.1.0
 
 martor>=1.6.0,<1.6.10
 
-mysql-connector-python==8.0.33
+mysql-connector-python>=8.0.33, <8.1.0
 
 neo4j >=4.4.1
 
