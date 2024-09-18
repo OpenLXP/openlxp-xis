@@ -72,17 +72,175 @@ git clone https://github.com/OpenLXP/openlxp-xis.git
 | SECRET_KEY_VAL            | The Secret Key for Django |
 
 ## 4. Deployment
-1. Create the openlxp docker network
-    Open a terminal and run the following command in the root directory of the project.
+1. Create the OpenLXP Docker network. Open a terminal and run the following command in the root directory of the project:
     ```
     docker network create openlxp
     ```
 
-2. Run the command below to deploy XIS from `docker-compose.yaml` 
+2. Create an `nginx.default` file in the root directory of the project with the following configuration for the nginx container:
     ```
-    docker-compose up -d --build
+    # nginx.default
 
-## 5. Configuration for XMS
+
+    include /etc/nginx/mime.types;
+    
+    server {
+        listen 8020;
+        server_name example.org;
+    
+        location /static {
+            root /tmp/openlxp-xis/app;
+        }
+    
+        location / {
+            proxy_pass http://app_xis:8010;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+    ```
+
+4. Create a `docker-compose.yaml` file in the root directory of the project and paste the configuration below.
+    ```
+    services:
+      db_xis:
+        image: mysql:8.0.36
+        ports:
+          - '3306:3306'
+        environment:
+          MYSQL_DATABASE: "${DB_NAME}"
+    #      MYSQL_USER: 'root'
+          MYSQL_PASSWORD: "${DB_PASSWORD}"
+          MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+          MYSQL_HOST: ''
+        networks:
+          - openlxp
+        
+      app_xis:
+        container_name: openlxp-xis
+        image: registry1.dso.mil/ironbank/adl-ousd/ecc-openlxp/ecc-openlxp-xis:1.0.3
+        #build:
+        #  context: .
+        ports:
+          - "8080:8020"
+        command: >
+          sh -c ". /tmp/start-app.sh"
+        environment:
+          CELERY_BROKER_URL: "${CELERY_BROKER_URL}"
+          CELERY_RESULT_BACKEND: "${CELERY_RESULT_BACKEND}"
+          CSRF_COOKIE_DOMAIN: "${CSRF_COOKIE_DOMAIN}"
+          CSRF_TRUSTED_ORIGINS: "${CSRF_TRUSTED_ORIGINS}"
+          DB_NAME: "${DB_NAME}"
+          DB_USER: "${DB_USER}"
+          DB_PASSWORD: "${DB_PASSWORD}"
+          DB_HOST: "${DB_HOST}"
+          DJANGO_SUPERUSER_USERNAME: "${DJANGO_SUPERUSER_USERNAME}"
+          DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD}"
+          DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL}"
+          LOG_PATH: "${LOG_PATH}"
+          SECRET_KEY_VAL: "${SECRET_KEY_VAL}"
+        volumes:
+          - shared-app-data:/tmp/openlxp-xds
+        depends_on:
+          - db_xis
+        networks:
+          - openlxp
+          
+      nginx:
+        image: nginx:latest
+        ports: 
+          - 8081:8020
+        volumes: 
+          - ./nginx.default:/etc/nginx/conf.d/default.conf
+          - shared-app-data:/tmp/openlxp-xis
+        depends_on:
+          - app_xis
+        networks:
+          - openlxp
+    
+      es01:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+        container_name: es01
+        environment:
+          - discovery.type=single-node
+        ulimits:
+          memlock:
+            soft: -1
+            hard: -1
+        volumes:
+          - data01:/usr/share/elasticsearch/data
+        ports:
+          - 9200:9200
+          - 9300:9300
+        networks:
+          - openlxp
+    
+      redis:
+        image: redis:alpine
+        networks:
+          - openlxp
+    
+      celery:
+        build:
+          context: .
+        command: celery -A openlxp_xis_project worker -l info --pool=solo
+        volumes:
+          - shared-app-data:/tmp/openlxp-xis
+        env_file:
+          - ./.env
+        depends_on:
+          - db_xis
+          - redis
+          - app_xis
+        networks:
+          - openlxp
+        restart: on-failure
+    
+      celery-beat:
+        build:
+          context: .
+        command: celery -A openlxp_xis_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info --pidfile=/tmp/celerybeat.pid
+        volumes:
+          - shared-app-data:/tmp/openlxp-xis
+        env_file:
+          - ./.env
+        depends_on:
+          - db_xis
+          - redis
+          - app_xis
+        networks:
+          - openlxp
+        restart: on-failure
+    
+      flower:
+        image: mher/flower:0.9.7
+        command: [ "flower", "--broker=redis://redis:6379/0", "--port=8888" ]
+        ports:
+          - 5555:5555
+        networks:
+          - openlxp
+    
+      neo4j:
+        image: neo4j
+        ports:
+          - 7474:7474
+          - 7687:7687
+        environment:
+          NEO4J_AUTH: 'neo4j/password'
+        networks:
+          - openlxp
+    
+    networks:
+      openlxp:
+        external: true
+    
+    volumes:
+      data01:
+        driver: local
+      shared-app-data:  
+    ```
+
+## 5. Configuration for XIS
 1. 1. Navigate over to `http://localhost:8080/admin/` in your browser and login to the Django Admin page with the admin credentials set in your `.env` (`DJANGO_SUPERUSER_EMAIL` & `DJANGO_SUPERUSER_PASSWORD`)
 
 2. <u>CORE</u>
