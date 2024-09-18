@@ -44,7 +44,7 @@ Or copy it into one of these folders to install it system-wide:
 
 
 ## 1. Clone the project
-Clone the ironbank repository
+Clone the Github repository
 ```
 git clone https://github.com/OpenLXP/openlxp-xis.git
 ```  
