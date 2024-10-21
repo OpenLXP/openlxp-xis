@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'openlxp_notifications',
     'core',
     'api',
+    'health_check', 
     'django_celery_beat',
     'django_celery_results',
     'social_django',
@@ -59,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+SECURE_SSL_REDIRECT = False
 
 ROOT_URLCONF = 'openlxp_xis_project.urls'
 
