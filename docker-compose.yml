@@ -16,7 +16,7 @@ services:
     
   app_xis:
     container_name: openlxp-xis
-    # image: registry1.dso.mil/ironbank/adl-ousd/ecc-openlxp/ecc-openlxp-xis
+    image: xis-1.0.7-ibtest
     build:
       context: .
     ports:
