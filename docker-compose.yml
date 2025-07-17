@@ -17,8 +17,8 @@ services:
   app_xis:
     container_name: openlxp-xis
     image: xis-1.0.7-ibtest
-    build:
-      context: .
+    # build:
+    #   context: .
     ports:
       - "8080:8020"
     command: >
@@ -79,8 +79,9 @@ services:
       - openlxp
 
   celery:
-    build:
-      context: .
+    image: xis-1.0.7-ibtest
+    # build:
+    #   context: .
     command: celery -A openlxp_xis_project worker -l info --pool=solo
     volumes:
       - shared-app-data:/tmp/openlxp-xis
@@ -95,8 +96,9 @@ services:
     restart: on-failure
 
   celery-beat:
-    build:
-      context: .
+    image: xis-1.0.7-ibtest
+    # build:
+    #   context: .
     command: celery -A openlxp_xis_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info --pidfile=/tmp/celerybeat.pid
     volumes:
       - shared-app-data:/tmp/openlxp-xis
