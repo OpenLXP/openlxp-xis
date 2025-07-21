@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'knox',
-    # 'openlxp_notifications',
+    'openlxp_notifications',
     'core',
     'api',
     'django_celery_beat',
