@@ -38,7 +38,7 @@ services:
       LOG_PATH: "${LOG_PATH}"
       SECRET_KEY_VAL: "${SECRET_KEY_VAL}"
     volumes:
-      - shared-app-data:/tmp/openlxp-xds
+      - shared-app-data:/tmp/openlxp-xis
     depends_on:
       - db_xis
     networks:

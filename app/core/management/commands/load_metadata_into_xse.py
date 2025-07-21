@@ -15,7 +15,7 @@ from django.db.models import Q
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 
-es = Elasticsearch()
+# es = Elasticsearch()
 
 logger = logging.getLogger('dict_config_logger')
 
