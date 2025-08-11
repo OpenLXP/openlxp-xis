@@ -106,7 +106,8 @@ def get_data_types_for_validation():
     datatype_to_object = {
         "int": int,
         "str": str,
-        "bool": bool
+        "bool": bool,
+        "URI": str
     }
     expected_data_types = dict()
 
