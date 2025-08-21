@@ -1,4 +1,3 @@
-import html
 import logging
 
 import bleach
@@ -11,35 +10,43 @@ logger = logging.getLogger('dict_config_logger')
 def required_recommended_logs(id_num, category, field):
     """logs the missing required and recommended """
 
+    RECORD = "Record"
+
     # Logs the missing required columns
     if category == 'Required':
         logger.error(
-            "Record " + str(
-                id_num) + " does not have all " + category +
-            " fields. "
-            + field + " field is empty")
-
+            "%s %s does not have all %s fields. %s field is empty",
+            RECORD,
+            id_num,
+            category,
+            field
+        )
     # Logs the missing recommended columns
     if category == 'Recommended':
         logger.warning(
-            "Record " + str(
-                id_num) + " does not have all " + category +
-            " fields. "
-            + field + " field is empty")
-
+            "%s %s does not have all %s fields. %s field is empty",
+            RECORD,
+            id_num,
+            category,
+            field
+        )
     # Logs the inaccurate datatype columns
     if category == 'datatype':
         logger.warning(
-            "Record " + str(
-                id_num) + " does not have the expected " + category +
-            " for the field " + field)
-
+            "%s %s does not have the expected %s for the field %s",
+            RECORD,
+            id_num,
+            category,
+            field
+        )
+    # Logs the prefered alias during homoglyph check
     if category == 'homoglyphs':
         logger.error(
-            "Record " + str(
-                id_num) + " does not have the expected " + "preferred aliases "
-                                                           "for the field " +
-                                                           field)
+            "%s %s does not have the expected preferred aliases for the field %s",
+            RECORD,
+            id_num,
+            field
+        )
 
 
 def dict_flatten(data_dict, required_column_list):
@@ -213,10 +220,10 @@ def bleach_data_to_json(rdata):
         # if string, clean
         if isinstance(rdata[key], str):
             rdata[key] = bleach.clean(rdata[key], tags={}, strip=True)
-            rdata[key] = html.unescape(rdata[key])
         # if dict, enter dict
         if isinstance(rdata[key], dict):
             rdata[key] = bleach_data_to_json(rdata[key])
+
     return rdata
 
 

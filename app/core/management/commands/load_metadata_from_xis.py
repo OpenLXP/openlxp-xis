@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
         xis_response = requests.get(
             url=upstream.xis_api_endpoint + 'metadata/',
-            headers=headers)
+            headers=headers, timeout=3.0)
 
         while (xis_response.status_code//10 == 20):
             for record in xis_response.json()['results']:
@@ -43,12 +43,13 @@ class Command(BaseCommand):
 
             if (xis_response.json()['next'] is not None):
                 xis_response = requests.get(
-                    url=xis_response.json()['next'], headers=headers)
+                    url=xis_response.json()['next'], headers=headers,
+                    timeout=3.0)
             else:
                 return
 
         logger.error(
-            f"HTTP Error {xis_response.status_code} from {upstream}")
+            "HTTP Error %s from %s", xis_response.status_code, upstream)
 
     def save_record(self, upstream, record):
         """saves record to metadata and supplemental ledgers as needed"""

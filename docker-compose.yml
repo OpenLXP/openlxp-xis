@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   db_xis:
     image: mysql:8.0.36
@@ -23,32 +21,31 @@ services:
     command: >
       sh -c ". /opt/app/start-app.sh"
     environment:
-      DB_NAME: "${DB_NAME}"
-      DB_USER: "${DB_USER}"
-      DB_PASSWORD: "${DB_PASSWORD}"
-      DB_HOST: "${DB_HOST}"
-      DJANGO_SUPERUSER_USERNAME: "${DJANGO_SUPERUSER_USERNAME}"
-      DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD}"
-      DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL}"
-      SECRET_KEY_VAL: "${SECRET_KEY_VAL}"
-      LOG_PATH: "${LOG_PATH}"
+      AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
+      BAD_HOST: "${BAD_HOST}"
       CELERY_BROKER_URL: "${CELERY_BROKER_URL}"
       CELERY_RESULT_BACKEND: "${CELERY_RESULT_BACKEND}"
-      ENTITY_ID: "${ENTITY_ID}"
-      SP_PUBLIC_CERT: "${SP_PUBLIC_CERT}"
-      SP_PRIVATE_KEY: "${SP_PRIVATE_KEY}"
-      BAD_HOST: "${BAD_HOST}"
-      OVERIDE_HOST: "${OVERIDE_HOST}"
-      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
-      REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
-      AWS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
-      P1PS_DOMAIN: "${P1PS_DOMAIN}"
-      TEAM_TOKEN: "${TEAM_TOKEN}"
-      TEAM_ID: "${TEAM_ID}"
       COOKIE_NAME: "${COOKIE_NAME}"
       COOKIE_VALUE: "${COOKIE_VALUE}"
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS}"
+      CSRF_COOKIE_DOMAIN: "${CSRF_COOKIE_DOMAIN}"
+      DB_HOST: "${DB_HOST}"
+      DB_NAME: "${DB_NAME}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_USER: "${DB_USER}"
+      DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL}"
+      DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD}"
+      DJANGO_SUPERUSER_USERNAME: "${DJANGO_SUPERUSER_USERNAME}"
+      ENTITY_ID: "${ENTITY_ID}"
+      LOG_PATH: "${LOG_PATH}"
+      OVERIDE_HOST: "${OVERIDE_HOST}"
+      # P1PS_DOMAIN: "${P1PS_DOMAIN}"
+      REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
+      SECRET_KEY_VAL: "${SECRET_KEY_VAL}"
+      SP_PRIVATE_KEY: "${SP_PRIVATE_KEY}"
+      SP_PUBLIC_CERT: "${SP_PUBLIC_CERT}"
+      # TEAM_ID: "${TEAM_ID}"
+      # TEAM_TOKEN: "${TEAM_TOKEN}"
     volumes:
       - ./app:/opt/app/openlxp-xis
     depends_on:

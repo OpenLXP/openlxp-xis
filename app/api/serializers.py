@@ -102,7 +102,6 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
         # validate for recommended values in data
         validate_recommended(
             data, recommended_column_list, flattened_source_data)
-
         # Type checking for values in metadata
         for item in flattened_source_data:
             # check if datatype has been assigned to field
@@ -139,6 +138,7 @@ class MetadataLedgerSerializer(DynamicFieldsModelSerializer):
             raise serializers.ValidationError("Metadata has missing fields. "
                                               "Data did not pass validation."
                                               "Check logs for more details")
+
         return data
 
     def update(self, instance, validated_data):
