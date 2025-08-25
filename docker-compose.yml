@@ -39,6 +39,7 @@ services:
       ENTITY_ID: "${ENTITY_ID}"
       LOG_PATH: "${LOG_PATH}"
       OVERIDE_HOST: "${OVERIDE_HOST}"
+      HOSTS: "${HOSTS}"
       # P1PS_DOMAIN: "${P1PS_DOMAIN}"
       REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt'
       SECRET_KEY_VAL: "${SECRET_KEY_VAL}"

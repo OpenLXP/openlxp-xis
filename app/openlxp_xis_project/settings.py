@@ -77,13 +77,18 @@ MIDDLEWARE = [
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 
+if os.environ.get('CSRF_TRUSTED_ORIGINS'):
+    CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(';')
+else:
+    CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
+
 SESSION_COOKIE_SECURE = True
 
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_BROWSER_XSS_FILTER = True
-SECURE_SSL_REDIRECT = True
-SECURE_REDIRECT_EXEMPT = ['health/', 'api/health/']
+# SECURE_SSL_REDIRECT = True
+# SECURE_REDIRECT_EXEMPT = ['health/', 'api/health/']
 
 ROOT_URLCONF = 'openlxp_xis_project.urls'
 
@@ -229,12 +234,8 @@ LOGGING = {
     }
 }
 
-CORS_ALLOWED_ORIGINS = [os.environ.get('CORS_ALLOWED_ORIGINS')]
-CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN')
-CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_COOKIE_DOMAIN'), 'https://'+os.environ.get('CSRF_COOKIE_DOMAIN'),]
-
-
+# CORS_ALLOWED_ORIGINS = [os.environ.get('CORS_ALLOWED_ORIGINS')]
+# CORS_ALLOW_CREDENTIALS = True
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
