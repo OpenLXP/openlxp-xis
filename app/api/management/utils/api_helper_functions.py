@@ -29,7 +29,7 @@ def add_metadata_ledger(data, experience_id):
             ['unique_record_identifier']).exists():
         logger.info("Assigning new UUID to updated value")
         data['unique_record_identifier'] = str(uuid.uuid4())
-        
+
     # sorting the metadata for consistency
     if 'metadata' in data:
         data['metadata'] = multi_dict_sort(data['metadata'])
@@ -79,7 +79,7 @@ def add_supplemental_ledger(data, experience_id):
             ['unique_record_identifier']).exists():
         logger.info("Assigning new UUID to updated value")
         data['unique_record_identifier'] = str(uuid.uuid4())
-        
+
     # sorting the metadata for consistency
     if 'metadata' in data:
         data['metadata'] = multi_dict_sort(data['metadata'])
