@@ -42,7 +42,8 @@ def required_recommended_logs(id_num, category, field):
     # Logs the prefered alias during homoglyph check
     if category == 'homoglyphs':
         logger.error(
-            "%s %s does not have the expected preferred aliases for the field %s",
+            "%s %s does not have the expected "
+            "preferred aliases for the field %s",
             RECORD,
             id_num,
             field
