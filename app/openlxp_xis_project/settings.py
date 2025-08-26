@@ -87,8 +87,8 @@ SESSION_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_BROWSER_XSS_FILTER = True
-# SECURE_SSL_REDIRECT = True
-# SECURE_REDIRECT_EXEMPT = ['health/', 'api/health/']
+SECURE_SSL_REDIRECT = True
+SECURE_REDIRECT_EXEMPT = ['health/', 'api/health/']
 
 ROOT_URLCONF = 'openlxp_xis_project.urls'
 
@@ -234,8 +234,8 @@ LOGGING = {
     }
 }
 
-# CORS_ALLOWED_ORIGINS = [os.environ.get('CORS_ALLOWED_ORIGINS')]
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [os.environ.get('CORS_ALLOWED_ORIGINS')]
+CORS_ALLOW_CREDENTIALS = True
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
