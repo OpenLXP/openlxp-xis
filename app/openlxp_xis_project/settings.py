@@ -299,3 +299,4 @@ elif os.environ.get('TOKEN_LIFE_FOREVER') is not None:
 if os.environ.get('TOKEN_COUNT_PER_USER') is not None:
     REST_KNOX_TOKEN_LIMIT_PER_USER = int(
         os.environ.get('TOKEN_COUNT_PER_USER'))
+
