@@ -113,6 +113,8 @@ class MetaDataView(ListAPIView):
     def post(self, request):
         """This method defines the API's to save data to the
         metadata ledger in the XIS"""
+        logger.info("Start processing")
+        logger.error("Incoming experience")
 
         # Add optional/recommended fields to the metadata
         extra_fields = get_optional_and_recommended_fields_for_validation()
@@ -346,7 +348,7 @@ class ManageDataView(APIView):
 
 
 @api_view(['GET'])
-@permission_classes((permissions.AllowAny,))
+@permission_classes((permissions.IsAdminUser,))
 def xis_workflow_api(request):
     logger.info('XIS workflow api')
     task = xis_workflow.delay()
@@ -354,7 +356,7 @@ def xis_workflow_api(request):
 
 
 @api_view(['GET'])
-@permission_classes((permissions.AllowAny,))
+@permission_classes((permissions.IsAdminUser,))
 def xis_downstream_workflow_api(request):
     logger.info('Downstream workflow api')
     task = xis_downstream_workflow.delay()
@@ -362,7 +364,7 @@ def xis_downstream_workflow_api(request):
 
 
 @api_view(['GET'])
-@permission_classes((permissions.AllowAny,))
+@permission_classes((permissions.IsAdminUser,))
 def xis_upstream_workflow_api(request):
     logger.info('Upstream workflow api')
     task = xis_upstream_workflow.delay()
@@ -370,7 +372,7 @@ def xis_upstream_workflow_api(request):
 
 
 @api_view(['GET'])
-@permission_classes((permissions.AllowAny,))
+@permission_classes((permissions.IsAdminUser,))
 def get_status(request, task_id):
     task_result = AsyncResult(task_id)
     result = {

@@ -31,7 +31,10 @@ def add_metadata_ledger(data, experience_id):
         data['unique_record_identifier'] = str(uuid.uuid4())
 
     # sorting the metadata for consistency
-    data['metadata'] = multi_dict_sort(data['metadata'])
+    if 'metadata' in data:
+        data['metadata'] = multi_dict_sort(data['metadata'])
+    else:
+        data['metadata'] = {}
 
     # create hash values of metadata and supplemental data
     metadata_hash = hashlib.sha512(str(data['metadata']).encode(
@@ -78,7 +81,10 @@ def add_supplemental_ledger(data, experience_id):
         data['unique_record_identifier'] = str(uuid.uuid4())
 
     # sorting the metadata for consistency
-    data['metadata'] = multi_dict_sort(data['metadata'])
+    if 'metadata' in data:
+        data['metadata'] = multi_dict_sort(data['metadata'])
+    else:
+        data['metadata'] = {}
 
     # create hash values of metadata and supplemental data
     supplemental_hash = hashlib.sha512(str(data['metadata'])

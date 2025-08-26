@@ -1,8 +1,7 @@
 from django.urls import path
+from key_auth import views
 from knox.views import LogoutAllView, LogoutView
 from rest_framework.routers import DefaultRouter
-
-from key_auth import views
 
 router = DefaultRouter()
 

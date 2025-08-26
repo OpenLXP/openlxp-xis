@@ -7,12 +7,18 @@ from django.urls import reverse
 from core.models import (CompositeLedger, MetadataLedger, SupplementalLedger,
                          XISConfiguration)
 
+from django.test import override_settings
+
 
 class TestSetUp(TestCase):
     """Class with setup and teardown for tests in XIS"""
 
     def setUp(self):
         """Function to set up necessary data for testing"""
+
+        settings_manager = override_settings(SECURE_SSL_REDIRECT=False)
+        settings_manager.enable()
+        self.addCleanup(settings_manager.disable)
 
         # globally accessible data sets
         self.metadata_url = reverse('api:metadata')
