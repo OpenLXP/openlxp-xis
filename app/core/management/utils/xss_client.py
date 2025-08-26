@@ -39,10 +39,10 @@ def read_json_data(schema_ref):
 
 def get_target_validation_schema():
     """Retrieve target validation schema from XIS configuration """
-    logger.info("Configuration of schemas and files")
+    logger.error("Configuration of schemas and files")
     data = XISConfiguration.objects.first()
     target_validation_schema = data.target_schema
-    logger.info("Reading schema for validation")
+    logger.error("Reading schema for validation")
     # Read source validation schema as dictionary
     schema_data_dict = read_json_data(target_validation_schema)
     return schema_data_dict
